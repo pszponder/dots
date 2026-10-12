@@ -50,7 +50,7 @@ mise -E workstation bootstrap --dry-run
 mise -E workstation bootstrap
 ```
 
-Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, Nerd Fonts, and globally available Codex and Claude Code CLIs. Servers also install Herdr. Global mise tool definitions live in `dots/.config/mise/` and are linked before bootstrap. Workstation also installs Flatpak if missing, configures the per-user Flathub remote, and installs declared Flatpak apps, including Zed. Missing SSH keys prompt for passphrases. Review the dry run before applying.
+Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, Nerd Fonts, Flox on supported systems, and globally available Codex and Claude Code CLIs. Servers also install Herdr. Global mise tool definitions live in `dots/.config/mise/` and are linked before bootstrap. Workstation also installs Flatpak if missing, configures the per-user Flathub remote, and installs declared Flatpak apps, including Zed. Missing SSH keys prompt for passphrases. Review the dry run before applying.
 
 ## Update this machine
 
@@ -59,8 +59,10 @@ Run `up` to update the OS, Homebrew if installed, mise and the applied profile's
 ## TODOs
 
 - [ ] Configure Flatpak applications (through mise bootstrap)
-- [ ] Install / setup [flox](https://flox.dev/docs/install-flox/install)
-- [ ] Review [dotfile groups](https://mise.jdx.dev/dotfiles/groups.html), should we use them?
 
 ## Resources / References
 - [mise](https://mise.jdx.dev)
+
+## Script conventions
+
+Executable shell scripts define their logic in functions and finish with `main "$@"`. Keep `main` focused on initialization and calling the workflow functions. Sourced helper libraries and shell startup configuration do not use a script entrypoint.

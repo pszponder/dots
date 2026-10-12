@@ -31,6 +31,22 @@ Bootstrap final hooks run on every bootstrap, including when keys and fonts alre
 
 The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. After moving the repository, rerun `sh scripts/bootstrap/configure_mise.sh` from the new checkout, reapply, and reload your shell.
 
+## Flox
+
+Both profiles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
+
+After installation, initialize your user’s [default environment](https://flox.dev/docs/tutorials/default-environment) once:
+
+```sh
+flox auth login
+flox init --default
+flox install --default <package>
+```
+
+Following Flox’s official shell setup, `.bashrc` and `.profile` (Bash), and `.zshrc` and `.zprofile` (Zsh), end with `eval "$(flox activate -D -m run)"`, guarded by a check that Flox is installed. The managed `.bash_profile` sources `.bashrc` and `.profile`, since Bash otherwise skips `.profile` when `.bash_profile` exists. Authenticate and initialize the environment before opening a new shell. Authentication and default packages are user-managed, outside these dotfiles.
+
+When Flox is on PATH, `up` runs `flox upgrade --default` to upgrade all default-environment packages, regardless of the current project directory. `up --dry-run` prints this command without running Flox. Failures appear in the updater’s final failure summary. The Flox CLI itself is updated by the OS package manager on Debian/RPM installations; the bootstrap installer does not upgrade it.
+
 ## Example expanded repository layout
 
 ```

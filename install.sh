@@ -2,21 +2,23 @@
 
 set -eu
 
-SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-LOGGING_LIB="$SCRIPT_DIR/scripts/utils/utils_logging.sh"
-if [ ! -f "$LOGGING_LIB" ]; then
-  # A downloaded installer has no checkout yet.
-  log_info() { printf 'INFO: %s\n' "$*"; }
-  log_success() { printf 'OK: %s\n' "$*"; }
-  log_warn() { printf 'WARN: %s\n' "$*" >&2; }
-  log_error() { printf 'ERROR: %s\n' "$*" >&2; }
-else
-  # shellcheck source=scripts/utils/utils_logging.sh
-  . "$LOGGING_LIB"
-fi
+initialize() {
+  SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+  LOGGING_LIB="$SCRIPT_DIR/scripts/utils/utils_logging.sh"
+  if [ ! -f "$LOGGING_LIB" ]; then
+    # A downloaded installer has no checkout yet.
+    log_info() { printf 'INFO: %s\n' "$*"; }
+    log_success() { printf 'OK: %s\n' "$*"; }
+    log_warn() { printf 'WARN: %s\n' "$*" >&2; }
+    log_error() { printf 'ERROR: %s\n' "$*" >&2; }
+  else
+    # shellcheck source=scripts/utils/utils_logging.sh
+    . "$LOGGING_LIB"
+  fi
 
-REPO_URL="${DOTFILES_REPO_URL:-https://github.com/pszponder/dots.git}"
-REPO_DIR="${DOTFILES_REPO_DIR:-$HOME/repos/github/pszponder/dots}"
+  REPO_URL="${DOTFILES_REPO_URL:-https://github.com/pszponder/dots.git}"
+  REPO_DIR="${DOTFILES_REPO_DIR:-$HOME/repos/github/pszponder/dots}"
+}
 
 die() {
   log_error "$*"
@@ -66,42 +68,48 @@ choose_profile() {
   esac
 }
 
-if [ -f "$SCRIPT_DIR/mise.toml" ]; then
-  REPO_DIR="$SCRIPT_DIR"
-else
-  command -v git >/dev/null 2>&1 || die "git is required to download the dotfiles repository"
-  if [ ! -d "$REPO_DIR/.git" ]; then
-    log_info "Cloning dotfiles into $REPO_DIR"
-    mkdir -p "$(dirname "$REPO_DIR")"
-    git clone "$REPO_URL" "$REPO_DIR"
+main() {
+  initialize
+
+  if [ -f "$SCRIPT_DIR/mise.toml" ]; then
+    REPO_DIR="$SCRIPT_DIR"
+  else
+    command -v git >/dev/null 2>&1 || die "git is required to download the dotfiles repository"
+    if [ ! -d "$REPO_DIR/.git" ]; then
+      log_info "Cloning dotfiles into $REPO_DIR"
+      mkdir -p "$(dirname "$REPO_DIR")"
+      git clone "$REPO_URL" "$REPO_DIR"
+    fi
   fi
-fi
 
-[ -f "$REPO_DIR/mise.toml" ] || die "could not find mise.toml in $REPO_DIR"
-install_mise
+  [ -f "$REPO_DIR/mise.toml" ] || die "could not find mise.toml in $REPO_DIR"
+  install_mise
 
-profile="$(choose_profile "${1:-}")"
-cd "$REPO_DIR"
+  profile="$(choose_profile "${1:-}")"
+  cd "$REPO_DIR"
 
-log_info "Linking global mise configuration and recording the checkout path"
-sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
+  log_info "Linking global mise configuration and recording the checkout path"
+  sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
 
-log_info "Trusting mise configuration in $REPO_DIR"
-mise trust
+  log_info "Trusting mise configuration in $REPO_DIR"
+  mise trust
 
-log_info "Previewing $profile setup"
-mise -E "$profile" bootstrap --dry-run
+  log_info "Previewing $profile setup"
+  mise -E "$profile" bootstrap --dry-run
 
-if [ -t 0 ]; then
-  printf 'Apply this setup now? [y/N] '
-  IFS= read -r answer
-  case "$answer" in
-    y|Y|yes|YES|Yes) ;;
-    *) log_warn "Setup cancelled"; exit 0 ;;
-  esac
-else
-  log_info "Applying $profile setup"
-fi
+  if [ -t 0 ]; then
+    printf 'Apply this setup now? [y/N] '
+    IFS= read -r answer
+    case "$answer" in
+      y|Y|yes|YES|Yes) ;;
+      *) log_warn "Setup cancelled"; exit 0 ;;
+    esac
+  else
+    log_info "Applying $profile setup"
+  fi
 
-mise -E "$profile" bootstrap
-log_success "Setup complete"
+  mise -E "$profile" bootstrap
+  log_success "Setup complete"
+}
+
+main "$@"
