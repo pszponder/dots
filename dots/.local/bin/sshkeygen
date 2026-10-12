@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+########################################
+# Logging
+########################################
+log_info() {
+    printf '%s\n' "ℹ️ [INFO] $*"
+}
+
+log_success() {
+    printf '%s\n' "✅ [OK] $*"
+}
+
+log_warn() {
+    printf '%s\n' "⚠️ [WARN] $*"
+}
+
+log_error() {
+    printf '%s\n' "❌ [ERROR] $*" >&2
+}
+
+########################################
+# Defaults
+########################################
+KEY_TYPE="ed25519"
+KEY_DIR="$HOME/.ssh"
+KEY_NAME=""
+KEY_COMMENT=""
+ADD_AGENT="ask"
+COPY_CLIPBOARD=true
+
+DIR_PROVIDED=false
+NAME_PROVIDED=false
+COMMENT_PROVIDED=false
+
+########################################
+# Usage
+########################################
+usage() {
+    cat <<EOF
+Usage: $0 [-t ed25519|rsa] [-d key_dir] [-n key_name] [-c comment] [-a|-A] [-q]
+
+Options:
+  -t  Key type (ed25519 or rsa) [default: ed25519]
+  -d  Key directory [default: ~/.ssh]
+  -n  Key filename [default: id_<type>]
+  -c  Key comment
+  -a  Add key to the current ssh-agent (may prompt for a passphrase)
+  -A  Skip adding the key to ssh-agent
+  -q  Skip clipboard copy (public key remains in the .pub file)
+  -h  Show this help message
+EOF
+}
+
+########################################
+# Parse Arguments
+########################################
+while getopts ":t:d:n:c:aAqh" opt; do
+    case ${opt} in
+        t) KEY_TYPE="$(printf '%s' "$OPTARG" | tr '[:upper:]' '[:lower:]')" ;; # tr for bash 3.2 compat
+        d)
+            KEY_DIR="${OPTARG/#\~/$HOME}"
+            DIR_PROVIDED=true
+            ;;
+        n)
+            KEY_NAME="${OPTARG%.pub}"
+            NAME_PROVIDED=true
+            ;;
+        c)
+            KEY_COMMENT="$OPTARG"
+            COMMENT_PROVIDED=true
+            ;;
+        a) ADD_AGENT="yes" ;;
+        A) ADD_AGENT="no" ;;
+        q) COPY_CLIPBOARD=false ;;
+        h) usage; exit 0 ;;
+        *) usage; exit 1 ;;
+    esac
+done
+
+command -v ssh-keygen >/dev/null || { log_error "ssh-keygen is required"; exit 1; }
+
+########################################
+# Validate Key Type
+########################################
+if [[ "$KEY_TYPE" != "ed25519" && "$KEY_TYPE" != "rsa" ]]; then
+    log_error "Unsupported key type: $KEY_TYPE"
+    log_info "Only 'ed25519' and 'rsa' are supported."
+    exit 1
+fi
+
+########################################
+# Interactive Prompts
+########################################
+if [[ "$DIR_PROVIDED" == false ]]; then
+    read -rp "Enter SSH key directory [default: $KEY_DIR]: " input_dir
+    [[ -n "$input_dir" ]] && KEY_DIR="${input_dir/#\~/$HOME}"
+fi
+
+if [[ "$NAME_PROVIDED" == false ]]; then
+    read -rp "Enter SSH key filename [default: id_${KEY_TYPE}]: " KEY_NAME
+    KEY_NAME=${KEY_NAME:-id_${KEY_TYPE}}
+fi
+
+if [[ "$COMMENT_PROVIDED" == false ]]; then
+    read -rp "Enter SSH key comment (e.g., email or purpose): " KEY_COMMENT
+fi
+
+if [[ -z "$KEY_NAME" || "$KEY_NAME" == */* || "$KEY_NAME" == "." || "$KEY_NAME" == ".." ]]; then
+    log_error "Key filename must be a single non-empty filename"
+    exit 1
+fi
+KEY_PATH="${KEY_DIR}/${KEY_NAME}"
+
+########################################
+# Ensure Directory Exists
+########################################
+if [[ ! -d "$KEY_DIR" ]]; then
+    log_info "Creating directory: $KEY_DIR"
+    mkdir -p "$KEY_DIR"
+fi
+
+chmod 700 "$KEY_DIR"
+
+########################################
+# Handle Existing Key
+########################################
+if [[ -e "$KEY_PATH" || -L "$KEY_PATH" || -e "$KEY_PATH.pub" || -L "$KEY_PATH.pub" ]]; then
+    log_error "Refusing to overwrite an existing private or public key: $KEY_PATH"
+    exit 1
+fi
+
+########################################
+# Generate Key
+########################################
+log_info "Generating $KEY_TYPE key..."
+
+if [[ "$KEY_TYPE" == "rsa" ]]; then
+    ssh-keygen -t rsa -b 4096 -f "$KEY_PATH" -C "$KEY_COMMENT"
+else
+    ssh-keygen -t ed25519 -f "$KEY_PATH" -C "$KEY_COMMENT"
+fi
+
+chmod 600 "$KEY_PATH"
+chmod 644 "${KEY_PATH}.pub"
+
+log_success "SSH key generated"
+log_info "Private: $KEY_PATH"
+log_info "Public:  ${KEY_PATH}.pub"
+
+########################################
+# Add to ssh-agent
+########################################
+if [[ "$ADD_AGENT" == "ask" ]]; then
+    read -rp "Add this key to ssh-agent? [Y/n]: " add_agent_input
+    add_agent_input="$(printf '%s' "$add_agent_input" | tr '[:upper:]' '[:lower:]')"
+    add_agent_input=${add_agent_input:-y}
+elif [[ "$ADD_AGENT" == "yes" ]]; then
+    add_agent_input="y"
+else
+    add_agent_input="n"
+fi
+
+if [[ "$add_agent_input" == "y" ]]; then
+    log_info "Adding key to ssh-agent..."
+
+    if [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+        log_error 'Start an agent in your calling shell with eval "$(ssh-agent -s)", then run ssh-add on this key'
+        exit 1
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]] && ssh-add -h 2>&1 | grep -q -- '-apple-use-keychain'; then
+        ssh-add --apple-use-keychain "$KEY_PATH"
+        log_success "Added with macOS Keychain support"
+    else
+        ssh-add "$KEY_PATH"
+        log_success "Key added"
+    fi
+fi
+
+########################################
+# Clipboard Copy
+########################################
+if [[ "$COPY_CLIPBOARD" == false ]]; then
+    exit 0
+fi
+log_info "Attempting to copy public key to clipboard..."
+
+if command -v cb &>/dev/null; then
+    cb copy < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (cb)"
+elif command -v pbcopy &>/dev/null; then
+    pbcopy < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (macOS)"
+elif command -v xclip &>/dev/null; then
+    xclip -selection clipboard < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (xclip)"
+elif command -v xsel &>/dev/null; then
+    xsel --clipboard < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (xsel)"
+elif command -v wl-copy &>/dev/null; then
+    wl-copy < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (Wayland)"
+elif command -v clip.exe &>/dev/null; then
+    clip.exe < "${KEY_PATH}.pub"
+    log_success "Copied to clipboard (Windows/WSL)"
+else
+    log_warn "Clipboard utility not found."
+    log_info "Public key:"
+    echo "----------------------------------------"
+    cat "${KEY_PATH}.pub"
+    echo "----------------------------------------"
+fi

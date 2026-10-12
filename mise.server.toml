@@ -1,0 +1,4 @@
+[vars]
+dotfiles_profile = "server"
+
+[bootstrap.packages]

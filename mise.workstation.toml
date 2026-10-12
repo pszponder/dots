@@ -1,0 +1,10 @@
+[vars]
+dotfiles_profile = "workstation"
+
+[bootstrap.packages]
+"apt:flatpak" = "latest"
+"pacman:flatpak" = "latest"
+"dnf:flatpak" = "latest"
+
+[bootstrap.hooks]
+post-packages = "sh {{ config_root | quote }}/scripts/gui/flatpak_install.sh"
