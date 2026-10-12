@@ -1,0 +1,362 @@
+[user]
+    name = {{ vars.git_name }}
+    email = {{ vars.git_email }}
+
+[init]
+    defaultBranch = main
+
+[core]
+    editor = nvim
+    # excludesfile = ~/.gitignore      # not needed: git auto-reads ~/.config/git/ignore (XDG default)
+    autocrlf = input # convert CRLF to LF on commit
+    # pager = delta --dark # use delta for paging
+    # pager = less
+    compression = 9 # maximum compression for git objects
+    whitespace = error # highlight whitespace errors
+    preloadindex = true # speed up git operations by preloading index
+
+[commit]
+    verbose = 1 # show diff in commit message editor
+    cleanup = scissors # remove everything after scissors line in commit message editor
+
+[stash]
+    showPatch = true # show diff when applying stash
+
+[color]
+    ui = true # colorize output
+
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+
+[color "diff"]
+    frag = magenta bold
+    meta = yellow bold
+    new = green bold
+    old = red bold
+    whitespace = red reverse
+
+[color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
+
+[status]
+    # To show long status, run 'git status --long'
+    # short = true # show short status
+    branch = true # show branch name
+    showUntrackedFiles = all # show untracked files
+    showStash = true
+
+[help]
+    # autoCorrect = immediate # autocorrect typos immediately
+    autoCorrect = prompt # prompt before autocorrecting typos
+
+[pager]
+    # status = true # use less for paging
+
+[diff]
+    colorMoved = default
+    algorithm = histogram
+    mnemonicPrefix = true # use clearer a/, b/, index, and worktree prefixes
+    interHunkContext = 3
+    renames = copies # detect renames and copies
+    context = 5 # show 5 lines of context
+    # noprefix = true
+    # tool = default-difftool # use 'git difftool' to see changes
+
+[interactive]
+    diffFilter = delta --color-only # use delta for interactive staging
+    singleKey = true # allow staging/unstaging a file with a single key press
+
+[rebase]
+    autoStash = true # auto stash before rebase
+    abbreviateCommands = true # abbreviate rebase commands
+    updateRef = true # update branch ref after rebase
+    autoSquash = true # auto squash commits
+    # tool = default-mergetool # use 'git mergetool' to resolve conflicts
+    missingCommitsCheck = warn # warn about missing commits during rebase
+
+[merge]
+    conflictStyle = zdiff3
+    autoStash = true # auto stash before merge
+    # tool = default-mergetool # use 'git mergetool' to resolve conflicts
+
+[include]
+    path = ~/.config/delta/themes/catppuccin.gitconfig
+
+[delta]
+    features = catppuccin-mocha
+    dark = true
+    hyperlinks = true # enable hyperlinks
+    # syntax-theme = Dracula
+    line-numbers = true # show line numbers
+    side-by-side = true # show diffs side-by-side
+    navigate = true # allow navigating between hunks
+
+[push]
+    default = current # 'simple' or 'current' for current branch only
+    autoSetupRemote = true # automatically setup remote tracking when pushing a new branch
+    followTags = true # push tags when pushing commits
+
+[pull]
+    # rebase = interactive # rebase instead of merge when pulling (and allow interactive rebase)
+    rebase = true # rebase instead of merge when pulling
+
+[credential]
+    helper = cache --timeout=3600 # stores password for 1 hour
+
+[log]
+    follow = true # follow renames
+    abbrevCommit = true # abbreviate commit hashes
+    graphColors = blue,yellow,cyan,magenta,green,red
+
+[rerere]
+    enabled = true # enable rerere
+
+[gc]
+    rerereResolved = 365 # remove resolved conflicts from rerere cache
+
+[branch]
+    sort = -committerdate # sort branches by last commit date
+
+[tag]
+    sort = -taggerdate # sort tags by tag date
+
+[column]
+    ui = auto # use columns for compact list output when appropriate
+
+[alias]
+    # stage updates to tracked files (either globally or for a specific path(s)/regex) and show status
+    # git u <file1> <file2>... to stage a file and see status
+    # Ex. git u '*.py' to stage all changes to python files
+    # Ex. git u 'src/**/*.py' to stage all changes to python files in the src directory
+    # Ex. git u '*.py' '*.md' to stage all changes to python and markdown files
+    u = "!f() { git add --update \"$@\" && git status; }; f"
+
+    # Add a main alias for master to legacy repsoitories
+    # Usage: git master-as-main
+    alias-master-as-main = !git symbolic-ref refs/heads/main refs/heads/master && git symbolic-ref refs/remotes/origin/main refs/remotes/origin/master && git switch main
+
+    # Select and switch branches w/ fzf
+    switch-recent = !git branch --sort=-committerdate --format='%(refname:short) ' | fzf --preview='git log --date=relative --color main..{}' | xargs git switch
+
+    # =======================
+    # --- Basic Shortcuts ---
+    # =======================
+    st = status --short
+    ci = commit
+    co = checkout
+    br = branch
+    df = diff
+    last = log -1 HEAD --stat
+
+    # --- Log & History ---
+    lg = log --oneline --graph --decorate --all
+    hist = log --pretty=format:'%C(yellow)%h%Creset %ad | %Cgreen%s%Creset %C(bold blue)<%an>%Creset' --graph --date=short
+
+    # ===========================
+    # --- Undo & Fix Mistakes ---
+    # ===========================
+    undo = reset --soft HEAD~1         # Undo last commit but keep changes
+    unstage = reset HEAD --            # Unstage files (but keep changes)
+    amend = commit --amend --no-edit   # Amend last commit without changing message
+    fixup = commit --fixup             # Create fixup commit for autosquash
+    squash = rebase -i --autosquash    # Interactive rebase with autosquash
+
+    # ========================
+    # --- Stash Management ---
+    # ========================
+    s = stash
+
+    sl = stash list --pretty=format:\"%C(yellow)%gd%C(reset) %C(green)%cr%C(reset) %gs\"
+
+    # Display full diff (patch) for the most recently created stash
+    sdiff = stash show -p
+
+    # Stash with a message and show diff
+    swip = "!f() { git stash push -m \"WIP: $1\" && git stash show -p stash@{0}; }; f"
+
+    sa = stash apply
+
+    # git unpark            retrieves and removes the most recent stash
+    # git unpack <index>    retrieves and removes the stash at specified <index>
+    sp = "!f() { \
+        if [ -z \"$1\" ]; then \
+            git stash pop; \
+        else \
+            git stash pop \"stash@{$1}\"; \
+        fi; \
+    }; f"
+
+    sd = stash drop    # Drop last stash
+
+    # interactive stash with a message and preview
+    sc = "!f() { git stash save \"$1\" && git stash show -p stash@{0}; }; f"   # stash with message and show patch
+
+    # ==============================
+    # --- Remote Tracking & Sync ---
+    # ==============================
+    fa = fetch --all --prune                          # Prune deleted remotes
+    up = "!f() { git fetch --all --prune -v && if git remote | grep -qx upstream; then git merge upstream/main; else git merge origin/main; fi; }; f"
+
+    # ===============================
+    # --- Cleaning Local Branches ---
+    # ===============================
+    bclean = "!git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n 1 git branch -d"
+    delete-merged = "!f() { git branch --merged $1 | grep -vE '(^\\*|main|master|dev)' | xargs git branch -d; }; f"
+
+    # removes local branches that no longer exist on remote
+    delete-gone = "!git fetch -p && git branch -vv | grep ': gone]' | awk '{print $1}' | xargs -r git branch -D"
+
+    # cleans up tracking refs and prunes remote branches
+    prune-branches = "!git remote prune origin && git fetch -p"
+
+    # ========================
+    # --- Tag & Submodules ---
+    # ========================
+    tags = tag -l
+    smupdate = submodule update --init --recursive
+
+    # ===========================
+    # --- Cherry-pick Helpers ---
+    # ===========================
+    cp = cherry-pick
+    cpa = cherry-pick --abort
+    cpc = cherry-pick --continue
+
+    # ==========================
+    # --- WIP / Parking Work ---
+    # ==========================
+
+    # Quick commit current work
+    quick-commit = "!f() { \
+        git add -A && \
+        git commit -m \"WIP: $(date '+%Y-%m-%d %H:%M')\" && \
+        echo \"Work saved with WIP commit\"; \
+    }; f"
+    qc = quick-commit
+
+    # Show what branches have WIP commits
+    wiplist = "!git for-each-ref --format='%(refname:short) %(objectname:short) %(contents:subject)' refs/heads | grep 'WIP:'"
+
+    # Clean up WIP commits from current branch (interactive)
+    wipclean = "!f() { \
+        echo \"WIP commits in current branch:\"; \
+        git log --oneline --grep=\"^WIP:\" --max-count=10; \
+        echo \"\"; \
+        read -p \"Do you want to squash these WIP commits? [y/N]: \" -n 1 -r; \
+        echo; \
+        if [[ $REPLY =~ ^[Yy]$ ]]; then \
+            wip_count=$(git log --oneline --grep=\"^WIP:\" | wc -l); \
+            if [ $wip_count -gt 0 ]; then \
+                git rebase -i HEAD~$((wip_count + 1)); \
+            fi; \
+        fi; \
+    }; f"
+
+    # Dangerous: nuke everything uncommitted
+    wipe = !git reset --hard && git clean -fd
+
+    # ==============================================
+    # --- Quick Context Switching (Commit-based) ---
+    # ==============================================
+
+    # Save work and switch to branch (commit-based)
+    commit-switch = "!f() { \
+        if [ -z \"$1\" ]; then \
+            echo \"Usage: git go <branch-name>\"; \
+            return 1; \
+        fi; \
+        MESSAGE=\"WIP: $(date '+%Y-%m-%d %H:%M') - switching to $1\"; \
+        git add -A && \
+        git commit -m \"$MESSAGE\"; \
+        if git show-ref --verify --quiet refs/heads/$1; then \
+            git checkout \"$1\" && \
+            echo \"Switched to existing branch: $1\"; \
+        else \
+            git checkout -b \"$1\" && \
+            echo \"Created and switched to new branch: $1\"; \
+        fi; \
+    }; f"
+    cs = commit-switch
+
+    # Resume work by undoing the last WIP commit (commit-based)
+    commit-resume = "!f() { \
+        if git log -1 --pretty=%B | grep -q \"^WIP:\"; then \
+            git reset --soft HEAD~1 && \
+            echo \"Resumed work - WIP commit undone, changes staged\"; \
+        else \
+            echo \"No WIP commit found to resume from\"; \
+        fi; \
+    }; f"
+    cr = commit-resume
+
+    # ===========================
+    # --- Feature Development ---
+    # ===========================
+
+    # Create a new feature branch from main/master
+    feature = "!f() { \
+        if [ -z \"$1\" ]; then \
+            echo \"Usage: git feature <feature-name>\"; \
+            return 1; \
+        fi; \
+        main_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' 2>/dev/null || echo 'main'); \
+        git checkout $main_branch && \
+        git pull origin $main_branch && \
+        git checkout -b \"feature/$1\" && \
+        echo \"Created feature branch: feature/$1\"; \
+    }; f"
+
+    # Show current work status
+    stat = "!f() { \
+        echo \"=== Current Branch ===\"; \
+        git branch --show-current; \
+        echo \"\"; \
+        echo \"=== Working Directory ===\"; \
+        git status --short; \
+        echo \"\"; \
+        echo \"=== Recent Commits ===\"; \
+        git log --oneline -5; \
+        echo \"\"; \
+        echo \"=== Stashes ===\"; \
+        git stash list --max-count=3; \
+    }; f"
+
+    # =================
+    # --- Worktrees ---
+    # =================
+    wt = worktree                # base shortcut: 'git wt <cmd>'
+    wtl = worktree list          # list worktrees
+    wtp = worktree prune -v      # prune stale worktree metadata
+
+    # Add a worktree for a branch (creates the branch if it doesn't exist).
+    # Default path is under the project root: <root>/.worktrees/<branch>
+    # (slashes -> dashes). Add '.worktrees/' to your gitignore.
+    # Usage: git wta <branch> [path]
+    wta = "!f() { \
+        if [ -z \"$1\" ]; then echo \"Usage: git wta <branch> [path]\"; return 1; fi; \
+        branch=\"$1\"; \
+        root=$(git rev-parse --show-toplevel); \
+        safe=$(printf '%s' \"$branch\" | tr '/' '-'); \
+        path=\"${2:-$root/.worktrees/$safe}\"; \
+        if git show-ref --verify --quiet \"refs/heads/$branch\"; then \
+            git worktree add \"$path\" \"$branch\"; \
+        else \
+            git worktree add -b \"$branch\" \"$path\"; \
+        fi && \
+        echo \"Worktree ready at: $path\"; \
+    }; f"
+
+    # Remove a worktree; with no arg, pick one interactively with fzf.
+    # Usage: git wtrm [path]
+    wtrm = "!f() { \
+        if [ -n \"$1\" ]; then git worktree remove \"$1\"; return; fi; \
+        git worktree list | fzf --prompt='remove worktree> ' | awk '{print $1}' | xargs -r git worktree remove; \
+    }; f"
+
+    # Print the path of an fzf-selected worktree. Git aliases can't cd the
+    # parent shell, so use this as: cd \"$(git wts)\"  (see shell wrapper below)
+    wts = !git worktree list | fzf --prompt='cd worktree> ' | awk '{print $1}'

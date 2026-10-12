@@ -19,5 +19,3 @@
 ```
 
 To add or remove a default directory, edit `[bootstrap.directories]` in `mise.toml`. Removing a declaration leaves the directory on disk. SSH directories are also declared with mode `0700`.
-
-The repository may live anywhere; bootstrap does not create a chezmoi source-directory symlink.

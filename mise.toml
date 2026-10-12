@@ -11,10 +11,20 @@ required = "Set your Git email"
 prompt = "Git email"
 
 [dotfiles]
-"~/.local/bin/sshkeygen" = { source = "dots/.local/bin/sshkeygen", mode = "symlink" }
-"~/.config/dotfiles/env.sh" = { source = "dots/.config/dotfiles/env.sh.tera", mode = "template" }
-
 "~/.config/nerd-fonts/fonts" = { source = "dots/.config/nerd-fonts/fonts", mode = "symlink" }
+"~/.bash_profile" = { source = "dots/.bash_profile", mode = "symlink" }
+"~/.bashrc" = { source = "dots/.bashrc", mode = "symlink" }
+"~/.zshenv" = { source = "dots/.zshenv", mode = "symlink" }
+"~/.config/aliases" = { source = "dots/.config/aliases", mode = "symlink" }
+"~/.config/env.sh" = { source = "dots/.config/env.sh.tera", mode = "template" }
+"~/.config/git/config" = { source = "dots/.config/git/config.tera", mode = "template" }
+"~/.config/git/ignore" = { source = "dots/.config/git/ignore", mode = "symlink" }
+"~/.config/delta" = { source = "dots/.config/delta", mode = "symlink-each" }
+"~/.config/shell" = { source = "dots/.config/shell", mode = "symlink-each" }
+"~/.config/starship.toml" = { source = "dots/.config/starship.toml", mode = "symlink" }
+"~/.config/tmux" = { source = "dots/.config/tmux", mode = "symlink-each" }
+"~/.config/zsh" = { source = "dots/.config/zsh", mode = "symlink-each" }
+"~/.local/bin" = { source = "dots/.local/bin", mode = "symlink-each" }
 
 [bootstrap.packages]
 # Ubuntu / Debian packages

@@ -1,0 +1,565 @@
+# Directory navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ..2='cd ../..'
+alias ....='cd ../../..'
+alias ..3='cd ../../..'
+alias .....='cd ../../../..'
+alias ..4='cd ../../../..'
+alias ..5='cd ../../../../..'
+alias ..6='cd ../../../../../..'
+
+# Navigate to specific directories
+alias dots='cd $HOME/.local/share/dotfiles'
+
+# # File System Navigation (via lsd)
+# alias l='lsd -l'
+# alias la='lsd -a'
+# alias ll='lsd -la'
+# alias lla='lsd -la'
+# alias lt='lsd --tree'
+
+# File System Navigation (via eza)
+if command -v eza >/dev/null 2>&1; then
+  alias l='eza -1 --icons=auto'
+  alias ls='eza --group-directories-first --icons=auto'
+  alias ll='eza -lh --group-directories-first --icons=auto'
+  alias lla='eza -lha --group-directories-first --icons=auto'
+fi
+
+lt() {
+  local level=${1:-2}  # default to 2 if no argument is passed
+  eza --tree --level="$level" --long --icons=auto --git
+}
+
+lta() {
+  local level=${1:-2}  # default to 2 if no argument is passed
+  eza --tree --level="$level" --long --icons=auto --git --all
+}
+
+# alias fd='fdfind'
+ff() {
+    local query="$*"
+    fzf --query="$query" --preview 'bat --style=numbers --color=always {}'
+}
+alias mkdir='mkdir -pv'
+
+if command -v zoxide >/dev/null 2>&1; then
+  alias cd='z'
+fi
+
+# Clipboard helpers: `echo foo | copy`, `copy < file.txt`, `paste`
+copy() {
+  if command -v pbcopy >/dev/null 2>&1; then
+    pbcopy
+  elif command -v wl-copy >/dev/null 2>&1; then
+    wl-copy
+  elif command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard
+  elif command -v xsel >/dev/null 2>&1; then
+    xsel --clipboard --input
+  else
+    printf 'copy: no clipboard command found\n' >&2
+    return 1
+  fi
+}
+
+# Print clipboard contents to stdout so it can be piped or captured.
+paste() {
+  if command -v pbpaste >/dev/null 2>&1; then
+    pbpaste
+  elif command -v wl-paste >/dev/null 2>&1; then
+    wl-paste --no-newline
+  elif command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard -o
+  elif command -v xsel >/dev/null 2>&1; then
+    xsel --clipboard --output
+  else
+    printf 'paste: no clipboard command found\n' >&2
+    return 1
+  fi
+}
+
+alias s='rg --smart-case'
+alias sa='rg --smart-case --hidden --no-ignore'  # search all
+alias search='rg --smart-case --pretty'
+
+# 🧰 Tool shortcuts
+# alias g='git'
+alias lzg='lazygit'
+alias lzd='lazydocker'
+alias k='kubectl'
+alias tf='terraform'
+
+# CLI tools
+alias cc='claude'
+alias cx='codex'
+alias oc='opencode'
+
+# Editors
+_nv() {
+  NVIM_APPNAME="$1" command nvim "${@:2}"
+}
+
+# nvim() {
+#   _nv nvim-custom "$@"
+# }
+
+alias nl='_nv nvim-lazyvim'
+alias nk='_nv nvim-kickstart'
+alias n='nvim'
+# alias v='nvim'
+
+# Yazi (file manager) — cd the shell to wherever yazi was left on quit
+y() {
+  local tmp
+  tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+  yazi "$@" --cwd-file="$tmp"
+  local cwd
+  if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+    cd -- "$cwd"
+  fi
+  rm -f -- "$tmp"
+}
+
+# --------------
+# 🛠 Git aliases
+# --------------
+
+# Basic Git Commands
+alias g='git'
+alias gs='git status'
+
+alias ga='git add'
+alias gaa='git add .'
+alias gap='git add --patch'
+
+# Diffing
+alias gd='git diff --output-indicator-new=" " --output-indicator-old=" "'
+alias gds='git diff --staged'
+alias gdc='git diff --cached'
+alias gdcw='git diff --cached --word-diff'
+
+# Committing
+alias gc='git commit'
+alias gcv='git commit -v'
+alias gcve='git commit -v --amend'
+gcm() { git commit --message "$*"; }
+alias gcam='git commit -a -m'
+alias gcad='git commit -a --amend'
+alias gca='gc --amend --no-edit'
+alias gce='gc --amend'
+
+# Branching and Checking Out
+alias gb='git branch'
+alias gba='git branch --all'
+alias gbr='git branch --remote'
+alias gbd='git branch -d'
+alias gbD='git branch -D'
+alias gbn='git checkout -b'  # new branch
+
+alias gco='git checkout'
+alias gcb='git checkout -b'
+
+alias gsw='git switch'
+alias gswc='git switch -c'
+
+# Show / Logging
+alias gl='git log --oneline --graph --decorate --all'
+alias glog='git log --oneline -1'
+alias gll='git log --graph --all --pretty=format:"%C(magenta)%h %C(white) %an  %ar%C(auto)  %D%n%s%n"'
+alias glp='git log -p'
+
+alias gsh='git show'
+alias gss='git shortlog'
+alias gblame='git blame'
+
+# Fetch/Pull/Push
+alias gf='git fetch'
+
+alias gp='git push'
+alias gpo='git push origin'
+alias gpof='git push origin --force'
+
+alias gu='git pull'
+alias gur='git pull --rebase'
+
+# Stash
+alias gst='git stash'
+alias gstl='git stash list'
+alias gsts='git stash save'
+alias gstp='git stash pop'
+alias gsta='git stash apply'
+alias gstd='git stash drop'
+
+# Remote
+# NOTE: `gr` is `git reset` in the Reset/Revert section below (which also has
+# grh/grhh/grm), so remote uses `grem` here to avoid being clobbered.
+alias grem='git remote'
+alias gra='git remote add'
+alias grv='git remote -v'
+
+# Tagging
+alias gt='git tag'
+alias gts='git tag -s'
+
+# Reset/Revert
+alias gr='git reset'
+alias grh='git reset HEAD'
+alias grhh='git reset --hard HEAD'
+alias grm='git revert'
+
+# Merge/Rebase
+alias gm='git merge'
+alias gmt='git mergetool'
+
+alias grb='git rebase'
+alias grbi='git rebase -i'
+
+# Cherry-pick
+alias gcp='git cherry-pick'
+
+# Worktrees
+# cd into an fzf-selected git worktree (wraps `git wts`)
+wtcd() {
+  local path
+  path="$(git wts)" && [ -n "$path" ] && cd "$path"
+}
+
+# Clean
+# NOTE: `gcl` is `git clone --recursive` in the Misc section below, so the
+# clean shortcut is `gclean` to avoid being clobbered.
+alias gclean='git clean -fd'
+
+# Misc
+alias gcf='git config --list'
+alias gg='git gui'
+alias ggi='git gui citool'
+alias gcount='git shortlog -sn'
+alias gwho='git shortlog -sn --all'
+alias gcl='git clone --recursive'
+alias gi='git init'
+
+# alias chmod commands
+alias mx='chmod a+x'
+alias 000='chmod -R 000'
+alias 644='chmod -R 644'
+alias 666='chmod -R 666'
+alias 755='chmod -R 755'
+alias 777='chmod -R 777'
+
+# 🌐 Networking
+alias ports='lsof -i -P -n | grep LISTEN'
+alias openports='netstat -nape --inet'
+alias ip='ip -c a'
+alias ping='ping -c 10'
+alias wget='wget -c'
+
+# Safe and forced reboots
+alias rebootsafe='sudo shutdown -r now'
+alias rebootforce='sudo shutdown -r -n now'
+
+# Show disk space and space used in a folder
+alias diskspace="du -S | sort -n -r |more"
+alias folders='du -h --max-depth=1'
+alias folderssort='find . -maxdepth 1 -type d -print0 | xargs -0 du -sk | sort -rn'
+alias tree='tree -CAhF --dirsfirst'
+alias treed='tree -CAFd'
+alias mountedinfo='df -hT'
+
+# Archives
+alias mktar='tar -cvf'
+alias mkbz2='tar -cvjf'
+alias mkgz='tar -cvzf'
+alias untar='tar -xvf'
+alias unbz2='tar -xvjf'
+alias ungz='tar -xvzf'
+
+# Show all logs in /var/log
+alias logs="sudo find /var/log -type f -exec file {} \; | grep 'text' | cut -d' ' -f1 | sed -e's/:$//g' | grep -v '[0-9]$' | xargs tail -f"
+
+#################
+# Docker / Podman
+#################
+alias d='docker'
+alias dc='docker compose'
+# alias docker='podman'
+alias p='podman'
+alias pc='podman compose'
+# Cleanup unused docker containers, images, networks, and volumes
+alias docker-clean=' \
+  docker container prune -f ; \
+  docker image prune -f ; \
+  docker network prune -f ; \
+  docker volume prune -f '
+
+alias podman-clean=' \
+  podman container prune -f ; \
+  podman image prune -f ; \
+  podman network prune -f ; \
+  podman volume prune -f '
+
+# ⚙️ Miscellaneous
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never'
+  alias catp='bat --paging=never --plain'
+  alias less='bat --paging=always'
+fi
+alias reload='exec $SHELL -l'
+alias c='clear'
+alias cl='clear'
+alias da='date "+%Y-%m-%d %A %T %Z"'
+alias rm='rm -v'
+alias ps='ps auxf'
+
+# System update
+up() {
+  topgrade -y
+}
+
+#######################################################
+# SPECIAL FUNCTIONS
+#######################################################
+
+# Retry last command with sudo
+please() {
+  if [[ -n "$ZSH_VERSION" ]]; then
+    eval "sudo !!"
+  elif [[ -n "$BASH_VERSION" ]]; then
+    sudo "$(fc -ln -1)"
+  else
+    echo "Unsupported shell"
+  fi
+}
+
+# Extracts any archive(s) (if unp isn't installed)
+extract() {
+  for archive in "$@"; do
+    if [ -f "$archive" ]; then
+      case $archive in
+      *.tar.bz2) tar xvjf $archive ;;
+      *.tar.gz) tar xvzf $archive ;;
+      *.bz2) bunzip2 $archive ;;
+      *.rar) rar x $archive ;;
+      *.gz) gunzip $archive ;;
+      *.tar) tar xvf $archive ;;
+      *.tbz2) tar xvjf $archive ;;
+      *.tgz) tar xvzf $archive ;;
+      *.zip) unzip $archive ;;
+      *.Z) uncompress $archive ;;
+      *.7z) 7z x $archive ;;
+      *) echo "don't know how to extract '$archive'..." ;;
+      esac
+    else
+      echo "'$archive' is not a valid file!"
+    fi
+  done
+}
+
+# Searches for text in all files in the current folder
+ftext() {
+  # -i case-insensitive
+  # -I ignore binary files
+  # -H causes filename to be printed
+  # -r recursive search
+  # -n causes line number to be printed
+  # optional: -F treat search term as a literal, not a regular expression
+  # optional: -l only print filenames and not the matching lines ex. grep -irl "$1" *
+  grep -iIHrn --color=always "$1" . | less -r
+}
+
+# Copy file with a progress bar
+cpp() {
+    set -e
+    strace -q -ewrite cp -- "${1}" "${2}" 2>&1 |
+    awk '{
+        count += $NF
+        if (count % 10 == 0) {
+            percent = count / total_size * 100
+            printf "%3d%% [", percent
+            for (i=0;i<=percent;i++)
+                printf "="
+            printf ">"
+            for (i=percent;i<100;i++)
+                printf " "
+            printf "]\r"
+        }
+    } END { print "" }' total_size="$(stat -c '%s' "${1}")" count=0
+}
+
+# Change to a directory and list its contents
+cdl() {
+  cd "$1" && ls -la
+}
+
+# Create a directory and change into it
+take() {
+  mkdir -pv "$1" && cd "$1"
+}
+
+# Copy and go to the directory
+cpg() {
+  if [ -d "$2" ]; then
+    cp "$1" "$2" && cd "$2"
+  else
+    cp "$1" "$2"
+  fi
+}
+
+# Move and go to the directory
+mvg() {
+  if [ -d "$2" ]; then
+    mv "$1" "$2" && cd "$2"
+  else
+    mv "$1" "$2"
+  fi
+}
+
+# Create a new git-enabled directory and navigate into it
+newgit() {
+  if [ -z "$1" ]; then
+    echo "Usage: newgit <directory_name>"
+    return 1
+  fi
+  mkdir -p "$1" && cd "$1"
+  git init
+}
+
+# Clone a git repository into current directory and cd into it
+clone() {
+  if [ $# -lt 1 ]; then
+    echo "Usage: clone <git-url> [directory]"
+    return 1
+  fi
+
+  local url="$1"
+  local dir="${2:-}"
+
+  if [ -n "$dir" ]; then
+    git clone "$url" "$dir" || return $?
+    cd "$dir" || return $?
+  else
+    # Derive repo name from URL (strip trailing .git)
+    local name
+    name="${url##*/}"
+    name="${name%.git}"
+    git clone "$url" || return $?
+    cd "$name" || {
+      echo "Could not cd into '$name' (clone may have used a different folder name)."
+      return 1
+    }
+  fi
+}
+
+# Backup a file or directory
+backup() {
+  if [ -z "$1" ]; then
+    echo "Usage: backup <file_or_directory>"
+    return 1
+  fi
+
+  local src="$1"
+
+  if [ ! -e "$src" ]; then
+    echo "Error: '$src' does not exist."
+    return 1
+  fi
+
+  if [ -f "$src" ]; then
+    # If it's a file, append .bak
+    local dest="${src}.bak"
+    cp "$src" "$dest"
+    echo "File backup created at: $dest"
+  elif [ -d "$src" ]; then
+    # If it's a directory, add timestamp suffix
+    local timestamp
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    local dest="${src}_backup_${timestamp}"
+    cp -r "$src" "$dest"
+    echo "Directory backup created at: $dest"
+  else
+    echo "Error: '$src' is neither a file nor a directory."
+    return 1
+  fi
+}
+
+# IP address lookup
+alias whatismyip="whatsmyip"
+function whatsmyip () {
+    # Use `command ip` so the `ip='ip -c a'` alias above doesn't get expanded
+    # into the arguments (which would produce `ip -c a addr show ...`). `ip -V`
+    # probes for the real binary regardless of the alias; fall back to ifconfig.
+    echo -n "Internal IP: "
+    if command ip -V >/dev/null 2>&1; then
+        command ip addr show wlan0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d/ -f1
+    elif command -v ifconfig >/dev/null 2>&1; then
+        command ifconfig wlan0 2>/dev/null | grep "inet " | awk '{print $2}'
+    else
+        echo "(no ip/ifconfig found)"
+    fi
+
+    # External IP Lookup
+    echo -n "External IP: "
+    curl -4 ifconfig.me
+}
+
+# 🐙 GitHub CLI aliases
+alias ghst='gh status'
+alias ghissues='gh issue list'
+alias ghprs='gh pr list'
+
+# List repositories
+alias ghls='gh repo list'                          # List your repos
+alias ghlsp='gh repo list --source'                # List only source repos (no forks)
+alias ghlsf='gh repo list --fork'                  # List only forked repos
+alias ghlspub='gh repo list --visibility public'   # List only public repos
+alias ghlspriv='gh repo list --visibility private' # List only private repos
+
+# Create new GitHub repo from current directory and push
+ghnew() {
+    local repo_name=${1:-$(basename "$(pwd)")}
+    echo "Creating public GitHub repo: $repo_name"
+    gh repo create "$repo_name" --public --source=. --remote=origin --push
+}
+
+# Create new private GitHub repo from current directory and push
+ghnewp() {
+    local repo_name=${1:-$(basename "$(pwd)")}
+    echo "Creating private GitHub repo: $repo_name"
+    gh repo create "$repo_name" --private --source=. --remote=origin --push
+}
+
+# Clone repo and cd into it
+ghclone() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: ghclone <repo>"
+        return 1
+    fi
+    gh repo clone "$1"
+    local repo_name=$(basename "$1")
+    cd "$repo_name"
+}
+
+# Fork a repo and clone it
+ghfork() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: ghfork <repo>"
+        return 1
+    fi
+    gh repo fork "$1" --clone
+    local repo_name=$(basename "$1")
+    cd "$repo_name"
+}
+
+# Create pull request
+ghpr() {
+    if [ $# -eq 0 ]; then
+        gh pr create --web
+    else
+        gh pr create --title "$1" --web
+    fi
+}
+
+# Open current repo in browser
+alias ghview='gh repo view --web'
+alias ghopen=ghview

@@ -38,7 +38,7 @@ To download and run the installer directly, without first cloning the repo:
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-The installer installs mise with Homebrew when available, or with mise's official installer otherwise. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before asking whether to apply it. When no profile argument is provided, it prompts you to choose `workstation` or `server`. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
+The installer installs mise with its official installer if needed. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before asking whether to apply it. When no profile argument is provided, it prompts you to choose `workstation` or `server`. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
 
 ## Run setup again
 
@@ -53,8 +53,9 @@ Use `server` instead of `workstation` on servers. Both profiles bootstrap direct
 
 ## TODOs
 
-- [ ] Add dotfiles (keep things as simple as possible)
-- [ ] Set up Git configuration
+- [ ] Verify the up alias will properly update mise with the appropriate environment (ex. mise.server.toml and mise.workstation.toml)
+  - [ ] Maybe these files should be moved to .config/mise directory?
+  - [ ] Should the dotfiles_profile variable be captured in env.sh.tera?
 - [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Install / setup [flox](https://flox.dev/docs/install-flox/install)
 

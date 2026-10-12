@@ -156,7 +156,7 @@ path = ~/.config/git/github_pszponder
 # Add other global gitconfig settings here ...
 ```
 
-Git configuration is not deployed by the current bootstrap. The following is an optional example: `~/.config/git/github_pszponder` can contain the Git identity collected through mise variables and the SSH key for repositories matched by the `includeIf` rules above. Create a separate fragment and include rule for each future host or account that needs a different identity or SSH key.
+The repository deploys shared Git defaults and the global author name/email from the `git_name` and `git_email` mise variables. For repositories that need a different identity or SSH key, keep a local `~/.config/git/github_pszponder` fragment and add an `includeIf` rule to `dots/.config/git/config.tera`. Create a separate fragment and include rule for each host or account that needs different settings.
 
 ```txt
 # ~/.config/git/github_pszponder

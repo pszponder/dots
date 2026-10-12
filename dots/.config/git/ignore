@@ -1,0 +1,12 @@
+# git worktrees created by 'git wta' (default: <root>/.worktrees/<branch>)
+.worktrees/
+
+.*.sw*
+*.pyc
+.DS_Store
+.Python
+.envrc
+.idea
+.pc
+.svn
+/tmp

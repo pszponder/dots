@@ -6,7 +6,7 @@ This repository uses explicit deployment: edit source files, review changes, and
 
 ## Current bootstrap configuration
 
-The examples later in this guide illustrate additional dotfiles you can adopt. The active configuration currently deploys `dots/.local/bin/sshkeygen` and a rendered `dots/.config/dotfiles/env.sh.tera`, plus `dots/.config/nerd-fonts/fonts`. Sources under `dots/` mirror their home-directory paths. Bash, Git, Neovim, and terminal configurations in the examples are not installed yet.
+Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. Mise renders `.tera` files, links individual files in shared config directories, and uses `[dotfiles]` in `mise.toml` to declare those targets.
 
 From the repository, select one profile:
 
@@ -22,23 +22,13 @@ Both profiles install OpenSSH using apt, pacman, or dnf, create the directories 
 
 The workstation profile also installs Flatpak through apt, pacman, or dnf if it is missing. An existing installation satisfies the `"latest"` declaration. The server profile does not install Flatpak. After package installation, a workstation `post-packages` hook runs `scripts/gui/flatpak_install.sh` to add the per-user Flathub remote with `flatpak remote-add --user --if-not-exists`. Existing user remotes are preserved. This matches the `--user` scope used by `flatpak_sync.sh`. Application manifests are configured separately. See [Flatpak remotes](https://docs.flatpak.org/en/latest/using-flatpak.html#add-a-remote).
 
-Both profiles install curl, tar, XZ support, and fontconfig, then install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `~/.local/share/fonts/NerdFonts` (or `$XDG_DATA_HOME/fonts/NerdFonts`). This setup uses standard packages and user-local font files and has no Omarchy dependency.
-
-Both profiles also install the [Homebrew Linux prerequisites](https://docs.brew.sh/Homebrew-on-Linux#requirements) through the supported system package manager:
-
-| Platform | Prerequisite packages |
-| --- | --- |
-| Debian / Ubuntu (apt) | `build-essential`, `procps`, `curl`, `file`, `git` |
-| Arch Linux (pacman) | `base-devel`, `procps-ng`, `curl`, `file`, `git` |
-| Fedora (dnf) | `development-tools` group, `procps-ng`, `curl`, `file`, `git` |
-
-`curl` is shared with the font installer. These declarations prepare the system for Homebrew; they do not install Homebrew itself. Fedora also declares `openssh-clients`, `xz`, `fontconfig`, and `tar` for SSH and font installation. A Fedora-only pre-packages hook installs the `development-tools` group; DNF leaves an already-installed group in place on repeated runs. Groups are handled separately because [mise checks DNF package names with `rpm -q`](https://mise.jdx.dev/bootstrap/packages/dnf.html#package-names). RHEL/CentOS Stream development groups are not configured.
+Both profiles install curl, tar, XZ support, fontconfig, Git, and OpenSSH through the supported system package manager, then install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `~/.local/share/fonts/NerdFonts` (or `$XDG_DATA_HOME/fonts/NerdFonts`). Fedora declares `openssh-clients`, `xz`, `fontconfig`, and `tar` for SSH and font installation.
 
 Edit `dots/.config/nerd-fonts/fonts` to select font families and `nerdfonts_version` in `mise.toml` to select a release. The installer downloads official [Nerd Fonts release archives](https://github.com/ryanoasis/nerd-fonts/releases), records each installed version, skips matching installed families, and refreshes the font cache after changes. Removing a family from the manifest leaves its installed files in place. Font selection in terminal applications is configured separately.
 
 Bootstrap final hooks run on every bootstrap, including when keys and fonts already exist. `dot apply` deploys sources but does not run these final hooks. Bootstrap status describes declarative resources, but does not verify SSH key or font installer state. A dry run prints the final hooks without generating keys or downloading fonts. See [mise bootstrap run order](https://mise.jdx.dev/bootstrap.html#run-order).
 
-The rendered `~/.config/dotfiles/env.sh` captures the repository location and selected profile. Source it from your existing Bash startup file and add the `up` function described in [Update tools and packages from any directory](#update-tools-and-packages-from-any-directory). The repository does not replace your `.bashrc`. Reapply from the new location and reload Bash after moving the repository.
+The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. Reapply from the new location and reload your shell after moving the repository.
 
 ## Example expanded repository layout
 
@@ -50,20 +40,10 @@ dotfiles/
 ├── mise.workstation.toml
 ├── mise.server.toml
 └── dots/
-    ├── .config/
-    │   └── dotfiles/
-    │       └── env.sh.tera
-    ├── bash/
-    │   └── bashrc
-    ├── git/
-    │   └── gitconfig.tera
-    ├── nvim/
-    │   ├── init.lua
-    │   └── lua/
-    ├── starship/
-    │   └── starship.toml
-    └── kitty/
-        └── kitty.conf
+    ├── .bashrc
+    ├── .zshenv
+    └── .config/
+        └── env.sh.tera
 ```
 
 Source paths are relative to the mise configuration file that declares them.
@@ -86,10 +66,10 @@ prompt = "Git email"
 
 [dotfiles]
 "~/.bashrc" = { source = "dots/bash/bashrc", mode = "symlink" }
-"~/.gitconfig" = { source = "dots/git/gitconfig.tera", mode = "template" }
+"~/.config/git/config" = { source = "dots/.config/git/config.tera", mode = "template" }
 "~/.config/nvim" = { source = "dots/nvim", mode = "symlink" }
 "~/.config/starship.toml" = { source = "dots/starship/starship.toml", mode = "copy" }
-"~/.config/dotfiles/env.sh" = { source = "dots/.config/dotfiles/env.sh.tera", mode = "template" }
+"~/.config/env.sh" = { source = "dots/.config/env.sh.tera", mode = "template" }
 
 [bootstrap.packages]
 "apt:git" = "latest"
@@ -151,7 +131,7 @@ mise.*.local.toml
 | Mode           | Behavior                                       | Typical use                                             |
 | -------------- | ---------------------------------------------- | ------------------------------------------------------- |
 | `symlink`      | Links the live path to the repository source   | Files you edit yourself                                 |
-| `symlink-each` | Creates directories and links individual files | Directories containing both managed and unmanaged files |
+| `symlink-each` | Creates directories and links individual files | Shared config directories where unrelated files must remain |
 | `copy`         | Writes an independent copy                     | Applications that rewrite configuration                 |
 | `template`     | Renders a template into a regular file         | Values that vary between machines                       |
 
@@ -163,7 +143,7 @@ See [managed files](https://mise.jdx.dev/dotfiles/managed.html).
 
 ## Templates and personal values
 
-For example, `dots/git/gitconfig.tera`:
+For example, `dots/.config/git/config.tera`:
 
 ```
 [user]
@@ -447,7 +427,7 @@ Configure [mise shell activation](https://mise.jdx.dev/getting-started.html) in 
 
 ## Update tools and packages from any directory
 
-The shared configuration above records the repository path with `config_root`, and each profile sets `dotfiles_profile`. Create `dots/.config/dotfiles/env.sh.tera` so apply can render those values into a Bash file outside the repository:
+The shared configuration records the repository path with `config_root`, and each profile sets `dotfiles_profile`. The managed `dots/.config/env.sh.tera` includes these exports alongside the shared shell environment:
 
 ```jinja
 export DOTFILES_REPO={{ vars.dotfiles_repo | quote }}
@@ -456,13 +436,9 @@ export DOTFILES_PROFILE={{ vars.dotfiles_profile | quote }}
 
 The `quote` filter formats values safely for Bash, including paths containing spaces. See [mise templates](https://mise.jdx.dev/templates.html).
 
-Add this to your managed `dots/bash/bashrc`:
+The managed Bash and Zsh startup files source `~/.config/env.sh`, so the values are available without an extra source snippet. For example, a Bash `up` function can use them like this:
 
 ```bash
-if [[ -f "$HOME/.config/dotfiles/env.sh" ]]; then
-    source "$HOME/.config/dotfiles/env.sh"
-fi
-
 up() {
     local repo="${DOTFILES_REPO:?Apply your dotfiles profile first}"
     local profile="${DOTFILES_PROFILE:?Apply your dotfiles profile first}"
@@ -480,7 +456,7 @@ mise exec gh@latest -- gh auth setup-git --hostname github.com
 source ~/.bashrc
 ```
 
-Use `server` instead of `workstation` on a server. Apply with an explicit profile so the environment template has a `dotfiles_profile` value. The initial bootstrap also renders this file.
+Use `server` instead of `workstation` on a server. Apply with an explicit profile so the environment template has a `dotfiles_profile` value. The initial bootstrap renders `~/.config/env.sh`.
 
 Then run `up` from any directory. It upgrades `[tools]` within their configured version ranges, then upgrades `[bootstrap.packages]` if the tool upgrade succeeds. It does not pull repository changes or reapply dotfiles. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [bootstrap packages](https://mise.jdx.dev/bootstrap/packages/).
 
