@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+# Update the host and the applied dotfiles profile from any directory.
+set -uo pipefail
+
+# Copied from scripts/utils/utils_logging.sh so the deployed command is standalone.
+
+log_info() {
+  printf '%s\n' "ℹ️ [INFO] $*"
+}
+
+log_success() {
+  printf '%s\n' "✅ [OK] $*"
+}
+
+log_warn() {
+  printf '%s\n' "⚠️ [WARN] $*"
+}
+
+log_error() {
+  printf '%s\n' "❌ [ERROR] $*" >&2
+}
+
+
+run() {
+  local command_text
+  printf -v command_text '%q ' "$@"
+  log_info "+ ${command_text% }"
+  if "$preview"; then return 0; fi
+  "$@"
+  local status=$?
+  if (( status )); then
+    # Preserve Ctrl-C rather than continuing with more upgrades.
+    if (( status == 130 || status == 143 )); then exit "$status"; fi
+    failures+=("$* (exit $status)")
+    return "$status"
+  fi
+}
+admin() {
+  if (( EUID == 0 )); then run "$@"; else run sudo "$@"; fi
+}
+has() { command -v "$1" >/dev/null 2>&1; }
+
+validate_profile() {
+  # Validate the applied profile before changing the host. Never guess based on GUI/SSH.
+  if has mise; then
+    if [[ ! -f "$repo/mise.toml" || ! -f "$repo/mise.$profile.toml" ]] ||
+        [[ "$profile" != server && "$profile" != workstation ]]; then
+      log_error "Apply your server or workstation dotfiles profile and reload your shell first."
+      log_error "Set DOTFILES_REPO and DOTFILES_PROFILE to override it explicitly."
+      return 2
+    fi
+    export MISE_ENV="$profile"
+  fi
+}
+
+update_system() {
+  local os
+  os=$(uname -s)
+  log_info "Updating $os; dotfiles profile: ${profile:-unavailable}"
+  case "$os" in
+    Darwin) admin softwareupdate --install --all || : ;;
+    Linux)
+      local ID= ID_LIKE= PRETTY_NAME=Linux
+      if [[ -r /etc/os-release ]]; then . /etc/os-release; fi
+      log_info "Distribution: $PRETTY_NAME"
+      case " $ID $ID_LIKE " in
+        *' debian '*|*' ubuntu '*)
+          admin apt-get update && admin apt-get full-upgrade -y || : ;;
+        *' arch '*|*' manjaro '*)
+          # AUR helpers must run as the user; they also upgrade official repositories.
+          if (( EUID != 0 )) && has paru; then run paru -Syu || :
+          elif (( EUID != 0 )) && has yay; then run yay -Syu || :
+          else admin pacman -Syu || :; fi ;;
+        *' fedora '*|*' rhel '*|*' centos '*)
+          admin dnf upgrade --refresh -y || : ;;
+        *' opensuse '*|*' suse '*|*' opensuse-tumbleweed '*)
+          if [[ "$ID" == opensuse-tumbleweed ]]; then
+            admin zypper --non-interactive refresh && admin zypper --non-interactive dup || :
+          else
+            admin zypper --non-interactive refresh && admin zypper --non-interactive update || :
+          fi ;;
+        *' alpine '*) admin apk update && admin apk upgrade || : ;;
+        *) failures+=("Unsupported Linux distribution: $ID") ;;
+      esac ;;
+    *) failures+=("Unsupported OS: $os") ;;
+  esac
+}
+
+update_homebrew() {
+  local prefix
+  # Include standard Homebrew locations even if shell startup did not add one to PATH.
+  if ! has brew; then
+    for prefix in /opt/homebrew /home/linuxbrew/.linuxbrew /usr/local; do
+      if [[ -x "$prefix/bin/brew" ]]; then export PATH="$prefix/bin:$PATH"; break; fi
+    done
+  fi
+  if has brew; then
+    run brew update && run brew upgrade || :
+  else
+    log_info "Homebrew is not installed; skipping."
+  fi
+}
+
+update_mise() {
+  local mise_bin
+  if has mise; then
+    mise_bin=$(command -v mise)
+    # Resolve symlinks to distinguish standalone installs from packaged binaries.
+    if has realpath; then mise_bin=$(realpath "$mise_bin"); fi
+    case "$mise_bin" in
+      /usr/bin/*|/bin/*|/usr/local/Cellar/*|/opt/homebrew/Cellar/*|/home/linuxbrew/.linuxbrew/Cellar/*)
+        log_info "Mise is managed by the system package manager or Homebrew." ;;
+      *) run mise -C "$repo" -E "$profile" self-update --yes || : ;;
+    esac
+    run mise -C "$repo" -E "$profile" plugins update || :
+    run mise -C "$repo" -E "$profile" upgrade --yes || :
+    run mise -C "$repo" -E "$profile" bootstrap packages upgrade --yes || :
+  else
+    log_info "Mise is not installed; skipping."
+  fi
+}
+
+update_flatpak() {
+  if has flatpak; then
+    run flatpak update --user --assumeyes || :
+    run flatpak update --system --assumeyes || :
+  else
+    log_info "Flatpak is not installed; skipping."
+  fi
+}
+
+report_results() {
+  local failure
+  if (( ${#failures[@]} )); then
+    log_error "Some updates failed:"
+    for failure in "${failures[@]}"; do log_error "$failure"; done
+    return 1
+  fi
+  if "$preview"; then log_success "Preview complete; no update commands executed."
+  else log_success "Updates complete. A reboot may be needed."; fi
+}
+
+main() {
+  local preview=false
+  local repo=${DOTFILES_REPO:-}
+  local profile=${DOTFILES_PROFILE:-${MISE_ENV:-}}
+  local -a failures=()
+
+  case "${1:-}" in
+    --dry-run) preview=true; shift ;;
+    -h|--help)
+      printf 'Usage: up [--dry-run]\nUpdate the OS, Homebrew, mise, and Flatpak. No automatic reboot.\n'
+      return 0 ;;
+  esac
+  if (( $# )); then
+    log_error "Unexpected argument: $1"
+    return 2
+  fi
+
+  validate_profile || return $?
+  update_system
+  update_homebrew
+  update_mise
+  update_flatpak
+  report_results
+}
+
+main "$@"

@@ -51,13 +51,15 @@ mise -E workstation bootstrap
 
 Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, and Nerd Fonts. Workstation also installs Flatpak if missing and configures the per-user Flathub remote. Missing SSH keys prompt for passphrases. Review the dry run before applying.
 
+## Update this machine
+
+Run `up` to update the OS, Homebrew if installed, mise and the applied profile's tools and bootstrap packages, and Flatpak if installed. Use `up --dry-run` to preview commands. See [update behavior](docs/mise.md#update-tools-and-packages-from-any-directory).
+
 ## TODOs
 
-- [ ] Verify the up alias will properly update mise with the appropriate environment (ex. mise.server.toml and mise.workstation.toml)
-  - [ ] Maybe these files should be moved to .config/mise directory?
-  - [ ] Should the dotfiles_profile variable be captured in env.sh.tera?
 - [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Install / setup [flox](https://flox.dev/docs/install-flox/install)
+- [ ] Review [dotfile groups](https://mise.jdx.dev/dotfiles/groups.html), should we use them?
 
 ## Resources / References
 - [mise](https://mise.jdx.dev)

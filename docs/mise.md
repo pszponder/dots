@@ -436,33 +436,27 @@ export DOTFILES_PROFILE={{ vars.dotfiles_profile | quote }}
 
 The `quote` filter formats values safely for Bash, including paths containing spaces. See [mise templates](https://mise.jdx.dev/templates.html).
 
-The managed Bash and Zsh startup files source `~/.config/env.sh`, so the values are available without an extra source snippet. For example, a Bash `up` function can use them like this:
+The managed Bash and Zsh startup files source `~/.config/env.sh`. `MISE_ENV` follows the applied `DOTFILES_PROFILE`. The `up` function calls the managed `~/.local/bin/system-update` script, which works from any directory:
 
-```bash
-up() {
-    local repo="${DOTFILES_REPO:?Apply your dotfiles profile first}"
-    local profile="${DOTFILES_PROFILE:?Apply your dotfiles profile first}"
-
-    mise -C "$repo" -E "$profile" upgrade &&
-        mise -C "$repo" -E "$profile" bootstrap packages upgrade
-}
+```sh
+up --dry-run  # Print the update commands without executing them.
+up
 ```
 
-From the repository, apply your machine's profile and reload Bash:
+The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
+
+Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, configured tools within their version ranges, and installed `[bootstrap.packages]`. Mise commands run from `DOTFILES_REPO` with the explicit server or workstation profile, including global configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
+
+Flatpak updates both per-user and default system applications and runtimes when installed. Optional managers that are absent are skipped. Independent update steps continue after failures, with a final failure summary and nonzero exit status. OS and bootstrap updates may request sudo credentials. No automatic reboot is performed.
+
+Apply your chosen profile to deploy the updater and refresh the environment, then reload your shell:
 
 ```sh
 mise -E workstation dot apply
-mise exec gh@latest -- gh auth setup-git --hostname github.com
 source ~/.bashrc
 ```
 
-Use `server` instead of `workstation` on a server. Apply with an explicit profile so the environment template has a `dotfiles_profile` value. The initial bootstrap renders `~/.config/env.sh`.
-
-Then run `up` from any directory. It upgrades `[tools]` within their configured version ranges, then upgrades `[bootstrap.packages]` if the tool upgrade succeeds. It does not pull repository changes or reapply dotfiles. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [bootstrap packages](https://mise.jdx.dev/bootstrap/packages/).
-
-`up` is a Bash function; `mise up` remains mise's built-in tool upgrade command. Mise does not automatically interpret `DOTFILES_REPO` or `DOTFILES_PROFILE`: the function supplies `-C` and `-E` explicitly. Repository tool selections still apply within the repository's scope; use global configuration for tools you want active everywhere.
-
-After moving the repository or switching profiles, apply again from the repository's current location and reload Bash to refresh the exported values. If you moved the repository, repair any existing symlinks that still point to its old location before reloading.
+Use `server` on a server. The updater requires the recorded repository and valid profile when mise is installed, rather than guessing from a desktop session or SSH connection. After moving the repository or changing profiles, apply again and reload your shell. You can explicitly override `DOTFILES_REPO` and `DOTFILES_PROFILE` for a run.
 
 ## Resources / References
 - [mise - Dotfiles](https://mise.jdx.dev/dotfiles.html)

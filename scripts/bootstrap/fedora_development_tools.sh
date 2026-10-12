@@ -1,12 +1,15 @@
 #!/bin/sh
 set -eu
 
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+. "$SCRIPT_DIR/../utils/utils_logging.sh"
+
 # DNF package groups cannot be checked as individual RPM packages by mise.
 [ -r /etc/os-release ] || exit 0
 . /etc/os-release
 [ "${ID:-}" = fedora ] || exit 0
 command -v dnf >/dev/null 2>&1 || {
-  printf '%s\n' 'Fedora bootstrap requires dnf on PATH' >&2
+  log_error "Fedora bootstrap requires dnf on PATH"
   exit 1
 }
 

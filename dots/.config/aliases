@@ -314,7 +314,7 @@ alias ps='ps auxf'
 
 # System update
 up() {
-  topgrade -y
+  command system-update "$@"
 }
 
 #######################################################
