@@ -2,9 +2,7 @@
 # must NOT source it again (doing so ran zinit/compinit/PATH twice on every
 # login shell). Keep only login-shell-only logic below.
 
-# Flox (optional default environment activation, only if flox is installed)
-# Per Flox's own docs this belongs in .zprofile, not .zshrc: it activates once
-# per login shell rather than being re-run for every interactive subshell.
-if command -v flox &> /dev/null; then
-    eval "$(flox activate)"
+# Activate the default environment as recommended by Flox.
+if command -v flox >/dev/null 2>&1; then
+  eval "$(flox activate -D -m run)"
 fi

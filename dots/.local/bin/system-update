@@ -127,6 +127,14 @@ update_mise() {
   fi
 }
 
+update_flox() {
+  if has flox; then
+    run flox upgrade --default || :
+  else
+    log_info "Flox is not installed; skipping."
+  fi
+}
+
 update_flatpak() {
   if has flatpak; then
     run flatpak update --user --assumeyes || :
@@ -156,7 +164,7 @@ main() {
   case "${1:-}" in
     --dry-run) preview=true; shift ;;
     -h|--help)
-      printf 'Usage: up [--dry-run]\nUpdate the OS, Homebrew, mise, and Flatpak. No automatic reboot.\n'
+      printf 'Usage: up [--dry-run]\nUpdate the OS, Homebrew, mise, Flox default packages, and Flatpak. No automatic reboot.\n'
       return 0 ;;
   esac
   if (( $# )); then
@@ -168,6 +176,7 @@ main() {
   update_system
   update_homebrew
   update_mise
+  update_flox
   update_flatpak
   report_results
 }

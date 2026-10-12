@@ -1,17 +1,10 @@
 # ~/.bash_profile
-#
-# Bash only sources this (not ~/.bashrc) for login shells, so pull .bashrc in
-# explicitly. Mirrors ~/.config/zsh/.zprofile.
+# Bash reads this instead of ~/.profile when it exists.
 
-# Source bashrc if it exists
-if [ -f ~/.bashrc ]; then
-    source ~/.bashrc
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc"
 fi
 
-# Flox (optional default environment activation, only if flox is installed)
-# Per Flox's own docs this belongs in the login-shell profile, not the
-# interactive rc file: it activates once per login shell rather than being
-# re-run for every interactive subshell.
-if command -v flox &> /dev/null; then
-    eval "$(flox activate)"
+if [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile"
 fi

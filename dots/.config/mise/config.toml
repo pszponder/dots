@@ -72,6 +72,7 @@ mode = "symlink-each"
 [bootstrap.hooks]
 pre-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/fedora_development_tools.sh"
 final = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",
   "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh",
   "NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh",
 ]

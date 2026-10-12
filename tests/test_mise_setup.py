@@ -75,6 +75,7 @@ class MiseSetupTests(unittest.TestCase):
                 output = self.run_command(MISE, '-E', profile, 'bootstrap',
                                           '--dry-run', '--skip', 'tools')
                 self.assertIn('create_ssh_keys.sh', output)
+                self.assertIn('flox_install.sh', output)
                 self.assertIn('flatpak_install.sh' if profile == 'workstation'
                               else 'nerdfonts_install.sh', output)
                 # Also check the root checkout-context override.

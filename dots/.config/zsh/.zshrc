@@ -225,3 +225,8 @@ fi
 if command -v zoxide &> /dev/null; then
   _cache_init zoxide "zoxide --version" "zoxide init zsh"
 fi
+
+# Activate the default environment as recommended by Flox.
+if command -v flox >/dev/null 2>&1; then
+  eval "$(flox activate -D -m run)"
+fi
