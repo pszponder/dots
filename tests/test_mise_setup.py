@@ -1,5 +1,6 @@
 """Offline integration checks: python3 -m unittest discover -s tests -v."""
 import os
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -50,6 +51,7 @@ class MiseSetupTests(unittest.TestCase):
         self.configure()
         context = tomllib.loads((self.config / 'conf.d/00-dotfiles-context.toml').read_text())
         self.assertEqual(context['vars']['dotfiles_repo'], str(self.repo))
+        self.assertEqual(context['settings']['dotfiles']['root'], str(self.repo / 'dots'))
         backups = list(self.config.glob('.dotfiles-backup.*'))
         self.assertEqual(len(backups), 1)
         self.assertEqual((backups[0] / 'config.toml').read_text(), '# existing configuration\n')
@@ -84,6 +86,50 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertIn(f'-E {profile} install --yes', output)
                 self.assertIn(f'-E {profile} upgrade --yes', output)
                 self.assertIn('bootstrap packages upgrade --yes', output)
+
+    @unittest.skipUnless(MISE, 'mise is required for dotfile integration checks')
+    def test_home_group_deployment(self):
+        self.configure()
+        (self.config / 'config.local.toml').write_text(
+            '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n')
+        self.run_command(MISE, '-E', 'server', 'dot', 'apply')
+        for source in (REPO / 'dots').rglob('*'):
+            relative = source.relative_to(REPO / 'dots')
+            if not source.is_file():
+                continue
+            target = self.home / relative
+            if source.suffix == '.tera':
+                rendered = target.with_suffix('')
+                self.assertTrue(rendered.is_file(), str(rendered))
+                self.assertFalse(rendered.is_symlink())
+                self.assertFalse(target.exists())
+            else:
+                self.assertTrue(target.is_symlink(), str(target))
+                self.assertEqual(target.resolve(), source.resolve())
+        self.assertIn('Test', (self.home / '.config/git/config').read_text())
+        self.assertIn(str(self.repo), (self.home / '.config/env.sh').read_text())
+        self.assertTrue((self.config / 'config.toml').is_symlink())
+        self.assertFalse((self.config / 'config.local.toml').is_symlink())
+        # Add a config after setup, using an isolated source tree.
+        sources = self.root / 'sources'
+        shutil.copytree(REPO / 'dots', sources)
+        fragment = sources / '.config/mise/conf.d/extra.toml'
+        fragment.parent.mkdir(parents=True)
+        fragment.write_text('[vars]\ngroup_extra = "deployed"\n')
+        context = self.config / 'conf.d/00-dotfiles-context.toml'
+        original_context = context.read_text()
+        local = self.config / 'config.local.toml'
+        local.write_text(local.read_text() +
+                         '\n[settings.dotfiles]\nroot = ' + json.dumps(str(sources)) + '\n')
+        local_config = local.read_text()
+        self.run_command(MISE, '-E', 'server', 'dot', 'apply')
+        deployed = self.config / 'conf.d/extra.toml'
+        self.assertTrue(deployed.is_symlink())
+        self.assertEqual(deployed.resolve(), fragment)
+        self.assertEqual((self.config / 'config.local.toml').read_text(), local_config)
+        self.assertFalse(context.is_symlink())
+        self.assertEqual(context.read_text(), original_context)
+        self.assertIn('group_extra', self.run_command(MISE, '-E', 'server', 'vars'))
 
     def test_installer_links_configuration_before_bootstrap(self):
         fake_bin = self.root / 'bin'

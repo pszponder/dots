@@ -14,21 +14,14 @@ prompt = "Git author name"
 required = "Set your Git email"
 prompt = "Git email"
 
-[dotfiles]
-"~/.config/nerd-fonts/fonts" = { source = "dotfiles/dots/.config/nerd-fonts/fonts", mode = "symlink" }
-"~/.bash_profile" = { source = "dotfiles/dots/.bash_profile", mode = "symlink" }
-"~/.bashrc" = { source = "dotfiles/dots/.bashrc", mode = "symlink" }
-"~/.zshenv" = { source = "dotfiles/dots/.zshenv", mode = "symlink" }
-"~/.config/aliases" = { source = "dotfiles/dots/.config/aliases", mode = "symlink" }
-"~/.config/env.sh" = { source = "dotfiles/dots/.config/env.sh.tera", mode = "template" }
-"~/.config/git/config" = { source = "dotfiles/dots/.config/git/config.tera", mode = "template" }
-"~/.config/git/ignore" = { source = "dotfiles/dots/.config/git/ignore", mode = "symlink" }
-"~/.config/delta" = { source = "dotfiles/dots/.config/delta", mode = "symlink-each" }
-"~/.config/shell" = { source = "dotfiles/dots/.config/shell", mode = "symlink-each" }
-"~/.config/starship.toml" = { source = "dotfiles/dots/.config/starship.toml", mode = "symlink" }
-"~/.config/tmux" = { source = "dotfiles/dots/.config/tmux", mode = "symlink-each" }
-"~/.config/zsh" = { source = "dotfiles/dots/.config/zsh", mode = "symlink-each" }
-"~/.local/bin" = { source = "dotfiles/dots/.local/bin", mode = "symlink-each" }
+[dotfile_groups.home]
+root = "."
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.home.entries]
+"~/.config/env.sh" = { source = ".config/env.sh.tera", mode = "template" }
+"~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
 
 [bootstrap.packages]
 # Ubuntu / Debian packages

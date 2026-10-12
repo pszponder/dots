@@ -6,7 +6,7 @@ This repository uses explicit deployment: edit source files, review changes, and
 
 ## Current bootstrap configuration
 
-Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. Mise renders `.tera` files, links individual files in shared config directories, and uses `[dotfiles]` in `dots/.config/mise/config.toml` to declare those targets.
+Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. The `home` group in `dots/.config/mise/config.toml` links each file under `dots/` into its matching home-directory path. Group entries render `env.sh.tera` and Git’s `config.tera` to their destinations instead of linking the template sources. The setup helper links the three initial mise configs before bootstrap; the home group also manages these links and deploys additional files under `dots/.config/mise/` on subsequent applies. Machine-local overrides and generated context remain untouched. New files under `dots/` are deployed automatically unless excluded.
 
 From the repository, select one profile:
 
@@ -49,7 +49,7 @@ dotfiles/
             └── config.server.toml
 ```
 
-Source paths resolve through the `dotfiles` link in the global mise directory, which points to the checkout. Hooks use `vars.dotfiles_repo` from machine-local checkout context.
+The setup helper records the absolute `dots/` directory as `settings.dotfiles.root` in machine-local context. The home group uses `root = "."`, relative to that setting. Hooks use `vars.dotfiles_repo`; relative sources in group entries resolve against the group root.
 
 ## Configure the repository
 
@@ -66,12 +66,14 @@ prompt = "Git author name"
 required = "Set your Git email"
 prompt = "Git email"
 
-[dotfiles]
-"~/.bashrc" = { source = "dotfiles/dots/bash/bashrc", mode = "symlink" }
-"~/.config/git/config" = { source = "dotfiles/dots/.config/git/config.tera", mode = "template" }
-"~/.config/nvim" = { source = "dotfiles/dots/nvim", mode = "symlink" }
-"~/.config/starship.toml" = { source = "dotfiles/dots/starship/starship.toml", mode = "copy" }
-"~/.config/env.sh" = { source = "dotfiles/dots/.config/env.sh.tera", mode = "template" }
+[dotfile_groups.home]
+root = "."
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.home.entries]
+"~/.config/env.sh" = { source = ".config/env.sh.tera", mode = "template" }
+"~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
 
 [bootstrap.packages]
 "apt:git" = "latest"
@@ -326,14 +328,11 @@ mise exec gh@latest -- gh auth setup-git --hostname github.com
 
 ## Add a dotfile
 
-Copy the existing file into `dots/`, then add its mapping to `dots/.config/mise/config.toml` or the relevant profile:
+Copy the existing file into its matching home-directory path under `dots/`; the home group deploys it automatically. For example, `dots/.config/example/config.toml` becomes `~/.config/example/config.toml`. To override the default linking behavior, add a group entry in `dots/.config/mise/config.toml`:
 
 ```
-[dotfiles]
-"~/.config/example/config.toml" = {
-  source = "dotfiles/dots/example/config.toml",
-  mode = "copy"
-}
+[dotfile_groups.home.entries]
+"~/.config/example/config.toml" = { mode = "copy" }
 ```
 
 Review and apply:
@@ -344,7 +343,7 @@ mise -E workstation dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
-Commit the source file and its configuration mapping together.
+Commit the source file and any group entry together.
 
 ## Capture application-written changes
 
@@ -405,7 +404,7 @@ See [secret inputs](https://mise.jdx.dev/bootstrap/secrets.html).
 
 ## Remove a managed file
 
-Deleting a mapping stops managing the target but leaves it on disk.
+Removing a file from the group source tree leaves its deployed target in place as `orphaned`. Review with `mise -E workstation dot status`, then use `mise -E workstation dot apply --prune` to remove unchanged orphaned targets. Deleting an explicit mapping also leaves its target on disk.
 
 To remove a previously deployed target locally, unapply it before deleting its mapping:
 
