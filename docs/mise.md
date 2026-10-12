@@ -6,11 +6,12 @@ This repository uses explicit deployment: edit source files, review changes, and
 
 ## Current bootstrap configuration
 
-Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. Mise renders `.tera` files, links individual files in shared config directories, and uses `[dotfiles]` in `mise.toml` to declare those targets.
+Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. Mise renders `.tera` files, links individual files in shared config directories, and uses `[dotfiles]` in `dots/.config/mise/config.toml` to declare those targets.
 
 From the repository, select one profile:
 
 ```sh
+sh scripts/bootstrap/configure_mise.sh
 mise trust
 mise -E workstation vars prompt
 mise -E workstation bootstrap --dry-run
@@ -24,11 +25,11 @@ The workstation profile also installs Flatpak through apt, pacman, or dnf if it 
 
 Both profiles install curl, tar, XZ support, fontconfig, Git, and OpenSSH through the supported system package manager, then install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `~/.local/share/fonts/NerdFonts` (or `$XDG_DATA_HOME/fonts/NerdFonts`). Fedora declares `openssh-clients`, `xz`, `fontconfig`, and `tar` for SSH and font installation.
 
-Edit `dots/.config/nerd-fonts/fonts` to select font families and `nerdfonts_version` in `mise.toml` to select a release. The installer downloads official [Nerd Fonts release archives](https://github.com/ryanoasis/nerd-fonts/releases), records each installed version, skips matching installed families, and refreshes the font cache after changes. Removing a family from the manifest leaves its installed files in place. Font selection in terminal applications is configured separately.
+Edit `dots/.config/nerd-fonts/fonts` to select font families and `nerdfonts_version` in `dots/.config/mise/config.toml` to select a release. The installer downloads official [Nerd Fonts release archives](https://github.com/ryanoasis/nerd-fonts/releases), records each installed version, skips matching installed families, and refreshes the font cache after changes. Removing a family from the manifest leaves its installed files in place. Font selection in terminal applications is configured separately.
 
 Bootstrap final hooks run on every bootstrap, including when keys and fonts already exist. `dot apply` deploys sources but does not run these final hooks. Bootstrap status describes declarative resources, but does not verify SSH key or font installer state. A dry run prints the final hooks without generating keys or downloading fonts. See [mise bootstrap run order](https://mise.jdx.dev/bootstrap.html#run-order).
 
-The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. Reapply from the new location and reload your shell after moving the repository.
+The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. After moving the repository, rerun `sh scripts/bootstrap/configure_mise.sh` from the new checkout, reapply, and reload your shell.
 
 ## Example expanded repository layout
 
@@ -37,24 +38,25 @@ dotfiles/
 ├── README.md
 ├── .gitignore
 ├── mise.toml
-├── mise.workstation.toml
-├── mise.server.toml
 └── dots/
     ├── .bashrc
     ├── .zshenv
     └── .config/
-        └── env.sh.tera
+        ├── env.sh.tera
+        └── mise/
+            ├── config.toml
+            ├── config.workstation.toml
+            └── config.server.toml
 ```
 
-Source paths are relative to the mise configuration file that declares them.
+Source paths resolve through the `dotfiles` link in the global mise directory, which points to the checkout. Hooks use `vars.dotfiles_repo` from machine-local checkout context.
 
 ## Configure the repository
 
-Put shared configuration in `mise.toml`:
+Put shared configuration in `dots/.config/mise/config.toml`:
 
 ```
 [vars]
-dotfiles_repo = "{{ config_root }}"
 
 [vars.git_name]
 required = "Set your Git author name"
@@ -65,11 +67,11 @@ required = "Set your Git email"
 prompt = "Git email"
 
 [dotfiles]
-"~/.bashrc" = { source = "dots/bash/bashrc", mode = "symlink" }
-"~/.config/git/config" = { source = "dots/.config/git/config.tera", mode = "template" }
-"~/.config/nvim" = { source = "dots/nvim", mode = "symlink" }
-"~/.config/starship.toml" = { source = "dots/starship/starship.toml", mode = "copy" }
-"~/.config/env.sh" = { source = "dots/.config/env.sh.tera", mode = "template" }
+"~/.bashrc" = { source = "dotfiles/dots/bash/bashrc", mode = "symlink" }
+"~/.config/git/config" = { source = "dotfiles/dots/.config/git/config.tera", mode = "template" }
+"~/.config/nvim" = { source = "dotfiles/dots/nvim", mode = "symlink" }
+"~/.config/starship.toml" = { source = "dotfiles/dots/starship/starship.toml", mode = "copy" }
+"~/.config/env.sh" = { source = "dotfiles/dots/.config/env.sh.tera", mode = "template" }
 
 [bootstrap.packages]
 "apt:git" = "latest"
@@ -87,7 +89,7 @@ Create the source files before applying. For an existing configuration, copy the
 
 Mise skips packages whose package manager is unavailable. A `"latest"` package declaration installs a missing package but accepts the version already installed. Upgrades are explicit. See [bootstrap packages](https://mise.jdx.dev/bootstrap/packages/).
 
-Add workstation configuration in `mise.workstation.toml`:
+Add workstation configuration in `dots/.config/mise/config.workstation.toml`:
 
 ```
 [vars]
@@ -95,7 +97,7 @@ dotfiles_profile = "workstation"
 
 [dotfiles]
 "~/.config/kitty/kitty.conf" = {
-  source = "dots/kitty/kitty.conf",
+  source = "dotfiles/dots/kitty/kitty.conf",
   mode = "symlink"
 }
 
@@ -104,7 +106,7 @@ dotfiles_profile = "workstation"
 "pacman:kitty" = "latest"
 ```
 
-Add server configuration in `mise.server.toml`:
+Add server configuration in `dots/.config/mise/config.server.toml`:
 
 ```
 [vars]
@@ -175,7 +177,7 @@ mise vars unset git_email
 mise vars prompt git_email
 ```
 
-Shared, non-sensitive defaults can be committed in `[vars]`. Local overrides can go in the ignored `mise.local.toml`:
+Shared, non-sensitive defaults can be committed in `[vars]`. Machine-local overrides can go in `~/.config/mise/config.local.toml`:
 
 ```
 [vars]
@@ -237,6 +239,7 @@ cd ~/path/to/dotfiles
 Review the configuration and sources, then trust the repo:
 
 ```
+sh scripts/bootstrap/configure_mise.sh
 mise trust
 ```
 
@@ -289,7 +292,7 @@ mise -E workstation dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 
 git diff
-git add dots/ mise.toml mise.workstation.toml mise.server.toml
+git add dots/ mise.toml
 git commit -m "Update dotfiles"
 mise exec gh@latest -- git push
 ```
@@ -323,12 +326,12 @@ mise exec gh@latest -- gh auth setup-git --hostname github.com
 
 ## Add a dotfile
 
-Copy the existing file into `dots/`, then add its mapping to `mise.toml` or the relevant profile:
+Copy the existing file into `dots/`, then add its mapping to `dots/.config/mise/config.toml` or the relevant profile:
 
 ```
 [dotfiles]
 "~/.config/example/config.toml" = {
-  source = "dots/example/config.toml",
+  source = "dotfiles/dots/example/config.toml",
   mode = "copy"
 }
 ```
@@ -371,14 +374,14 @@ Templates require manually incorporating changes into their source while preserv
 
 Keep credentials out of committed variables and source files.
 
-Declare a secret input in `mise.toml`:
+Declare a secret input in `dots/.config/mise/config.toml`:
 
 ```
 [bootstrap.secrets]
 api_token = "MY_API_TOKEN"
 
 [dotfiles."~/.config/example/credentials"]
-source = "dots/example/credentials.tera"
+source = "dotfiles/dots/example/credentials.tera"
 mode = "template"
 permissions = "0600"
 ```
@@ -421,13 +424,21 @@ The next apply removes that file.
 
 ## Tool versions and shell activation
 
-If you add `[tools]` to this repository’s `mise.toml`, those tool selections apply within the repository’s configuration scope. For tools you want available throughout your home directory, manage a separate global `~/.config/mise/config.toml`.
+All tools, OS packages, dotfiles, directories, and hooks are declared under `dots/.config/mise/` and linked into the global mise directory:
+
+- `config.toml` declares shared setup, including Codex and Claude Code.
+- `config.server.toml` adds Herdr for servers.
+- `config.workstation.toml` adds workstation setup, including Flatpak.
+
+Tool declarations use `[tools]`; OS packages use `[bootstrap.packages]`. The shared file merges with the selected profile; the managed shell environment exports `MISE_ENV="$DOTFILES_PROFILE"`. Global versions are user-wide defaults that project configuration can override.
+
+Run `sh scripts/bootstrap/configure_mise.sh` once before direct bootstrap, or use `install.sh`, which runs it automatically. The helper links the configs and checkout and writes `conf.d/00-dotfiles-context.toml` with the checkout path. Existing conflicting mise configs are moved to a backup directory. Bootstrap then installs configured tools in its normal tools phase, including on the first run. Rerun the helper after moving the checkout, then bootstrap and reload your shell. `dot apply` only deploys files; run `mise -E <profile> install` afterward to install newly declared tools without a full bootstrap. Tool installation does not configure CLI authentication.
 
 Configure [mise shell activation](https://mise.jdx.dev/getting-started.html) in your managed shell startup file when using mise-installed tools interactively.
 
 ## Update tools and packages from any directory
 
-The shared configuration records the repository path with `config_root`, and each profile sets `dotfiles_profile`. The managed `dots/.config/env.sh.tera` includes these exports alongside the shared shell environment:
+The setup helper records the repository path in global machine-local context; root `mise.toml` supplies `config_root` when working inside the checkout. Each global profile sets `dotfiles_profile`. The managed `dots/.config/env.sh.tera` includes these exports alongside the shared shell environment:
 
 ```jinja
 export DOTFILES_REPO={{ vars.dotfiles_repo | quote }}
@@ -445,7 +456,7 @@ up
 
 The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
 
-Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, configured tools within their version ranges, and installed `[bootstrap.packages]`. Mise commands run from `DOTFILES_REPO` with the explicit server or workstation profile, including global configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
+Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected global profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO` with the explicit server or workstation profile, including global configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
 
 Flatpak updates both per-user and default system applications and runtimes when installed. Optional managers that are absent are skipped. Independent update steps continue after failures, with a final failure summary and nonzero exit status. OS and bootstrap updates may request sudo credentials. No automatic reboot is performed.
 
@@ -456,7 +467,7 @@ mise -E workstation dot apply
 source ~/.bashrc
 ```
 
-Use `server` on a server. The updater requires the recorded repository and valid profile when mise is installed, rather than guessing from a desktop session or SSH connection. After moving the repository or changing profiles, apply again and reload your shell. You can explicitly override `DOTFILES_REPO` and `DOTFILES_PROFILE` for a run.
+Use `server` on a server. The updater requires the recorded repository and valid profile when mise is installed, rather than guessing from a desktop session or SSH connection. After moving the repository, rerun the setup helper. After moving the repository or changing profiles, apply again and reload your shell. You can explicitly override `DOTFILES_REPO` and `DOTFILES_PROFILE` for a run.
 
 ## Resources / References
 - [mise - Dotfiles](https://mise.jdx.dev/dotfiles.html)

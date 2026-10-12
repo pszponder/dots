@@ -38,18 +38,19 @@ To download and run the installer directly, without first cloning the repo:
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-The installer installs mise with its official installer if needed. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before asking whether to apply it. When no profile argument is provided, it prompts you to choose `workstation` or `server`. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
+The installer installs mise with its official installer if needed. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before asking whether to apply it. When no profile argument is provided, it prompts you to choose `workstation` or `server` in a terminal, and defaults to `workstation` for noninteractive runs. Before previewing bootstrap, it links the global mise configs and records the checkout path; conflicting mise files are backed up. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
 
 ## Run setup again
 
 ```sh
+sh scripts/bootstrap/configure_mise.sh
 mise trust
 mise -E workstation vars prompt
 mise -E workstation bootstrap --dry-run
 mise -E workstation bootstrap
 ```
 
-Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, and Nerd Fonts. Workstation also installs Flatpak if missing and configures the per-user Flathub remote. Missing SSH keys prompt for passphrases. Review the dry run before applying.
+Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, Nerd Fonts, and globally available Codex and Claude Code CLIs. Servers also install Herdr. Global mise tool definitions live in `dots/.config/mise/` and are linked before bootstrap. Workstation also installs Flatpak if missing and configures the per-user Flathub remote. Missing SSH keys prompt for passphrases. Review the dry run before applying.
 
 ## Update this machine
 

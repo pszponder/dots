@@ -7,4 +7,4 @@ dotfiles_profile = "workstation"
 "dnf:flatpak" = "latest"
 
 [bootstrap.hooks]
-post-packages = "sh {{ config_root | quote }}/scripts/gui/flatpak_install.sh"
+post-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh"

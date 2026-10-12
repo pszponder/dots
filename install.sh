@@ -5,11 +5,15 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 LOGGING_LIB="$SCRIPT_DIR/scripts/utils/utils_logging.sh"
 if [ ! -f "$LOGGING_LIB" ]; then
-  printf 'Error: logging helpers not found at %s\n' "$LOGGING_LIB" >&2
-  exit 1
+  # A downloaded installer has no checkout yet.
+  log_info() { printf 'INFO: %s\n' "$*"; }
+  log_success() { printf 'OK: %s\n' "$*"; }
+  log_warn() { printf 'WARN: %s\n' "$*" >&2; }
+  log_error() { printf 'ERROR: %s\n' "$*" >&2; }
+else
+  # shellcheck source=scripts/utils/utils_logging.sh
+  . "$LOGGING_LIB"
 fi
-# shellcheck source=scripts/utils/utils_logging.sh
-. "$LOGGING_LIB"
 
 REPO_URL="${DOTFILES_REPO_URL:-https://github.com/pszponder/dots.git}"
 REPO_DIR="${DOTFILES_REPO_DIR:-$HOME/repos/github/pszponder/dots}"
@@ -41,9 +45,13 @@ install_mise() {
 choose_profile() {
   profile=${1:-}
 
+  if [ -z "$profile" ] && [ ! -t 0 ]; then
+    profile=workstation
+  fi
+
   if [ -z "$profile" ]; then
-    printf 'Select setup profile:\n  1) workstation\n  2) server\n'
-    printf 'Profile [1]: '
+    printf 'Select setup profile:\n  1) workstation\n  2) server\n' >&2
+    printf 'Profile [1]: ' >&2
     IFS= read -r profile
     profile="${profile:-1}"
     case "$profile" in
@@ -74,6 +82,9 @@ install_mise
 
 profile="$(choose_profile "${1:-}")"
 cd "$REPO_DIR"
+
+log_info "Linking global mise configuration and recording the checkout path"
+sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
 
 log_info "Trusting mise configuration in $REPO_DIR"
 mise trust

@@ -1,0 +1,83 @@
+[tools]
+codex = "latest"
+claude = "latest"
+
+[vars]
+nerdfonts_version = "v3.5.1"
+
+[vars.git_name]
+required = "Set your Git author name"
+prompt = "Git author name"
+
+[vars.git_email]
+required = "Set your Git email"
+prompt = "Git email"
+
+[dotfiles]
+"~/.config/nerd-fonts/fonts" = { source = "dotfiles/dots/.config/nerd-fonts/fonts", mode = "symlink" }
+"~/.bash_profile" = { source = "dotfiles/dots/.bash_profile", mode = "symlink" }
+"~/.bashrc" = { source = "dotfiles/dots/.bashrc", mode = "symlink" }
+"~/.zshenv" = { source = "dotfiles/dots/.zshenv", mode = "symlink" }
+"~/.config/aliases" = { source = "dotfiles/dots/.config/aliases", mode = "symlink" }
+"~/.config/env.sh" = { source = "dotfiles/dots/.config/env.sh.tera", mode = "template" }
+"~/.config/git/config" = { source = "dotfiles/dots/.config/git/config.tera", mode = "template" }
+"~/.config/git/ignore" = { source = "dotfiles/dots/.config/git/ignore", mode = "symlink" }
+"~/.config/delta" = { source = "dotfiles/dots/.config/delta", mode = "symlink-each" }
+"~/.config/shell" = { source = "dotfiles/dots/.config/shell", mode = "symlink-each" }
+"~/.config/starship.toml" = { source = "dotfiles/dots/.config/starship.toml", mode = "symlink" }
+"~/.config/tmux" = { source = "dotfiles/dots/.config/tmux", mode = "symlink-each" }
+"~/.config/zsh" = { source = "dotfiles/dots/.config/zsh", mode = "symlink-each" }
+"~/.local/bin" = { source = "dotfiles/dots/.local/bin", mode = "symlink-each" }
+
+[bootstrap.packages]
+# Ubuntu / Debian packages
+"apt:build-essential" = "latest"
+"apt:curl" = "latest"
+"apt:file" = "latest"
+"apt:fontconfig" = "latest"
+"apt:git" = "latest"
+"apt:openssh-client" = "latest"
+"apt:procps" = "latest"
+"apt:tar" = "latest"
+"apt:xz-utils" = "latest"
+
+# Fedora packages
+# The development-tools group is installed by the pre-packages hook.
+"dnf:curl" = "latest"
+"dnf:file" = "latest"
+"dnf:fontconfig" = "latest"
+"dnf:git" = "latest"
+"dnf:openssh-clients" = "latest"
+"dnf:procps-ng" = "latest"
+"dnf:tar" = "latest"
+"dnf:xz" = "latest"
+
+# Arch Linux packages
+"pacman:base-devel" = "latest"
+"pacman:curl" = "latest"
+"pacman:file" = "latest"
+"pacman:fontconfig" = "latest"
+"pacman:git" = "latest"
+"pacman:openssh" = "latest"
+"pacman:procps-ng" = "latest"
+"pacman:tar" = "latest"
+"pacman:xz" = "latest"
+
+[bootstrap.directories]
+"~/repos/github/pszponder" = {}
+"~/resources/courses" = {}
+"~/resources/books" = {}
+"~/resources/datasets" = {}
+"~/resources/cheatsheets" = {}
+"~/resources/notes" = {}
+"~/scratch" = {}
+"~/.ssh" = { mode = "0700" }
+"~/.ssh/github" = { mode = "0700" }
+"~/.ssh/github/pszponder" = { mode = "0700" }
+
+[bootstrap.hooks]
+pre-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/fedora_development_tools.sh"
+final = [
+  "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh",
+  "NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh",
+]
