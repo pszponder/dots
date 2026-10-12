@@ -1,8 +1,46 @@
 # Dotfiles with mise
 
-Linux workstation and server dotfiles, with explicit deployment through mise. This repository is independent of any desktop distribution.
+Linux workstation and server dotfiles and bootstrap scripts, with explicit deployment through mise. This repository is independent of any desktop distribution.
 
 See [mise setup and usage](docs/mise.md), [directory structure](docs/directory_structure.md), and [SSH configuration](docs/ssh_configuration.md).
+
+## Install on a new machine
+
+Run from a local checkout and choose the profile interactively:
+
+```sh
+./install.sh
+```
+
+Pass `workstation` or `server` to select a profile without the profile prompt:
+
+```sh
+./install.sh workstation
+./install.sh server
+```
+
+To use a different clone location:
+
+```sh
+DOTFILES_REPO_DIR="$HOME/dotfiles" ./install.sh server
+```
+
+To use a different repository URL when the script needs to clone the repo:
+
+```sh
+DOTFILES_REPO_URL="https://github.com/yourname/dots.git" \
+  DOTFILES_REPO_DIR="$HOME/dotfiles" ./install.sh workstation
+```
+
+To download and run the installer directly, without first cloning the repo:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
+```
+
+The installer installs mise with Homebrew when available, or with mise's official installer otherwise. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before asking whether to apply it. When no profile argument is provided, it prompts you to choose `workstation` or `server`. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
+
+## Run setup again
 
 ```sh
 mise trust
@@ -15,9 +53,10 @@ Use `server` instead of `workstation` on servers. Both profiles bootstrap direct
 
 ## TODOs
 
+- [ ] Add dotfiles (keep things as simple as possible)
 - [ ] Set up Git configuration
 - [ ] Configure Flatpak applications (through mise bootstrap)
-- [ ] Create install.sh which will download / install mise, and start bootstrap / setup process (it should detect if homeberw is install and install mise using homebrew but if not available, use the official installer tool to install mise instead)
+- [ ] Install / setup [flox](https://flox.dev/docs/install-flox/install)
 
 ## Resources / References
 - [mise](https://mise.jdx.dev)
