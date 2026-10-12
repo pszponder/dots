@@ -1,6 +1,7 @@
 [tools]
 codex = "latest"
 claude = "latest"
+herdr = "latest"
 
 [vars]
 nerdfonts_version = "v3.5.1"

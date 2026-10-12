@@ -50,7 +50,7 @@ mise -E workstation bootstrap --dry-run
 mise -E workstation bootstrap
 ```
 
-Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, Nerd Fonts, and globally available Codex and Claude Code CLIs. Servers also install Herdr. Global mise tool definitions live in `dots/.config/mise/` and are linked before bootstrap. Workstation also installs Flatpak if missing and configures the per-user Flathub remote. Missing SSH keys prompt for passphrases. Review the dry run before applying.
+Use `server` instead of `workstation` on servers. Both profiles bootstrap directories, SSH keys, Nerd Fonts, and globally available Codex and Claude Code CLIs. Servers also install Herdr. Global mise tool definitions live in `dots/.config/mise/` and are linked before bootstrap. Workstation also installs Flatpak if missing, configures the per-user Flathub remote, and installs declared Flatpak apps, including Zed. Missing SSH keys prompt for passphrases. Review the dry run before applying.
 
 ## Update this machine
 

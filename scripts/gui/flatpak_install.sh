@@ -8,10 +8,24 @@ if [ "$(uname -s)" != "Linux" ]; then
   exit 0
 fi
 
-# Package installation is declared in mise.workstation.toml.
+# Prepare Flatpak before mise applies the workstation's application declarations.
 if ! command -v flatpak >/dev/null 2>&1; then
-  log_error 'Flatpak is missing; run mise -E workstation bootstrap to install it'
-  exit 1
+  if command -v apt-get >/dev/null 2>&1; then
+    set -- apt-get install -y flatpak
+  elif command -v dnf >/dev/null 2>&1; then
+    set -- dnf install -y flatpak
+  elif command -v pacman >/dev/null 2>&1; then
+    set -- pacman -S --needed --noconfirm flatpak
+  else
+    log_error 'Cannot install Flatpak: expected apt-get, dnf, or pacman'
+    exit 1
+  fi
+
+  if [ "$(id -u)" -eq 0 ]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
 fi
 
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo

@@ -1,5 +1,4 @@
 [tools]
-herdr = "latest"
 
 [vars]
 dotfiles_profile = "server"

@@ -2,9 +2,7 @@
 dotfiles_profile = "workstation"
 
 [bootstrap.packages]
-"apt:flatpak" = "latest"
-"pacman:flatpak" = "latest"
-"dnf:flatpak" = "latest"
+"flatpak:dev.zed.Zed" = "latest"
 
 [bootstrap.hooks]
-post-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh"
+pre-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh"
