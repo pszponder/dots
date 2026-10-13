@@ -48,7 +48,7 @@ choose_profile() {
   profile=${1:-}
 
   if [ -z "$profile" ] && [ ! -t 0 ]; then
-    profile=workstation
+    profile=server
   fi
 
   if [ -z "$profile" ]; then

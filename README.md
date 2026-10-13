@@ -1,61 +1,31 @@
 # Dotfiles with mise
 
-Linux workstation and server dotfiles and bootstrap scripts, with explicit deployment through mise. This repository is independent of any desktop distribution.
+Linux workstation and server dotfiles, deployed with [mise](https://mise.jdx.dev).
 
-See [mise setup and usage](docs/mise.md), [directory structure](docs/directory_structure.md), and [SSH configuration](docs/ssh_configuration.md).
+## Install
 
-## Install on a new machine
-
-Run from a local checkout and choose the profile interactively:
+From a local checkout:
 
 ```sh
-./install.sh
+./install.sh              # Choose a profile interactively
+./install.sh workstation  # Or select workstation / server
 ```
 
-Pass `workstation` or `server` to select a profile without the profile prompt:
-
-```sh
-./install.sh workstation
-./install.sh server
-```
-
-To use a different clone location:
-
-```sh
-DOTFILES_REPO_DIR="$HOME/dotfiles" ./install.sh server
-```
-
-To use a different repository URL when the script needs to clone the repo:
-
-```sh
-DOTFILES_REPO_URL="https://github.com/yourname/dots.git" \
-  DOTFILES_REPO_DIR="$HOME/dotfiles" ./install.sh workstation
-```
-
-To download and run the installer directly, without first cloning the repo:
+Without cloning first:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-In a terminal, the installer first asks permission to prepare global mise configuration. Preparation installs mise with its official installer if needed. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before a separate confirmation to apply it. Declining bootstrap leaves the already-approved global mise preparation in place. When no profile argument is provided, it prompts you to choose `workstation` or `server` in a terminal, and defaults to `workstation` for noninteractive runs. Before previewing bootstrap, it links the global mise config; conflicting mise files are backed up. In a terminal, it runs `mise vars prompt` for the selected profile to collect missing configuration values before previewing. Noninteractive runs perform preparation and bootstrap without either confirmation. For unattended runs, first supply `git_name` and `git_email` in `~/.config/mise/config.local.toml` or save them with `mise vars prompt NAME=VALUE`; mise enforces required variables during setup. After bootstrap it reports status. Open a new shell and run `mise doctor` to verify activation. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
+The installer prepares mise, collects missing configuration values, and previews bootstrap before applying it. Interactive runs ask for confirmation before preparation and application; noninteractive runs apply both and default to `server`. For unattended setup, supply `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
 
-## Bootstrap directly with mise
+The default checkout is `~/repos/github/pszponder/dots`. Override it with `DOTFILES_REPO_DIR`, or set `DOTFILES_REPO_URL` to use another repository. Keep the checkout: deployed symlinks point into it. After setup, open a new shell and run `mise doctor`.
 
-With mise already installed, you can clone and apply this repository directly:
+Already have mise? See [direct repository bootstrap](docs/mise.md#bootstrap-from-a-repository).
 
-```sh
-mise -E workstation bootstrap \
-  --from https://github.com/pszponder/dots.git \
-  --from-dir "$HOME/repos/github/pszponder/dots" \
-  --prompt-vars
-```
+## Reapply or update
 
-Use `server` instead of `workstation` on servers. This path deploys the global tool config and installs its tools without running `configure_mise.sh` first. Keep the checkout: deployed symlinks point into it. Use `install.sh` when mise needs installing or existing global mise configuration needs backing up.
-
-For previewing, unattended setup, and pulling updates, see [repository bootstrap](docs/mise.md#bootstrap-from-a-repository).
-
-## Run setup again
+From the checkout, use `server` instead of `workstation` where appropriate:
 
 ```sh
 sh scripts/bootstrap/configure_mise.sh
@@ -66,48 +36,30 @@ mise -E workstation bootstrap
 mise -E workstation bootstrap status
 ```
 
-Use `server` instead of `workstation` on servers.
+Run `up` from any directory to update the OS, Homebrew, mise tools, bootstrap packages, and Flatpak where installed. Use `up --dry-run` to preview; see [update behavior](docs/mise.md#update-tools-and-packages-from-any-directory).
 
-## Update this machine
-
-Run `up` to update the OS, Homebrew if installed, mise and the applied profile's tools and bootstrap packages, and Flatpak if installed. Use `up --dry-run` to preview commands. See [update behavior](docs/mise.md#update-tools-and-packages-from-any-directory).
+Keep machine-local overrides in `~/.config/mise/config.local.toml` or `config.<profile>.local.toml`, outside the deployed source tree.
 
 ## Repository checks
 
-Keep bootstrap declarations in root `mise.toml` and `mise.<profile>.toml`; shared global tools live in `dots/.config/mise/config.toml`. Root `mise.toml` also provides maintenance tasks. Initial machine setup supports `install.sh` or `mise bootstrap --from`.
-
-With mise and Python 3.11 or newer available:
+With mise and Python 3.11+ installed:
 
 ```sh
 mise trust
-mise run test   # Offline tests using temporary home directories
+mise run test   # Offline tests in temporary home directories
 mise run lint   # TOML and shell syntax
-mise run check  # Both
+mise run check  # Both; also run by CI
 ```
 
-Install Zsh to include its startup-file syntax checks locally. CI installs Zsh and runs `mise run check` on pushes and pull requests. Checks do not bootstrap your machine. ShellCheck is not currently part of the check task.
+Install Zsh to include its startup-file syntax checks locally. Checks do not bootstrap your machine; ShellCheck is not included.
 
-Both profiles install Neovim (`nvim`) and bat through mise, plus `less` and `col` through the OS package manager, for the configured editor and pager. Other shell integrations activate when their executables are available; install those tools separately as needed.
+Bootstrap declarations live in `mise.toml` and `mise.<profile>.toml`; shared global tools live in `dots/.config/mise/config.toml`.
 
-Machine-local overrides belong in `~/.config/mise/config.local.toml` or `config.<profile>.local.toml`. Matching files under `dots/.config/mise/` are ignored by Git; keep personal overrides outside the deployed source tree.
+Executable shell scripts define functions and finish with `main "$@"`; keep `main` focused on initialization and workflow calls. Sourced libraries and shell startup files do not use an entrypoint.
 
-## TODOs
+## Documentation
 
-- [ ] Configure Flatpak applications (through mise bootstrap)
-- [ ] Add mise tools/packages
-- [ ] Review my old dotfiles and import other configurations
-- [ ] Configure desktop background?
-- [x] Install Zed through Flatpak bootstrap
-  - [ ] Maybe instead install Zed through the recommended installer (curl command?)
-- [ ] Install podman
-- [ ] Install podman desktop
-- [ ] Install rancher desktop (does it conflict w/ podman/podman desktop?)
-- [ ] Does [mise support installing snaps](https://github.com/jdx/mise/discussions/14370) (for Ubuntu?)
-- [ ] Does mise support [configuring copr installs](https://github.com/jdx/mise/issues/14372) (ex. [Binaries and Packages - Install](https://ghostty.org/docs/install/binary#fedora))
-- [ ] Check out [Project scaffolding tasks | mise-en-place](https://mise.jdx.dev/mise-cookbook/presets.html) (I would want the scaffolding task to create a python project with pytest as a dev dependency, maybe don't create a bare project but an application ([Creating projects | uv](https://docs.astral.sh/uv/concepts/projects/init/)))
-## Resources / References
-- [mise](https://mise.jdx.dev)
-
-## Script conventions
-
-Executable shell scripts define their logic in functions and finish with `main "$@"`. Keep `main` focused on initialization and calling the workflow functions. Sourced helper libraries and shell startup configuration do not use a script entrypoint.
+- [mise setup and usage](docs/mise.md)
+- [Directory structure](docs/directory_structure.md)
+- [SSH configuration](docs/ssh_configuration.md)
+- [TODOs](docs/todo.md)

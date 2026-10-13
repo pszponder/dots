@@ -257,6 +257,13 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         self.assertEqual(calls, ['trust',
                                  '-E server bootstrap --dry-run', '-E server bootstrap',
                                  '-E server bootstrap status'])
+        # An explicit workstation profile overrides the noninteractive default.
+        self.run_command('sh', str(self.repo / 'install.sh'), 'workstation')
+        calls = (self.home / 'mise-calls').read_text().splitlines()
+        self.assertEqual(calls[-4:], ['trust',
+                                     '-E workstation bootstrap --dry-run',
+                                     '-E workstation bootstrap',
+                                     '-E workstation bootstrap status'])
         # A standalone downloaded installer must work before logging helpers exist.
         downloaded = self.root / 'downloaded-install.sh'
         shutil.copy(self.repo / 'install.sh', downloaded)
@@ -265,9 +272,9 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         self.run_command('sh', str(downloaded))
         calls = (self.home / 'mise-calls').read_text().splitlines()
         self.assertEqual(calls[-4:], ['trust',
-                                     '-E workstation bootstrap --dry-run',
-                                     '-E workstation bootstrap',
-                                     '-E workstation bootstrap status'])
+                                     '-E server bootstrap --dry-run',
+                                     '-E server bootstrap',
+                                     '-E server bootstrap status'])
         # Accept preparation, then decline bootstrap after its preview.
         master, slave = pty.openpty()
         try:
