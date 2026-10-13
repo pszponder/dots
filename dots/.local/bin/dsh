@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Open a devbox container from a dropdown list in the CLI using FZF
+
+main() {
+  interactive_shell="${SHELL:-/bin/bash}"
+
+  command -v fzf >/dev/null 2>&1 || exec "$interactive_shell"
+
+  runtimes=()
+  command -v podman >/dev/null 2>&1 && runtimes+=(podman)
+  command -v docker >/dev/null 2>&1 && runtimes+=(docker)
+
+  [[ ${#runtimes[@]} -gt 0 ]] || exec "$interactive_shell"
+
+  entries=""
+  for rt in "${runtimes[@]}"; do
+    entries+="$( "$rt" ps --format '{{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}' 2>/dev/null \
+      | awk -F'\t' -v rt="$rt" '$1 != "" { printf "%s|%s|%s|%s|%s\n", rt, $1, $2, $3, $4 }' )"
+  done
+
+  if [[ -z "${entries//$'\n'/}" ]]; then
+    exec "$interactive_shell"
+  fi
+
+  selected="$(printf '%s' "$entries" \
+    | awk -F'|' '!seen[$2]++' \
+    | fzf --ansi --layout=reverse --border \
+          --header 'Pick a container' \
+          --delimiter='|' \
+          --with-nth=3,4,5 \
+          --preview 'rt={1}; id={2}; "$rt" ps --no-trunc -f "id=$id" --format "{{.ID}}  {{.Names}}  {{.Image}}  {{.Status}}" 2>/dev/null' \
+          2>/dev/null || true )"
+
+  if [[ -z "$selected" ]]; then
+    exec "$interactive_shell"
+  fi
+
+  IFS='|' read -r rt id name image status <<<"$selected"
+
+  container_shell="$( "$rt" exec "$id" sh -c 'for s in bash zsh fish ash sh; do command -v "$s" >/dev/null 2>&1 && { printf "%s" "$s"; exit 0; }; done' 2>/dev/null || true )"
+  container_shell="${container_shell:-sh}"
+
+  exec "$rt" exec -it "$id" "$container_shell"
+}
+
+main "$@"
