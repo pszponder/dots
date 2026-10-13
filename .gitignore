@@ -3,3 +3,5 @@ mise.*.local.toml
 .env
 .env.*
 __pycache__/
+/dots/.config/mise/config.local.toml
+/dots/.config/mise/config.*.local.toml
