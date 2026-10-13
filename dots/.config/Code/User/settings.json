@@ -1,0 +1,521 @@
+{
+  // =============================================
+  // ================ GENERAL ====================
+  // =============================================
+  "breadcrumbs.enabled": true,
+  "zenMode.hideLineNumbers": false,
+  "files.trimTrailingWhitespace": true,
+  "security.workspace.trust.untrustedFiles": "open",
+  "workbench.sideBar.location": "right",
+
+  // =============================================
+  // ================ EDITOR =====================
+  // =============================================
+  "editor.fontSize": 16,
+  "editor.fontFamily": "'CaskaydiaCove Nerd Font', 'Cascadia Code NF', 'Liga ComicCode Nerd Font', SymbolsNerdFont",
+  "editor.fontLigatures": "'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'calt', 'dlig', 'liga'",
+  "editor.lineNumbers": "relative",
+  "editor.renderWhitespace": "boundary",
+  "editor.wordWrap": "on",
+  "editor.tabCompletion": "on",
+  "editor.formatOnSaveMode": "file",
+  "editor.formatOnSave": true,
+  "editor.suggest.insertMode": "replace",
+  "editor.linkedEditing": true,
+//   "editor.minimap.autohide": true,
+  "editor.mouseWheelZoom": true,
+  "editor.codeActionsOnSave": {
+    // "source.fixAll": "explicit",
+    // "source.sortImports": "explicit",
+    // "source.organizeImports": "explicit"
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.lineHeight": 25,
+  "editor.letterSpacing": 0.5,
+  "editor.cursorWidth": 3,
+  "editor.formatOnPaste": true,
+  "editor.minimap.maxColumn": 50,
+  "editor.guides.bracketPairs": true,
+  "editor.largeFileOptimizations": true,
+  "editor.cursorBlinking": "expand",
+  "editor.stickyScroll.enabled": true,
+  "editor.cursorSurroundingLines": 8,
+  // SEE LANGUAGE SPECIFIC SETTINGS FOR TAB SIZE
+
+  // =============================================
+  // ================ TERMINAL ===================
+  // =============================================
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.shellIntegration.enabled": true,
+//   "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.scrollback": 10000, // Amount of lines to keep in terminal
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "/usr/bin/bash",
+      "icon": "terminal-bash"
+    },
+    "zsh": {
+      "path": "/usr/bin/zsh",
+      "icon": "terminal-bash"
+    }
+  },
+//   "terminal.external.linuxExec": "which $ZSH",
+//   "terminal.integrated.defaultProfile.linux": "zsh",
+  // =============================================
+  // ================ WORKBENCH ==================
+  // =============================================
+  "workbench.colorTheme": "Catppuccin Mocha",
+  "workbench.iconTheme": "catppuccin-mocha",
+  "workbench.activityBar.location": "top",
+  "workbench.editor.titleScrollbarSizing": "large",
+  //   "workbench.statusBar.visible": false,
+  //   "workbench.activityBar.visible": false,
+
+  // =============================================
+  // ================ EXPLORER ===================
+  // =============================================
+  "explorer.confirmDragAndDrop": true,
+
+  // =============================================
+  // ================== GIT ======================
+  // =============================================
+  "git.autofetch": true,
+
+  // =============================================
+  // ================ WINDOW =====================
+  // =============================================
+  "window.menuBarVisibility": "toggle",
+  "window.commandCenter": true,
+  "window.titleBarStyle": "custom",
+
+  // =============================================
+  // ================ NOTEBOOK ====================
+  // =============================================
+  "notebook.formatOnSave.enabled": true,
+  "notebook.output.wordWrap": true,
+//   "notebook.codeActionsOnSave": {
+//     "notebook.source.fixAll": true,
+//     "notebook.source.organizeImports": true
+//   },
+
+  // =============================================
+  // ============= GITHUB COPILOT ================
+  // =============================================
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+
+  // =============================================
+  // ================ VIM SETTINGS ===============
+  // =============================================
+  "vim.handleKeys": {
+    // Enable / Disable specific VIM Bindings in VSCode
+    // "<C-w>": false, // Disable VIM binding for "Close Window"
+    "<C-f>": false // Disable VIM binding for "Find in File"
+  },
+
+  "vim.leader": "<Space>",
+  "vim.hlsearch": true,
+  "vim.useSystemClipboard": true,
+  "vim.shell": "/usr/bin/zsh",
+  "vim.smartRelativeLine": true,
+  "vim.highlightedyank.enable": true,
+  "vim.highlightedyank.color": "#a9dc7660",
+  "vim.highlightedyank.duration": 250,
+
+  "vim.insertModeKeyBindings": [
+    // "jj" in Insert Mode => Go to Normal Mode
+    {
+      "before": ["j", "j"],
+      "after": ["<Esc>"]
+    }
+    // // "jk" in Insert Mode => Go to Normal Mode
+    // {
+    //   "before": ["j", "k"],
+    //   "after": ["<Esc>"]
+    // },
+    // // "kj" in Insert Mode => Go to Normal Mode
+    // {
+    //   "before": ["k", "j"],
+    //   "after": ["<Esc>"]
+    // }
+  ],
+
+  "vim.normalModeKeyBindingsNonRecursive": [
+    // NAVIGATION
+    // switch b/w buffers
+    { "before": ["<S-h>"], "commands": [":bprevious"] },
+    { "before": ["<S-l>"], "commands": [":bnext"] },
+
+    // splits
+    // { "before": ["leader", "v"], "commands": [":vsplit"] },
+    // { "before": ["leader", "s"], "commands": [":split"] },
+    { "before": ["leader", "\\"], "commands": [":vsplit"] },
+    { "before": ["leader", "-"], "commands": [":split"] },
+    { "before": ["leader", "w", "v"], "commands": [":vsplit"] },
+    { "before": ["leader", "w", "h"], "commands": [":split"] },
+
+    // panes / window navigation
+    {
+      // "before": ["leader", "h"],
+      "before": ["<C-h>"],
+      "commands": ["workbench.action.focusLeftGroup"]
+    },
+    {
+      // "before": ["leader", "j"],
+      "before": ["<C-j>"],
+      "commands": ["workbench.action.focusBelowGroup"]
+    },
+    {
+      // "before": ["leader", "k"],
+      "before": ["<C-k>"],
+      "commands": ["workbench.action.focusAboveGroup"]
+    },
+    {
+      // "before": ["leader", "l"],
+      "before": ["<C-l>"],
+      "commands": ["workbench.action.focusRightGroup"]
+    },
+
+    // Close active editor
+    {
+      "before": ["<leader>", "w", "d"],
+      "commands": ["workbench.action.closeActiveEditor"]
+    },
+
+    // Save file
+    { "before": ["leader", "w"], "commands": [":w!"] },
+
+    // Quit without saving
+    { "before": ["leader", "q"], "commands": [":q!"] },
+
+    // Save file and quit
+    { "before": ["leader", "x"], "commands": [":x!"] },
+
+    // Go to Previous Error or Warning
+    {
+      "before": ["[", "d"],
+      "commands": ["editor.action.marker.prev"]
+    },
+
+    // Go to Previous Error or Warning
+    {
+      "before": ["]", "d"],
+      "commands": ["editor.action.marker.next"]
+    },
+
+    // Code Actions / Quick Fix
+    {
+      "before": ["<leader>", "c", "a"],
+      "commands": ["editor.action.quickFix"]
+    },
+
+    // File Quick Open
+    { "before": ["leader", "f"], "commands": ["workbench.action.quickOpen"] },
+
+    // Format the whole document
+    { "before": ["leader", "p"], "commands": ["editor.action.formatDocument"] }
+  ],
+
+  "vim.normalModeKeyBindings": [
+    // https://dev.to/ansonh/10-vs-code-vim-tricks-to-boost-your-productivity-1b0n
+
+    // Go to Definition
+    {
+      "before": ["g", "d"],
+      "commands": ["editor.action.revealDefinition"],
+      "when": "editorHasDefinitionProvider && editorTextFocus && !isInEmbeddedEditor"
+    },
+    // Peek Definition
+    {
+      "before": ["g", "p", "d"],
+      "commands": ["editor.action.peekDefinition"],
+      "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor"
+    },
+
+    // Show Hover
+    {
+      "before": ["g", "h"],
+      "commands": ["editor.action.showDefinitionPreviewHover"]
+    },
+
+    // Go to Implementations
+    {
+      "before": ["g", "i"],
+      "commands": ["editor.action.revealDeclaration"]
+    },
+
+    // Peek Implementations
+    {
+      "before": ["g", "p", "i"],
+      "commands": ["editor.action.peekDeclaration"]
+    },
+
+    // Quick Fix (open the code action lightbulb menu)
+    {
+      "before": ["g", "q"],
+      "commands": ["editor.action.quickFix"]
+    },
+
+    // Go to References
+    {
+      "before": ["g", "r"],
+      "commands": ["editor.action.referenceSearch.trigger"]
+    },
+
+    // Go to Type Definition
+    {
+      "before": ["g", "t"],
+      "commands": ["editor.action.goToTypeDefinition"]
+    },
+
+    // Peek Type Definition
+    {
+      "before": ["g", "p", "t"],
+      "commands": ["editor.action.peekTypeDefinition"]
+    },
+
+    // Open File Explorer
+    {
+      "before": ["<leader>", "e"],
+      "commands": ["workbench.view.explorer"]
+    }
+  ],
+
+  "vim.visualModeKeyBindings": [
+    // Stay in visual mode while indenting
+    { "before": ["<"], "commands": ["editor.action.outdentLines"] },
+    { "before": [">"], "commands": ["editor.action.indentLines"] },
+
+    // Move selected lines while staying in visual mode
+    { "before": ["J"], "commands": ["editor.action.moveLinesDownAction"] },
+    { "before": ["K"], "commands": ["editor.action.moveLinesUpAction"] },
+
+    // toggle comment selection
+    { "before": ["leader", "c"], "commands": ["editor.action.commentLine"] }
+  ],
+
+  "vim.visualModeKeyBindingsNonRecursive": [
+    // Add current selection to next find match
+    {
+      "before": ["<leader>", "d"],
+      "commands": ["editor.action.addSelectionToNextFindMatch"]
+    }
+  ],
+
+  // VIM PLUGINS
+  "vim.surround": true, // Enable surround.vim -- https://github.com/VSCodeVim/Vim#vim-surround
+  "vim.surround.suppressSurroundingSpaces": true, // Don't add spaces when surrounding with quotes
+  "vim.commentary": true, // Enable commentary.vim -- https://github.com/VSCodeVim/Vim#vim-commentary
+
+  // =============================================
+  // ============== LANGUAGE SPECIFIC ============
+  // =============================================
+  "editor.insertSpaces": true, // Default to tabs
+  "editor.tabSize": 4, // Default to 4 spaces
+  "editor.detectIndentation": true, // Auto detect indentation
+
+  "[javascript]": {
+    // "editor.tabSize": 4
+  },
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+
+  "[typescriptreact]": {
+    // "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "[typescript]": {
+    // "editor.tabSize": 4
+  },
+
+  "[css]": {
+    "editor.suggest.insertMode": "replace"
+  },
+
+  "[json]": {
+    // "editor.tabSize": 4
+  },
+
+  "[csharp]": {
+    // "editor.defaultFormatter": "ms-dotnettools.csharp"
+    // "editor.tabSize": 4
+  },
+
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    }
+  },
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.autoImportCompletions": true,
+  // "python.defaultInterpreterPath": "${env:HOME}/.pixi/bin/python",
+
+  "[go]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false
+  },
+  "go.toolsManagement.autoUpdate": true,
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": ["--fast"],
+
+  "[markdown]": {
+    "editor.tabSize": 4,
+    "editor.unicodeHighlight.ambiguousCharacters": false,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    },
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one"
+  },
+
+  // =============================================
+  // ================ EXTENSIONS =================
+  // =============================================
+  "markdown.extension.list.indentationSize": "inherit",
+  "markdown.extension.tableFormatter.normalizeIndentation": true,
+  "sonarlint.pathToNodeExecutable": "${env:HOME}/.local/share/mise/shims/node",
+  "disableLigatures.ligatures": [
+    ".=",
+    ".-",
+    ":=",
+    "=:=",
+    "==",
+    "!=",
+    "===",
+    "!==",
+    "=/=",
+    "<-<",
+    "<<-",
+    "<--",
+    "<-",
+    "<->",
+    "->",
+    "-->",
+    "->>",
+    ">->",
+    "<=<",
+    "<<=",
+    "<==",
+    "<=>",
+    "=>",
+    "==>",
+    "=>>",
+    ">=>",
+    ">>=",
+    ">>-",
+    ">-",
+    "<~>",
+    "-<",
+    "-<<",
+    "=<<",
+    "<~~",
+    "<~",
+    "~~",
+    "~>",
+    "~~>",
+    "<<<",
+    "<<",
+    "<=",
+    "<>",
+    ">=",
+    ">>",
+    ">>>",
+    "{.",
+    "{|",
+    "[|",
+    "<:",
+    ":>",
+    "|]",
+    "|}",
+    ".}",
+    "<|||",
+    "<||",
+    "<|",
+    "<|>",
+    "|>",
+    "||>",
+    "|||>",
+    "<$",
+    "<$>",
+    "$>",
+    "<+",
+    "<+>",
+    "+>",
+    "<*",
+    "<*>",
+    "*>",
+    "\\\\",
+    "\\\\\\",
+    "\\*",
+    "*/",
+    "///",
+    "//",
+    "<//",
+    "<!==",
+    "</>",
+    "-->",
+    "/>",
+    ";;",
+    "::",
+    ":::",
+    "..",
+    "...",
+    "..<",
+    "!!",
+    "??",
+    "%%",
+    "&&",
+    "||",
+    "?.",
+    "?:",
+    "+",
+    "++",
+    "+++",
+    "-",
+    "--",
+    "---",
+    "*",
+    "**",
+    "***",
+    "~=",
+    "~-",
+    "www",
+    "-~",
+    "~@",
+    "^=",
+    "?=",
+    "/=",
+    "/==",
+    "|=",
+    "||=",
+    "#!",
+    "##",
+    "###",
+    "####",
+    "#{",
+    "#[",
+    "]#",
+    "#(",
+    "#?",
+    "#_",
+    "#_("
+  ],
+  "cSpell.userWords": [
+  ],
+  "[jsonc]": {
+    // "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

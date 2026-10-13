@@ -1,0 +1,252 @@
+// Place your key bindings in this file to override the defaults
+[
+  // ====================
+  // ==== NAVIGATION ====
+  // ====================
+  // Move line up
+  {
+    "key": "alt+k",
+    "command": "editor.action.moveLinesUpAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  // Move line down
+  {
+    "key": "alt+j",
+    "command": "editor.action.moveLinesDownAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  // ========================
+  // ======= EDITOR =========
+  // ========================
+  {
+    "key": "ctrl+o",
+    "command": "workbench.action.navigateBack",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+i",
+    "command": "workbench.action.navigateForward",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+k",
+    "command": "workbench.action.terminal.runSelectedText",
+    "when": "editorTextFocus"
+  },
+
+  // ========================
+  // ====== TERMINAL ========
+  // ========================
+  {
+    "key": "ctrl+,",
+    "command": "workbench.action.terminal.toggleTerminal",
+    "when": "terminal.active"
+  },
+  {
+    "key": "ctrl+a",
+    "command": "workbench.action.terminal.focusNext",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+b",
+    "command": "workbench.action.terminal.focusPrevious",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+n",
+    "command": "workbench.action.terminal.new",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+w",
+    "command": "workbench.action.terminal.kill",
+    "when": "terminalFocus"
+  },
+
+  // TERMINAL NAVIGATION
+  {
+    "key": "ctrl+u",
+    "command": "workbench.action.terminal.scrollUpPage",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+d",
+    "command": "workbench.action.terminal.scrollDownPage",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+u",
+    "command": "workbench.action.terminal.scrollToTop",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+d",
+    "command": "workbench.action.terminal.scrollToBottom",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.terminal.scrollUp",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.terminal.scrollDown",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+j",
+    "command": "workbench.action.terminal.scrollToNextCommand",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "ctrl+shift+k",
+    "command": "workbench.action.terminal.scrollToPreviousCommand",
+    "when": "terminalFocus"
+  },
+
+  // {
+  //   "key": "ctrl+j",
+  //   "command": "workbench.action.togglePanel"
+  // },
+
+  // ===========================
+  // ====== FILE TREE ==========
+  // ===========================
+  {
+    "command": "workbench.files.action.focusFilesExplorer",
+    "key": "ctrl+e",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+e",
+    "command": "workbench.action.toggleSidebarVisibility"
+  },
+  {
+    "key": "space e",
+    "command": "workbench.action.toggleSidebarVisibility",
+    "when": "filesExplorerFocus && !inputFocus"
+  },
+  {
+    "key": "a",
+    "command": "explorer.newFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+  },
+  {
+    "key": "f",
+    "command": "explorer.newFolder",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+  },
+  {
+    "key": "r",
+    "command": "renameFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+  },
+  {
+    "key": "x",
+    "command": "filesExplorer.cut",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !explorerResourceReadonly && !inputFocus"
+  },
+  {
+    "key": "y",
+    "command": "filesExplorer.copy",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceIsRoot && !inputFocus"
+  },
+  {
+    "key": "p",
+    "command": "filesExplorer.paste",
+    "when": "explorerViewletVisible && filesExplorerFocus && !explorerResourceReadonly && !inputFocus"
+  },
+  {
+    "command": "deleteFile",
+    "key": "d",
+    "when": "filesExplorerFocus && !inputFocus"
+  },
+  // {
+  //   "key": "n",
+  //   "command": "explorer.newFile",
+  //   "when": "filesExplorerFocus && !inputFocus"
+  // },
+  // {
+  //   "command": "renameFile",
+  //   "key": "r",
+  //   "when": "filesExplorerFocus && !inputFocus"
+  // },
+  // {
+  //   "key": "shift+n",
+  //   "command": "explorer.newFolder",
+  //   "when": "explorerViewletFocus"
+  // },
+  // // {
+  // //   "key": "shift+n",
+  // //   "command": "workbench.action.newWindow",
+  // //   "when": "!explorerViewletFocus"
+  // // },
+
+  // ===============================
+  // ==== HOVER MENU NAVIGATION ====
+  // ===============================
+  {
+    "key": "h",
+    "command": "editor.action.scrollLeftHover",
+    "when": "editorHoverFocused"
+  },
+  {
+    "key": "j",
+    "command": "editor.action.scrollDownHover",
+    "when": "editorHoverFocused"
+  },
+  {
+    "key": "k",
+    "command": "editor.action.scrollUpHover",
+    "when": "editorHoverFocused"
+  },
+  {
+    "key": "l",
+    "command": "editor.action.scrollRightHover",
+    "when": "editorHoverFocused"
+  },
+
+  // ===============================
+  // ==== PEEK MENU NAVIGATION =====
+  // ===============================
+
+  // Toggle focus between right and left peek widget
+  {
+    "key": "tab",
+    "command": "togglePeekWidgetFocus",
+    "when": "inReferenceSearchEditor && vim.active && vim.mode != 'Insert' || referenceSearchVisible"
+  },
+
+  // ===============================
+  // ====== MENU NAVIGATION ========
+  // ===============================
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.quickOpenSelectNext",
+    "when": "inQuickOpen"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.quickOpenSelectPrevious",
+    "when": "inQuickOpen"
+  },
+
+  // EXTRA
+  {
+    "key": "ctrl+shift+5",
+    "command": "editor.emmet.action.matchTag"
+  },
+  {
+    "key": "ctrl+z",
+    "command": "workbench.action.toggleZenMode"
+  },
+
+  // ===============================
+  // ====== DISABLED COMMANDS ======
+  // ===============================
+  {
+    "key": "ctrl+j",
+    "command": "-workbench.action.togglePanel"
+  }
+]
