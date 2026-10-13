@@ -23,6 +23,18 @@ The default checkout is `~/repos/github/pszponder/dots`. Override it with `DOTFI
 
 Already have mise? See [direct repository bootstrap](docs/mise.md#bootstrap-from-a-repository).
 
+The workstation profile sets `~/Pictures/wallpapers/catppuccin-mocha.png` as
+the wallpaper on GNOME (light and dark), Omarchy, or COSMIC (all displays).
+
+It detects the running desktop and skips sessions without a display or an unsupported desktop. After installing from a console or SSH, run this from a terminal in your graphical session, in the checkout:
+
+```sh
+sh scripts/gui/configure_wallpaper.sh
+```
+
+GNOME and COSMIC configuration requires `python3`; GNOME also uses `gsettings`. COSMIC's existing wallpaper files are backed up once with a `.before-dotfiles`
+suffix. Reapplying workstation bootstrap restores the repository wallpaper.
+
 ## Reapply or update
 
 From the checkout, use `server` instead of `workstation` where appropriate:

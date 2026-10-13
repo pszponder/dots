@@ -9,6 +9,9 @@ dotfiles_profile = "workstation"
 "dnf:ghostty" = "latest"
 
 [bootstrap.hooks]
+post-dotfiles = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
+]
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/setup_copr.sh",
