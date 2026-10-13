@@ -1,4 +1,6 @@
 [tools]
+bat = "latest"
+neovim = "latest"
 codex = "latest"
 claude = "latest"
 herdr = "latest"

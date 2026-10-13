@@ -1,3 +1,15 @@
 # Checkout context; machine declarations live in dots/.config/mise/.
 [vars]
 dotfiles_repo = "{{ config_root }}"
+
+[tasks.test]
+description = "Run offline tests with isolated home directories"
+run = "python3 -m unittest discover -s tests -v"
+
+[tasks.lint]
+description = "Validate TOML and shell syntax"
+run = "python3 scripts/check.py"
+
+[tasks.check]
+description = "Run all repository checks"
+depends = ["lint", "test"]

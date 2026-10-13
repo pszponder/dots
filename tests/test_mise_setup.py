@@ -1,5 +1,6 @@
 """Offline integration checks: python3 -m unittest discover -s tests -v."""
 import os
+import pty
 import json
 from pathlib import Path
 import shutil
@@ -163,6 +164,39 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                                      '-E workstation bootstrap --dry-run',
                                      '-E workstation bootstrap',
                                      '-E workstation bootstrap status'])
+        # Accept preparation, then decline bootstrap after its preview.
+        master, slave = pty.openpty()
+        try:
+            os.write(master, b'y\nn\n')
+            result = subprocess.run(['sh', str(self.repo / 'install.sh'), 'server'],
+                                    stdin=slave, env=self.env, cwd='/tmp',
+                                    text=True, capture_output=True, timeout=10)
+        finally:
+            os.close(slave)
+            os.close(master)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        calls = (self.home / 'mise-calls').read_text().splitlines()
+        self.assertEqual(calls[-3:], ['trust', '-E server vars prompt',
+                                     '-E server bootstrap --dry-run'])
+
+    def test_declining_preparation_leaves_global_config_untouched(self):
+        self.config.mkdir(parents=True)
+        original = self.config / 'config.toml'
+        original.write_text('# existing config\n')
+        master, slave = pty.openpty()
+        try:
+            os.write(master, b'n\n')
+            result = subprocess.run(['sh', str(self.repo / 'install.sh'), 'server'],
+                                    stdin=slave, env=self.env, cwd='/tmp',
+                                    text=True, capture_output=True, timeout=10)
+        finally:
+            os.close(slave)
+            os.close(master)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('cancelled before global mise preparation', result.stdout + result.stderr)
+        self.assertFalse(original.is_symlink())
+        self.assertEqual(original.read_text(), '# existing config\n')
+        self.assertEqual(list(self.config.iterdir()), [original])
 
 
 if __name__ == '__main__':

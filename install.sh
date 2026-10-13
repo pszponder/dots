@@ -83,10 +83,19 @@ main() {
   fi
 
   [ -f "$REPO_DIR/mise.toml" ] || die "could not find mise.toml in $REPO_DIR"
-  install_mise
-
   profile="$(choose_profile "${1:-}")"
   cd "$REPO_DIR"
+
+  log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves checkout context and trust"
+  if [ -t 0 ]; then
+    printf 'Prepare global mise configuration before previewing bootstrap? [y/N] '
+    IFS= read -r answer
+    case "$answer" in
+      y|Y|yes|YES|Yes) ;;
+      *) log_warn "Setup cancelled before global mise preparation"; exit 0 ;;
+    esac
+  fi
+  install_mise
 
   log_info "Linking global mise configuration and recording the checkout path"
   sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
@@ -102,7 +111,7 @@ main() {
   mise -E "$profile" bootstrap --dry-run
 
   if [ -t 0 ]; then
-    printf 'Apply this setup now? [y/N] '
+    printf 'Apply bootstrap now? (Global mise preparation is already complete.) [y/N] '
     IFS= read -r answer
     case "$answer" in
       y|Y|yes|YES|Yes) ;;

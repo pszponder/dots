@@ -6,6 +6,8 @@ This repository uses explicit deployment: edit source files, review changes, and
 
 ## Current bootstrap configuration
 
+The installer asks for confirmation before preparing global mise configuration, then previews bootstrap and asks separately before applying it. Declining the second prompt leaves preparation in place. Noninteractive runs apply both stages without confirmation. Directly running `configure_mise.sh` applies preparation immediately. See [repository checks](../README.md#repository-checks) for maintenance tasks.
+
 Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. The `home` group in `dots/.config/mise/config.toml` links each file under `dots/` into its matching home-directory path. Group entries render `env.sh.tera` and Git’s `config.tera` to their destinations instead of linking the template sources. The setup helper links the three initial mise configs before bootstrap; the home group also manages these links and deploys additional files under `dots/.config/mise/` on subsequent applies. Machine-local overrides and generated context remain untouched. New files under `dots/` are deployed automatically unless excluded.
 
 From the repository, select one profile:
@@ -142,6 +144,8 @@ Add these exclusions to `.gitignore`:
 ```
 mise.local.toml
 mise.*.local.toml
+/dots/.config/mise/config.local.toml
+/dots/.config/mise/config.*.local.toml
 .env
 .env.*
 ```
