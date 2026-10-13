@@ -1,0 +1,15 @@
+[tui]
+# All options available through /statusline
+status_line = [
+    "current-dir",
+    "git-branch",
+    "model-with-reasoning",
+    "context-window-size",
+    "context-used",
+    "used-tokens",
+    # "total-input-tokens",
+    # "total-output-tokens",
+    "five-hour-limit",
+    "weekly-limit",
+    "thread-id",
+]
