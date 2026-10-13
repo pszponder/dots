@@ -36,7 +36,8 @@ mode = "symlink-each"
 "apt:xz-utils" = "latest"
 
 # Fedora packages
-# The development-tools group is installed by the pre-packages hook.
+# Requires mise with https://github.com/jdx/mise/pull/14347.
+"dnf:@development-tools" = "latest"
 "dnf:curl" = "latest"
 "dnf:file" = "latest"
 "dnf:fontconfig" = "latest"
@@ -70,7 +71,6 @@ mode = "symlink-each"
 "~/.ssh/github/pszponder" = { mode = "0700" }
 
 [bootstrap.hooks]
-pre-packages = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/fedora_development_tools.sh"
 final = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",
   "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh",

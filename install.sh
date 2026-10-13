@@ -37,7 +37,7 @@ install_mise() {
   else
     command -v curl >/dev/null 2>&1 || die "curl is required to install mise"
     log_info "Installing mise with the official installer"
-    curl https://mise.run | sh
+    curl -fsSL https://mise.run | sh
   fi
 
   export PATH="$HOME/.local/bin:$PATH"
@@ -94,6 +94,10 @@ main() {
   log_info "Trusting mise configuration in $REPO_DIR"
   mise trust
 
+  if [ -t 0 ]; then
+    mise -E "$profile" vars prompt
+  fi
+
   log_info "Previewing $profile setup"
   mise -E "$profile" bootstrap --dry-run
 
@@ -109,7 +113,9 @@ main() {
   fi
 
   mise -E "$profile" bootstrap
+  mise -E "$profile" bootstrap status
   log_success "Setup complete"
+  log_info "Open a new shell, then run 'mise doctor' to verify shell activation"
 }
 
 main "$@"

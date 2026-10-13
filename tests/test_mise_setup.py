@@ -74,6 +74,7 @@ class MiseSetupTests(unittest.TestCase):
                 # Skip version resolution/downloads; exercise all bootstrap path rendering.
                 output = self.run_command(MISE, '-E', profile, 'bootstrap',
                                           '--dry-run', '--skip', 'tools')
+                self.assertNotIn('fedora_development_tools.sh', output)
                 self.assertIn('create_ssh_keys.sh', output)
                 self.assertIn('flox_install.sh', output)
                 self.assertIn('flatpak_install.sh' if profile == 'workstation'
@@ -148,7 +149,9 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         self.env['PATH'] = str(fake_bin) + ':' + self.env['PATH']
         self.run_command('sh', str(self.repo / 'install.sh'), 'server')
         calls = (self.home / 'mise-calls').read_text().splitlines()
-        self.assertEqual(calls, ['trust', '-E server bootstrap --dry-run', '-E server bootstrap'])
+        self.assertEqual(calls, ['trust',
+                                 '-E server bootstrap --dry-run', '-E server bootstrap',
+                                 '-E server bootstrap status'])
         # A standalone downloaded installer must work before logging helpers exist.
         downloaded = self.root / 'downloaded-install.sh'
         shutil.copy(self.repo / 'install.sh', downloaded)
@@ -156,8 +159,10 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         self.env['DOTFILES_REPO_DIR'] = str(self.repo)
         self.run_command('sh', str(downloaded))
         calls = (self.home / 'mise-calls').read_text().splitlines()
-        self.assertEqual(calls[-3:], ['trust', '-E workstation bootstrap --dry-run',
-                                     '-E workstation bootstrap'])
+        self.assertEqual(calls[-4:], ['trust',
+                                     '-E workstation bootstrap --dry-run',
+                                     '-E workstation bootstrap',
+                                     '-E workstation bootstrap status'])
 
 
 if __name__ == '__main__':

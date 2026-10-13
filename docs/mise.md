@@ -21,7 +21,7 @@ mise -E workstation bootstrap
 
 Both profiles install OpenSSH using apt, pacman, or dnf, create the directories in `[bootstrap.directories]`, deploy the helper/environment files, and run the final SSH key hook. Run in a terminal: missing keys prompt for passphrases. Existing keys remain untouched. See [SSH setup](ssh_configuration.md) and [directory structure](directory_structure.md).
 
-The workstation profile's `pre-packages` hook runs `scripts/gui/flatpak_install.sh` to install the Flatpak CLI through apt, dnf, or pacman if missing, then add the system-wide Flathub remote with `flatpak remote-add --system --if-not-exists`, using sudo unless running as root. Existing remotes are preserved. Mise then installs the applications declared under `[bootstrap.packages]`, including Zed. Add more apps to `dots/.config/mise/config.workstation.toml` as `"flatpak:APPLICATION_ID" = "latest"` to match the hook's system scope. The server profile does not install Flatpak. See [mise Flatpak packages](https://mise.jdx.dev/bootstrap/packages/flatpak.html).
+Both profiles declare the Fedora `@development-tools` group in shared `[bootstrap.packages]`. This requires a mise release containing [PR #14347](https://github.com/jdx/mise/pull/14347); v2026.10.8 and earlier do not include the fix. The workstation profile's `pre-packages` hook runs `scripts/gui/flatpak_install.sh` to install the Flatpak CLI through apt, dnf, or pacman if missing, then add the system-wide Flathub remote with `flatpak remote-add --system --if-not-exists`, using sudo unless running as root. Existing remotes are preserved. Mise then installs the applications declared under `[bootstrap.packages]`, including Zed. Add more apps to `dots/.config/mise/config.workstation.toml` as `"flatpak:APPLICATION_ID" = "latest"` to match the hook's system scope. The server profile does not install Flatpak. See [mise Flatpak packages](https://mise.jdx.dev/bootstrap/packages/flatpak.html).
 
 Both profiles install curl, tar, XZ support, fontconfig, Git, and OpenSSH through the supported system package manager, then install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `~/.local/share/fonts/NerdFonts` (or `$XDG_DATA_HOME/fonts/NerdFonts`). Fedora declares `openssh-clients`, `xz`, `fontconfig`, and `tar` for SSH and font installation.
 
@@ -284,12 +284,14 @@ mise -E workstation bootstrap status
 For a server:
 
 ```
-mise -E workstation vars prompt
+mise -E server vars prompt
 mise -E server bootstrap --dry-run
 mise -E server bootstrap
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 mise -E server bootstrap status
 ```
+
+Open a new shell after bootstrap and run `mise doctor` to verify shell activation.
 
 Bootstrap applies the declared setup, including packages and dotfiles. Run it again after changing bootstrap declarations. Earlier successful steps remain applied if a later step fails.
 
