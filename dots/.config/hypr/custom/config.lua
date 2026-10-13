@@ -1,0 +1,3 @@
+-- Placeholder for a standalone, non-Omarchy Hyprland configuration.
+-- Add profile settings in custom/modules/ and load them here when implemented.
+-- This profile intentionally loads no Omarchy defaults or personal overrides.

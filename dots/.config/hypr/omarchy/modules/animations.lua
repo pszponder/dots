@@ -1,0 +1,7 @@
+-- https://wiki.hypr.land/Configuring/Basics/Variables/#animations
+-- hl.config({
+--   animations = {
+--     -- Disable all animations.
+--     enabled = false,
+--   },
+-- })
