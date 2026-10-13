@@ -59,6 +59,85 @@ class MiseSetupTests(unittest.TestCase):
         self.assertFalse((self.config / 'dotfiles').exists())
         self.assertFalse((self.config / 'conf.d/00-dotfiles-context.toml').exists())
 
+    @unittest.skipUnless(MISE and shutil.which('git'), 'mise and git are required')
+    def test_repository_bootstrap_without_global_preparation(self):
+        # Exercise --from against a real local Git remote, without network or
+        # package installation. Copy sources so deployed links use the clone.
+        remote = self.root / 'remote'
+        remote.mkdir()
+        for name in ('mise.toml', 'mise.server.toml', 'mise.workstation.toml'):
+            shutil.copy(REPO / name, remote / name)
+        for name in ('dots', 'scripts'):
+            shutil.copytree(REPO / name, remote / name)
+        # Unrelated final hooks have their own coverage; don't download fonts,
+        # install Flox, or generate keys in this repository-bootstrap test.
+        for name in ('scripts/cli/flox_install.sh',
+                     'scripts/cli/nerdfonts_install.sh',
+                     'scripts/bootstrap/create_ssh_keys.sh'):
+            (remote / name).write_text('#!/bin/sh\nexit 0\n')
+        self.run_command('git', 'init', str(remote))
+        self.run_command('git', '-C', str(remote), 'add', '.')
+        self.run_command('git', '-C', str(remote), '-c', 'user.name=Test',
+                         '-c', 'user.email=test@example.com', 'commit', '-m', 'Fixture')
+        expected_tools = tomllib.loads(
+            (REPO / 'dots/.config/mise/config.toml').read_text())['tools']
+        for profile in ('server', 'workstation'):
+            with self.subTest(profile=profile):
+                base = self.root / profile
+                home = base / 'home'
+                home.mkdir(parents=True)
+                self.env.update(HOME=str(home), XDG_CONFIG_HOME=str(home / '.config'),
+                                XDG_DATA_HOME=str(base / 'data'),
+                                XDG_CACHE_HOME=str(base / 'cache'),
+                                XDG_STATE_HOME=str(base / 'state'))
+                checkout = base / 'checkout with spaces'
+                args = (MISE, '-E', profile, 'bootstrap', '--from', str(remote),
+                        '--from-dir', str(checkout))
+                preview = self.run_command(*args, '--dry-run')
+                self.assertFalse(checkout.exists())
+                self.assertIn('clone', preview.lower())
+                self.run_command(MISE, 'vars', 'prompt', 'git_name=Test',
+                                 'git_email=test@example.com')
+                self.run_command(*args, '--only', 'repos')
+                config = home / '.config/mise/config.toml'
+                self.assertFalse(config.exists())
+                preview = self.run_command(*args, '--dry-run', '--skip', 'tools')
+                self.assertIn('create_ssh_keys.sh', preview)
+                self.assertEqual('flatpak_install.sh' in preview, profile == 'workstation')
+                self.assertFalse(config.exists())
+                self.run_command(*args, '--only', 'dotfiles')
+                self.assertEqual(config.resolve(), checkout / 'dots/.config/mise/config.toml')
+                environment = (home / '.config/env.sh').read_text()
+                self.assertIn(str(checkout), environment)
+                self.assertIn(profile, environment)
+                # Run the real final hook, replacing only its installer
+                # subprocess with a tool-list probe to avoid downloads.
+                fake_bin = base / 'bin'
+                fake_bin.mkdir()
+                installer = fake_bin / 'mise'
+                installer.write_text(
+                    '#!/bin/sh\nset -eu\n'
+                    'test "$1" = -C\nshift 2\n'
+                    'test "$1" = -E\nshift 2\n'
+                    'test "$*" = "install --yes"\n'
+                    'exec "$REAL_MISE" config --json > "$HOME/tools.json"\n')
+                installer.chmod(0o755)
+                original_path = self.env['PATH']
+                self.env.update(PATH=str(fake_bin) + ':' + original_path, REAL_MISE=MISE)
+                self.run_command(*args, '--only', 'final-hook')
+                self.env['PATH'] = original_path
+                tools = json.loads((home / 'tools.json').read_text())
+                self.assertIn(str(config), str(tools), tools)
+                self.assertEqual(tomllib.loads(config.read_text())['tools'], expected_tools)
+                self.run_command(*args, '--only', 'dotfiles')
+                # --update must refresh the retained checkout from its remote.
+                (remote / 'revision').write_text(profile)
+                self.run_command('git', '-C', str(remote), 'add', 'revision')
+                self.run_command('git', '-C', str(remote), '-c', 'user.name=Test',
+                                 '-c', 'user.email=test@example.com', 'commit', '-m', profile)
+                self.run_command(*args, '--update', '--only', 'dotfiles')
+                self.assertEqual((checkout / 'revision').read_text(), profile)
+
     def test_migration_preserves_legacy_context_and_local_overrides(self):
         self.config.mkdir(parents=True)
         for name in ('config.server.toml', 'config.workstation.toml'):

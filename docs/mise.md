@@ -33,6 +33,52 @@ Bootstrap final hooks run on every bootstrap, including when keys and fonts alre
 
 The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. After moving the repository, rerun `sh scripts/bootstrap/configure_mise.sh` from the new checkout, reapply from that checkout, and reload your shell.
 
+## Bootstrap from a repository
+
+This repository is a mise bootstrap project: its entry point is root `mise.toml`, with `mise.workstation.toml` and `mise.server.toml` profiles. Use `--from`; `--adopt` expects either a global config repository or mise's dotfile-history format, neither of which matches this layout. See [mise repository bootstrap](https://mise.jdx.dev/bootstrap/from-repository.html).
+
+With mise installed, run in a terminal:
+
+```sh
+mise -E workstation bootstrap \
+  --from https://github.com/pszponder/dots.git \
+  --from-dir "$HOME/repos/github/pszponder/dots" \
+  --prompt-vars
+```
+
+Use `server` instead of `workstation` throughout on servers. `--prompt-vars` collects missing Git identity values and saves them outside the checkout. For unattended setup, save them first, then run the command above with `--yes`:
+
+```sh
+mise vars prompt git_name="Your Name" git_email="you@example.com"
+```
+
+The home dotfile group deploys `~/.config/mise/config.toml`. The first final hook starts a fresh `mise install` invocation with the checkout and profile explicitly selected, so it loads that newly deployed config and installs the shared tools on the first bootstrap. The tool manifest remains solely in `dots/.config/mise/config.toml`. On later runs, already-installed matching tools are kept. Other final hooks then install Flox and fonts and prepare SSH keys.
+
+This direct path uses mise's dotfile conflict handling. It does not run the setup helper's config backup and legacy migration logic; use `install.sh` when you need those. mise still loads existing global configuration alongside this project. Keep the checkout at its selected location because deployed symlinks and `DOTFILES_REPO` refer to it. Without `--from-dir`, mise uses its data directory's `bootstrap-repo` checkout instead.
+
+Add `--dry-run` to preview. When the checkout does not exist yet, that only prints the clone command. To clone and then preview the actual configuration before applying it:
+
+```sh
+git clone https://github.com/pszponder/dots.git "$HOME/repos/github/pszponder/dots"
+mise -E workstation bootstrap \
+  --from https://github.com/pszponder/dots.git \
+  --from-dir "$HOME/repos/github/pszponder/dots" \
+  --prompt-vars --dry-run
+```
+
+The preview prints the tool-install hook without installing tools. Required-variable prompting can still save answers during a dry run. Once reviewed, rerun without `--dry-run` to apply.
+
+To pull and apply new commits later:
+
+```sh
+mise -E workstation bootstrap \
+  --from https://github.com/pszponder/dots.git \
+  --from-dir "$HOME/repos/github/pszponder/dots" \
+  --update
+```
+
+Without `--update`, mise reuses the checkout's current commit. Updates require a fast-forward and matching origin. `--update` also refreshes bootstrap package metadata and configured repositories; use `up` for the broader machine and tool upgrades described below. Append `?ref=<branch|tag|commit>` to the repository URL to select a specific revision.
+
 ## Flox
 
 Both profiles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.

@@ -40,6 +40,21 @@ curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 
 In a terminal, the installer first asks permission to prepare global mise configuration. Preparation installs mise with its official installer if needed. It clones the repository if needed, trusts its mise configuration, and previews the selected profile's bootstrap before a separate confirmation to apply it. Declining bootstrap leaves the already-approved global mise preparation in place. When no profile argument is provided, it prompts you to choose `workstation` or `server` in a terminal, and defaults to `workstation` for noninteractive runs. Before previewing bootstrap, it links the global mise config; conflicting mise files are backed up. In a terminal, it runs `mise vars prompt` for the selected profile to collect missing configuration values before previewing. Noninteractive runs perform preparation and bootstrap without either confirmation. For unattended runs, first supply `git_name` and `git_email` in `~/.config/mise/config.local.toml` or save them with `mise vars prompt NAME=VALUE`; mise enforces required variables during setup. After bootstrap it reports status. Open a new shell and run `mise doctor` to verify activation. The default clone location is `~/repos/github/pszponder/dots`; set `DOTFILES_REPO_DIR` or `DOTFILES_REPO_URL` to override the clone location or repository URL.
 
+## Bootstrap directly with mise
+
+With mise already installed, you can clone and apply this repository directly:
+
+```sh
+mise -E workstation bootstrap \
+  --from https://github.com/pszponder/dots.git \
+  --from-dir "$HOME/repos/github/pszponder/dots" \
+  --prompt-vars
+```
+
+Use `server` instead of `workstation` on servers. This path deploys the global tool config and installs its tools without running `configure_mise.sh` first. Keep the checkout: deployed symlinks point into it. Use `install.sh` when mise needs installing or existing global mise configuration needs backing up.
+
+For previewing, unattended setup, and pulling updates, see [repository bootstrap](docs/mise.md#bootstrap-from-a-repository).
+
 ## Run setup again
 
 ```sh
@@ -59,7 +74,7 @@ Run `up` to update the OS, Homebrew if installed, mise and the applied profile's
 
 ## Repository checks
 
-Keep bootstrap declarations in root `mise.toml` and `mise.<profile>.toml`; shared global tools live in `dots/.config/mise/config.toml`. Root `mise.toml` also provides maintenance tasks. Initial machine setup uses `install.sh`.
+Keep bootstrap declarations in root `mise.toml` and `mise.<profile>.toml`; shared global tools live in `dots/.config/mise/config.toml`. Root `mise.toml` also provides maintenance tasks. Initial machine setup supports `install.sh` or `mise bootstrap --from`.
 
 With mise and Python 3.11 or newer available:
 
@@ -78,7 +93,7 @@ Machine-local overrides belong in `~/.config/mise/config.local.toml` or `config.
 
 ## TODOs
 
-- [x] Configure Flatpak applications (through mise bootstrap)
+- [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Add mise tools/packages
 - [ ] Review my old dotfiles and import other configurations
 - [ ] Configure desktop background?
@@ -87,9 +102,9 @@ Machine-local overrides belong in `~/.config/mise/config.local.toml` or `config.
 - [ ] Install podman
 - [ ] Install podman desktop
 - [ ] Install rancher desktop (does it conflict w/ podman/podman desktop?)
-- [ ] Does mise support installing snaps (for Ubuntu?)
+- [ ] Does [mise support installing snaps](https://github.com/jdx/mise/discussions/14370) (for Ubuntu?)
 - [ ] Does mise support configuring copr installs (ex. [Binaries and Packages - Install](https://ghostty.org/docs/install/binary#fedora))
-- [ ] Consider how can we [Bootstrap from a repository | mise-en-place](https://mise.jdx.dev/bootstrap/from-repository.html)
+- [x] Support [bootstrapping from a repository](https://mise.jdx.dev/bootstrap/from-repository.html)
 - [ ] Check out [Project scaffolding tasks | mise-en-place](https://mise.jdx.dev/mise-cookbook/presets.html) (I would want the scaffolding task to create a python project with pytest as a dev dependency, maybe don't create a bare project but an application ([Creating projects | uv](https://docs.astral.sh/uv/concepts/projects/init/)))
 ## Resources / References
 - [mise](https://mise.jdx.dev)
