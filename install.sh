@@ -86,7 +86,7 @@ main() {
   profile="$(choose_profile "${1:-}")"
   cd "$REPO_DIR"
 
-  log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves checkout context and trust"
+  log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves trust"
   if [ -t 0 ]; then
     printf 'Prepare global mise configuration before previewing bootstrap? [y/N] '
     IFS= read -r answer
@@ -97,7 +97,7 @@ main() {
   fi
   install_mise
 
-  log_info "Linking global mise configuration and recording the checkout path"
+  log_info "Linking global mise tool configuration"
   sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
 
   log_info "Trusting mise configuration in $REPO_DIR"

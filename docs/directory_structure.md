@@ -1,6 +1,6 @@
 # Home Directory Structure
 
-`mise -E workstation bootstrap` (or `-E server`) creates these directories from `[bootstrap.directories]` in [`config.toml`](../dots/.config/mise/config.toml). Existing directories and their contents are preserved.
+`mise -E workstation bootstrap` (or `-E server`) creates these directories from `[bootstrap.directories]` in [`mise.toml`](../mise.toml). Existing directories and their contents are preserved.
 
 ```
 ~/
@@ -18,4 +18,4 @@
 └── scratch/                  # Temporary, disposable work and quick experiments
 ```
 
-To add or remove a default directory, edit `[bootstrap.directories]` in `dots/.config/mise/config.toml`. Removing a declaration leaves the directory on disk. SSH directories are also declared with mode `0700`.
+To add or remove a default directory, edit `[bootstrap.directories]` in `mise.toml`. Removing a declaration leaves the directory on disk. SSH directories are also declared with mode `0700`.

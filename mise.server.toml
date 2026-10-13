@@ -1,5 +1,3 @@
-[tools]
-
 [vars]
 dotfiles_profile = "server"
 
