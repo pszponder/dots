@@ -24,8 +24,13 @@ install_flatpak() {
 }
 
 configure_flathub() {
-  flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-  log_success 'User Flathub remote configured'
+  set -- flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  if [ "$(id -u)" -eq 0 ]; then
+    "$@"
+  else
+    sudo "$@"
+  fi
+  log_success 'System Flathub remote configured'
 }
 
 main() {
