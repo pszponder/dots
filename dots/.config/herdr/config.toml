@@ -1,0 +1,85 @@
+[theme]
+# Match the Omarchy tmux palette.
+name = "terminal"
+
+[theme.custom]
+panel_bg = "black"
+
+[terminal]
+# Match tmux's -c "#{pane_current_path}" behavior.
+new_cwd = "follow"
+
+[keys]
+# Match Omarchy tmux. Herdr currently supports one prefix only.
+prefix = "ctrl+b"
+
+# Config and help
+reload_config = "prefix+q"
+help = "prefix+?"
+detach = "prefix+d"
+
+# Copy mode: Omarchy's entry key plus the stock tmux convenience key.
+copy_mode = ["prefix+[", "prefix+y"]
+
+# Panes: Omarchy bindings plus stock tmux split aliases.
+split_horizontal = ["prefix+h", "alt+enter", "prefix+double_quote"]
+split_vertical = ["prefix+v", "alt+shift+enter", "prefix+percent"]
+close_pane = ["prefix+x", "alt+esc"]
+zoom = "prefix+z"
+last_pane = "prefix+;"
+
+# Omarchy direct navigation plus stock tmux prefixed arrows.
+focus_pane_left = ["ctrl+alt+left", "prefix+left"]
+focus_pane_down = ["ctrl+alt+down", "prefix+down"]
+focus_pane_up = ["ctrl+alt+up", "prefix+up"]
+focus_pane_right = ["ctrl+alt+right", "prefix+right"]
+
+# Omarchy resize mode mirrors tmux's prefix+Ctrl-arrow bindings; direct
+# Ctrl+Alt+Shift arrows match Omarchy tmux's root-table resize bindings.
+resize_mode = [
+  "prefix+ctrl+left",
+  "prefix+ctrl+down",
+  "prefix+ctrl+up",
+  "prefix+ctrl+right",
+]
+resize_pane_left = "ctrl+alt+shift+left"
+resize_pane_down = "ctrl+alt+shift+down"
+resize_pane_up = "ctrl+alt+shift+up"
+resize_pane_right = "ctrl+alt+shift+right"
+
+# Herdr-specific pane operation; tmux has no direct equivalent.
+rename_pane = "prefix+shift+o"
+
+# Windows -> tabs: Omarchy plus stock tmux aliases.
+new_tab = "prefix+c"
+rename_tab = "prefix+r"
+close_tab = ["prefix+k", "prefix+ampersand"]
+switch_tab = ["prefix+1..9", "alt+1..9"]
+previous_tab = ["prefix+p", "alt+left"]
+next_tab = ["prefix+n", "alt+right"]
+move_tab_previous = "alt+shift+left"
+move_tab_next = "alt+shift+right"
+
+# Sessions -> workspaces.
+new_workspace = "prefix+shift+c"
+rename_workspace = "prefix+shift+r"
+close_workspace = "prefix+shift+k"
+previous_workspace = ["prefix+shift+p", "alt+up"]
+next_workspace = ["prefix+shift+n", "alt+down"]
+
+# Retain local workspace navigation conveniences and add tmux's session picker.
+workspace_picker = ["prefix+w", "prefix+s"]
+goto = "prefix+g"
+
+[ui]
+# Match Omarchy's tmux presentation and retain the local preference.
+accent = "blue"
+pane_gaps = false
+pane_outer_borders = false
+pane_scrollbars = false
+confirm_close = false
+prompt_new_tab_name = false
+mouse_capture = true
+agent_panel_sort = "spaces"
+tab_bar_right = [{ type = "zoom" }, { type = "hostname" }]
+window_title = "{hostname}: {workspace}"
