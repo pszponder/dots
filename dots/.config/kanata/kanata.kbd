@@ -1,0 +1,120 @@
+;; Video related to this file
+;; https://youtu.be/jvJ3f4HHiMY
+
+;; Kanata docs
+;; https://github.com/jtroo/kanata/blob/main/docs/config.adoc
+;; https://shom.dev/start/using-kanata-to-remap-any-keyboard/
+
+;; Setup Kanata on Linux
+;; https://github.com/jtroo/kanata/blob/cd2be50a467e7bb6ba128166d3b3c9924bbcfb06/docs/setup-linux.md
+
+;; OS key code mappings
+;; https://github.com/jtroo/kanata/blob/main/parser/src/keys/mod.rs
+
+;; Use the below commands to reload kanata if changes made to config and to check for errors
+;; systemctl --user daemon-reload
+;; systemctl --user restart kanata.service
+;; journalctl --user -u kanata.service -f
+
+(defcfg
+  process-unmapped-keys yes
+  concurrent-tap-hold yes
+  ;; Recommended whenever defoverrides is used: without this, releasing the
+  ;; modifier a beat before the non-modifier key (common during repeated
+  ;; word-jumps, e.g. holding Ctrl+Right) can drop the override mid-repeat.
+  override-release-on-activation yes
+)
+
+;; Variable Declarations
+(defvar
+  tap-time 150
+  hold-time 200
+  chord-time 80
+)
+
+;; Only one defsrc is allowed.
+;;
+;; defsrc defines the keys that will be intercepted by kanata. The order of the
+;; keys matches with deflayer declarations and all deflayer declarations must
+;; have the same number of keys as defsrc. Any keys not listed in defsrc will
+;; be passed straight to the operating system.
+(defsrc
+  esc    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv    1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab    q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps   a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft   z    x    c    v    b    n    m    ,    .    /         rsft
+         lctl lmet lalt         spc         ralt prnt rctl pgup up   pgdn
+                                                           lft  down rght
+)
+
+(defalias
+  ;; Escape / Ctrl
+  esctrl (tap-hold $tap-time $hold-time esc lctl)
+
+  ;; Space Cadet Shift
+  sclsft (tap-hold $tap-time $hold-time lpar lsft)
+  scrsft (tap-hold $tap-time $hold-time rpar rsft)
+
+  ;; Homerow Mods
+  hrlmet (tap-hold $tap-time $hold-time a lmet)
+  hrlalt (tap-hold $tap-time $hold-time s lalt)
+  hrlsft (tap-hold $tap-time $hold-time d lsft)
+  hrlctl (tap-hold $tap-time $hold-time f lctl)
+
+  hrrctl (tap-hold $tap-time $hold-time j rctl)
+  hrrsft (tap-hold $tap-time $hold-time k rsft)
+  hrralt (tap-hold $tap-time $hold-time l ralt)
+  hrrmet (tap-hold $tap-time $hold-time ; rmet)
+
+  ;; Nav Layer
+  lyrnav (tap-hold $tap-time $hold-time spc (layer-toggle nav))
+)
+
+;; Main Layer
+(deflayer main
+  esc       f1      f2      f3      f4      f5   f6   f7      f8      f9       f10      f11  f12
+  grv       1       2       3       4       5    6    7       8       9        0        -    =    bspc
+  tab       q       w       e       r       t    y    u       i       o        p        [    ]    \
+  @esctrl   @hrlmet @hrlalt @hrlsft @hrlctl g    h    @hrrctl @hrrsft @hrralt  @hrrmet  '    ret
+  @sclsft   z       x       c       v       b    n    m       ,       .        /        @scrsft
+      lctl  lmet    lalt             @lyrnav                  ralt    prnt     rctl     pgup up   pgdn
+                                                                                        lft  down rght
+)
+
+;; Navigation Layer
+(deflayer nav
+  esc    f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv    1    2    3    4    5    6    7    8    9    0    -    =    del
+  tab    q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps   a    s    d    f    g    lft  down up   rght grv  '    ret
+  lsft   z    x    caps v    b    home pgdn pgup end  /         rsft
+         lctl lmet lalt         spc         ralt prnt rctl pgup up   pgdn
+                                                           lft  down rght
+)
+
+;; Chords
+(defchordsv2
+  (x c)   [ $chord-time first-release ()
+  (, .)   ] $chord-time first-release ()
+;;  (tab q) ` $chord-time first-release ()
+)
+
+;; Platform-specific overrides
+;; https://github.com/jtroo/kanata/blob/main/docs/config.adoc#platform
+;;
+;; macOS's native word/line navigation shortcuts differ from the
+;; Linux/Windows convention this config is otherwise built around:
+;; word-jump/delete is Ctrl+Left/Right/Backspace on Linux, but
+;; Option(alt)+Left/Right/Backspace on macOS. Overriding Ctrl-based
+;; navigation to fire the macOS-native combo keeps muscle memory
+;; consistent across machines without needing a separate config file.
+(platform (macos)
+  (defoverrides
+    (lctl left)  (lalt left)
+    (lctl right) (lalt right)
+    (lctl bspc)  (lalt bspc)
+    (lctl home)  (lmet up)
+    (lctl end)   (lmet down)
+  )
+)
