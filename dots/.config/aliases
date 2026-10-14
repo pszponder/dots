@@ -101,13 +101,10 @@ _nv() {
   NVIM_APPNAME="$1" command nvim "${@:2}"
 }
 
-nvim() {
-  _nv nvim-lazyvim "$@"
-}
-
 alias nl='_nv nvim-lazyvim'
 alias nk='_nv nvim-kickstart'
 alias n='nvim'
+alias se='sudoedit' # uses the default editor set in $EDITOR, which is usually vim or nvim for sudo edits
 alias v='vim'
 
 # Yazi (file manager) — cd the shell to wherever yazi was left on quit
