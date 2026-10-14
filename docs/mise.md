@@ -518,7 +518,7 @@ Shared `[tools]` declarations live in `dots/.config/mise/config.toml`, linked in
 
 Run `sh scripts/bootstrap/configure_mise.sh` once before direct bootstrap, or use `install.sh`, which runs it automatically. The helper links global tools before bootstrap so the first run installs them. Conflicting global config is backed up and local overrides are preserved. When migrating from the previous layout, legacy profile links, the checkout link, and generated context are moved into a backup directory. Root configuration now supplies checkout context.
 
-After moving the checkout, rerun the helper, apply dotfiles from the new checkout with the selected profile, and reload your shell. `dot apply` only deploys files; run `mise install` to install newly declared global tools without a full bootstrap. Tool installation does not configure CLI authentication.
+After moving the checkout, rerun the helper, apply dotfiles from the new checkout with the selected profile, and reload your shell. `dot apply` deploys files and runs dotfile hooks (including the workstation wallpaper hook); run `mise install` to install newly declared global tools without a full bootstrap. Tool installation does not configure CLI authentication. See the README for [individual setup steps](../README.md#run-individual-setup-steps).
 
 Configure [mise shell activation](https://mise.jdx.dev/getting-started.html) in your managed shell startup file when using mise-installed tools interactively.
 

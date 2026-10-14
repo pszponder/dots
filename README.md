@@ -2,7 +2,9 @@
 
 Linux workstation and server dotfiles, deployed with [mise](https://mise.jdx.dev).
 
-## Install
+## Full machine setup
+
+Use this for packages, directories, dotfiles, global mise tools, Flox, Nerd Fonts, and SSH key setup together. For individual steps, see [bootstrap only](#bootstrap-only-packages-and-directories), [dotfiles only](#deploy-dotfiles-only), or [global tools only](#install-global-tools-only).
 
 From a local checkout:
 
@@ -35,7 +37,58 @@ sh scripts/gui/configure_wallpaper.sh
 GNOME and COSMIC configuration requires `python3`; GNOME also uses `gsettings`. COSMIC's existing wallpaper files are backed up once with a `.before-dotfiles`
 suffix. Reapplying workstation bootstrap restores the repository wallpaper.
 
-## Reapply or update
+## Run individual setup steps
+
+These commands require Git, an installed `mise` on `PATH`, and a local checkout. Clone once if needed:
+
+```sh
+git clone https://github.com/pszponder/dots.git "$HOME/repos/github/pszponder/dots"
+cd "$HOME/repos/github/pszponder/dots"
+mise trust
+```
+
+Run the examples from the checkout. Replace `workstation` with `server` for a server. Keep the checkout in place because deployed symlinks point into it.
+
+### Bootstrap only: packages and directories
+
+Install the profile's system packages and create its declared directories:
+
+```sh
+mise -E workstation bootstrap --only packages,files --dry-run
+mise -E workstation bootstrap --only packages,files
+```
+
+This selects `[bootstrap.packages]` and `[bootstrap.directories]` without deploying dotfiles or running the final hooks that install global tools, Flox, fonts, and SSH keys. Package hooks still run: workstation setup prepares Flatpak/Flathub and Fedora's Ghostty COPR. Package installation may request sudo. To select packages alone, use `--only packages`. See [mise bootstrap parts](https://mise.jdx.dev/bootstrap.html).
+
+### Deploy dotfiles only
+
+Collect the Git identity used by templates, review the deployment, then apply:
+
+```sh
+mise -E workstation vars prompt
+mise -E workstation dot diff
+mise -E workstation dot apply --dry-run
+mise -E workstation dot apply
+mise -E workstation dot status
+```
+
+Review and back up conflicting target files before applying; see [conflict handling](docs/mise.md#3-clone-and-review). This links files and renders templates, including the global mise tool configuration, but does not install packages or tools or run final bootstrap hooks. Dotfile hooks still run, including the workstation wallpaper configuration. Open a new shell afterward to load the managed environment and mise activation. CLI authentication remains a separate step.
+
+### Install global tools only
+
+Link the shared tool manifest into global mise configuration, preview downloads, then install missing tools:
+
+```sh
+sh scripts/bootstrap/configure_mise.sh
+mise -E workstation install --dry-run
+mise -E workstation install
+```
+
+The helper backs up conflicting global mise configuration, preserves local overrides, and retires legacy configuration links. It deploys the mise tool config without applying the rest of the dotfiles. Shared tools are declared in [`dots/.config/mise/config.toml`](dots/.config/mise/config.toml); machine-local declarations can also contribute tools. Running from this checkout avoids picking up another project's tool declarations.
+
+`mise install` installs missing configured versions; use `mise -E workstation upgrade` to upgrade configured tools. These commands do not install bootstrap packages, Flox, or Nerd Fonts. If you have not deployed the shell startup files, configure [mise shell activation](https://mise.jdx.dev/getting-started.html) to put tools on `PATH`. See [mise install](https://mise.jdx.dev/cli/install.html).
+
+## Reapply full setup or update
 
 From the checkout, use `server` instead of `workstation` where appropriate:
 

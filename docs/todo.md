@@ -11,8 +11,11 @@
   - [ ] Ghostty (https://github.com/jdx/mise/pull/14401)
 - [ ] Install Services (on all machines)
   - [ ] Podman
+  - [ ] Docker?
+- [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 
 ## Done
+- [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.
 - [x] Configure desktop background?
 - [x] Review my old dotfiles and import other configurations ([migration notes](dotfiles_migration.md))
 - [x] Review tmux and herdr bindings/configs. Should we make both use default tmux bindings?
