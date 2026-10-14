@@ -18,6 +18,8 @@ def main():
                    for path in (root / 'scripts').rglob('*.sh')})
     shells.update({path: 'bash' for path in (root / 'dots/.local/bin').iterdir()
                    if path.is_file() and 'bash' in path.read_text().splitlines()[0]})
+    shells.update({path: 'bash' for path in (root / 'dots/.config/mise/tasks').rglob('*')
+                   if path.is_file() and 'bash' in path.read_text().splitlines()[0]})
     for name in ('.bashrc', '.bash_profile', '.profile', '.config/aliases',
                  '.config/shell/functions.sh'):
         shells[root / 'dots' / name] = 'bash'

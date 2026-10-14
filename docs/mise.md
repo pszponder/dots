@@ -79,6 +79,26 @@ mise -E workstation bootstrap \
 
 Without `--update`, mise reuses the checkout's current commit. Updates require a fast-forward and matching origin. `--update` also refreshes bootstrap package metadata and configured repositories; use `up` for the broader machine and tool upgrades described below. Append `?ref=<branch|tag|commit>` to the repository URL to select a specific revision.
 
+## Scaffold a Python application
+
+After deploying dotfiles, the global `scaffold:python` task is available in any directory:
+
+```sh
+mkdir my-app
+cd my-app
+mise run scaffold:python
+# Or select another Python version:
+# mise run scaffold:python 3.13
+# Or resolve and pin the latest available Python version:
+# mise run scaffold:python latest
+```
+
+The task defaults to the latest available Python version, resolves it to a concrete version, and installs project-local Python and uv tool declarations. It runs `uv init --app --package` to create an application with a `src/` layout and command-line entry point, then adds pytest to the dev dependency group, creates `uv.lock`, and syncs `.venv`. It refuses to run if `pyproject.toml`, `mise.toml`, or `.mise.toml` already exists.
+
+Add tests, then run `mise run test`. After cloning, run `mise run sync` to install locked dependencies. Both tasks use `--locked`; use `uv add` or `uv lock` when intentionally updating dependencies. Commit `mise.toml`, `pyproject.toml`, `uv.lock`, `.python-version`, and the generated application files. uv creates a `.gitignore` excluding `.venv` in a new Git repository; ensure `.venv/` is ignored when scaffolding inside an existing repository. pytest reports no tests until you add them.
+
+See [mise scaffolding tasks](https://mise.jdx.dev/mise-cookbook/presets.html) and [uv application projects](https://docs.astral.sh/uv/concepts/projects/init/#applications).
+
 ## Flox
 
 Both profiles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#MISE description="Create a Python application with uv and pytest"
+#MISE dir="{{cwd}}"
+#USAGE arg "[version]" default="latest" help="Python version or latest"
+set -euo pipefail
+
+for file in pyproject.toml mise.toml .mise.toml; do
+  if [[ -e "$file" || -L "$file" ]]; then
+    printf 'Refusing to scaffold over existing %s\n' "$file" >&2
+    exit 1
+  fi
+done
+
+python_version=$(mise latest "python@${usage_version}")
+
+mise use "python@${python_version}" uv@latest
+mise exec -- uv init --app --package --python "$python_version"
+mise exec -- uv add --dev pytest
+mise tasks add sync --description "Sync locked dependencies" -- uv sync --locked
+mise tasks add test --description "Run tests" -- uv run --locked pytest
