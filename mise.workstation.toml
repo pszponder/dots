@@ -3,10 +3,14 @@ dotfiles_profile = "workstation"
 
 [bootstrap.packages]
 "flatpak:dev.zed.Zed" = "latest"
-# Requires Ubuntu 26.04 or newer.
+"snap:ghostty" = { classic = true }
 "apt:ghostty" = "latest"
 "pacman:ghostty" = "latest"
 "dnf:ghostty" = "latest"
+
+# Requires mise with native COPR support.
+[bootstrap.dnf.repos]
+ghostty = { copr = "scottames/ghostty" }
 
 [bootstrap.hooks]
 post-dotfiles = [
@@ -14,5 +18,4 @@ post-dotfiles = [
 ]
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/setup_copr.sh",
 ]

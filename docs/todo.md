@@ -1,20 +1,18 @@
 # TODOs
 
 - [ ] Configure Flatpak applications (through mise bootstrap)
-- [ ] Determine if need to install from [snaps](https://github.com/jdx/mise/pull/14402)
-- [ ] Determine if need to install COPR repositories (https://github.com/jdx/mise/pull/14401)
 - [ ] Install GUIs on Workstation
   - [ ] Zed (flatpak or through official curl installation?)
   - [ ] Podman Desktop (does it conflict w/ Rancher Desktop?)
   - [ ] Rancher Desktop (does it conflict w/ Podman Desktop?)
   - [ ] Yaak (API Client)
-  - [ ] Ghostty (https://github.com/jdx/mise/pull/14401)
 - [ ] Install Services (on all machines)
   - [ ] Podman
   - [ ] Docker?
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 
 ## Done
+- [x] Configure Ghostty through available package managers: Snap, apt, native mise COPR on Fedora, and pacman on Arch.
 - [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.
 - [x] Configure desktop background?
 - [x] Review my old dotfiles and import other configurations ([migration notes](dotfiles_migration.md))
