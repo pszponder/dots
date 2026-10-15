@@ -1,37 +1,67 @@
-# Dotfiles with mise
+# Setup and usage
 
-Manage Linux dotfiles and bootstrap workstation/server environments from a private Git repository.
+Use the [README](../README.md) for installation and individual setup commands. Commands here run from the checkout with `-E workstation`; substitute `server` on servers.
 
-This repository uses explicit deployment: edit source files, review changes, and apply them. Automatic history synchronization is optional and is not enabled here.
+## Configuration layout
 
-## Current bootstrap configuration
+| File | Purpose |
+| --- | --- |
+| `mise.toml` | Shared packages, directories, dotfiles, variables, and hooks |
+| `mise.workstation.toml` | Desktop packages and wallpaper hook |
+| `mise.server.toml` | Server profile |
+| `dots/` | Sources mirroring home-directory paths |
+| `dots/.config/mise/config.toml` | Global tools and tasks; projects can override them |
+| `~/.config/mise/config.local.toml` | Machine-local overrides |
 
-The installer asks for confirmation before preparing global mise configuration, then previews bootstrap and asks separately before applying it. Declining the second prompt leaves preparation in place. Noninteractive runs apply both stages without confirmation and default to `server` unless a profile is supplied. Directly running `configure_mise.sh` applies preparation immediately. See [repository checks](../README.md#repository-checks) for maintenance tasks.
+The home group links individual files under `dots/`, preserving unrelated files. Git configuration and `env.sh` are rendered from templates. New source files deploy automatically unless excluded.
 
-Dotfile sources live under `dots/` and mirror their home-directory paths. The active configuration deploys the portable Bash and Zsh startup files, shared aliases and environment, Git defaults, Starship, tmux, Nerd Fonts selection, and the SSH key helper. The `home` group in `mise.toml` links each file under `dots/` into its matching home-directory path. Group entries render `env.sh.tera` and Git’s `config.tera` to their destinations instead of linking the template sources. The setup helper links the shared global tool config before bootstrap; the home group also manages this link and deploys additional files under `dots/.config/mise/` on subsequent applies. Machine-local overrides remain untouched. New files under `dots/` are deployed automatically unless excluded.
+The setup helper backs up conflicting global mise config, preserves local overrides, and retires legacy configuration links. `install.sh` confirms this preparation, then separately confirms bootstrap. Declining bootstrap leaves preparation in place; noninteractive runs apply both stages.
 
-From the repository, select one profile:
+Bootstrap final hooks install global tools, Flox, SSH keys, and fonts on every run, skipping existing matching installations. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
+
+## Packages and desktop setup
+
+Both profiles install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
+
+The workstation profile adds:
+
+| Application | Installation |
+| --- | --- |
+| Zed | Official Linux installer |
+| Brave Origin | Official installer; binary AUR package on Arch |
+| Helium | apt repository, Fedora COPR, or binary AUR package |
+| Zen | System Flatpak |
+| Visual Studio Code | System Flatpak, classic Snap, or binary AUR package |
+| Ghostty | Classic Snap, apt, pacman, or Fedora `scottames/ghostty` COPR |
+| Yaak | Arch package; official 2026.9.0 Debian/RPM download on x64 or ARM64 |
+| Podman | Native packages; Podman Desktop via user Flatpak |
+
+Package hooks prepare system-wide Flatpak/Flathub and native installers. Existing native installations are preserved. Yaak's direct downloads do not configure an update repository; update those installations separately. Add system Flatpak apps as `"flatpak:APPLICATION_ID" = "latest"` in `mise.workstation.toml`.
+
+Requirements:
+
+- Fedora development groups need mise with [PR #14347](https://github.com/jdx/mise/pull/14347); v2026.10.8 and earlier lack the fix.
+- Snap declarations need mise with [Snap support](https://github.com/jdx/mise/pull/14402) and working snapd.
+- Fedora repositories need mise with [native COPR support](https://mise.jdx.dev/bootstrap/packages/dnf.html#copr).
+- Ghostty on apt needs a [repository providing it](https://ghostty.org/docs/install/binary).
+
+### Wallpaper
+
+Workstation dotfile deployment sets `~/Pictures/wallpapers/catppuccin-mocha.png` on GNOME (light and dark), Omarchy, or COSMIC (all displays). Unsupported desktops and sessions without a display are skipped.
+
+After installation over SSH or a console, run in a graphical terminal:
 
 ```sh
-sh scripts/bootstrap/configure_mise.sh
-mise trust
-mise -E workstation vars prompt
-mise -E workstation bootstrap --dry-run
-mise -E workstation bootstrap
-# On servers, replace workstation with server.
+sh scripts/gui/configure_wallpaper.sh
 ```
 
-Both profiles install OpenSSH using apt, pacman, or dnf, create the directories in `[bootstrap.directories]`, deploy the helper/environment files, and run the final SSH key hook. Run in a terminal: missing keys prompt for passphrases. Existing keys remain untouched. See [SSH setup](ssh_configuration.md) and [directory structure](directory_structure.md).
+GNOME and COSMIC require Python 3; GNOME also uses `gsettings`. COSMIC wallpaper files are backed up once with `.before-dotfiles`. Reapplying restores the repository wallpaper.
 
-Both profiles declare the Fedora `@development-tools` group in shared `[bootstrap.packages]`. This requires a mise release containing [PR #14347](https://github.com/jdx/mise/pull/14347); v2026.10.8 and earlier do not include the fix. The workstation profile's `pre-packages` hooks prepare system-wide Flatpak/Flathub, install Zed and Brave Origin with their official Linux installers, and configure Helium's official apt repository. Existing native installations are preserved. Zen is installed from Flathub. Visual Studio Code is declared for Flatpak, classic Snap, and Arch's `visual-studio-code-bin` AUR package. Arch also uses binary AUR packages for Brave Origin and Helium. Add Flatpak apps to `mise.workstation.toml` as `"flatpak:APPLICATION_ID" = "latest"` to match the hook's system scope. The server profile does not install these desktop applications. The workstation also declares Ghostty for Snap, apt, pacman, and dnf, with mise's native `scottames/ghostty` COPR configuration for Fedora. Mise skips unavailable package managers. See [mise Flatpak packages](https://mise.jdx.dev/bootstrap/packages/flatpak.html).
+### Nerd Fonts
 
-Both profiles install curl, tar, XZ support, fontconfig, Git, and OpenSSH through the supported system package manager, then install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `~/.local/share/fonts/NerdFonts` (or `$XDG_DATA_HOME/fonts/NerdFonts`). Fedora declares `openssh-clients`, `xz`, `fontconfig`, and `tar` for SSH and font installation.
+Both profiles install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `${XDG_DATA_HOME:-~/.local/share}/fonts/NerdFonts`.
 
-Edit `dots/.config/nerd-fonts/fonts` to select font families and `nerdfonts_version` in `mise.toml` to select a release. The installer downloads official [Nerd Fonts release archives](https://github.com/ryanoasis/nerd-fonts/releases), records each installed version, skips matching installed families, and refreshes the font cache after changes. Removing a family from the manifest leaves its installed files in place. Font selection in terminal applications is configured separately.
-
-Bootstrap final hooks run on every bootstrap, including when keys and fonts already exist. `dot apply` deploys sources but does not run these final hooks. Bootstrap status describes declarative resources, but does not verify SSH key or font installer state. A dry run prints the final hooks without generating keys or downloading fonts. See [mise bootstrap run order](https://mise.jdx.dev/bootstrap.html#run-order).
-
-The rendered `~/.config/env.sh` contains the repository location, selected profile, and shared shell environment. Managed Bash and Zsh startup files load it directly. After moving the repository, rerun `sh scripts/bootstrap/configure_mise.sh` from the new checkout, reapply from that checkout, and reload your shell.
+Edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. Removing a family leaves installed files in place; select fonts in terminal applications separately.
 
 ## Bootstrap from a repository
 
@@ -52,7 +82,7 @@ Use `server` instead of `workstation` throughout on servers. `--prompt-vars` col
 mise vars prompt git_name="Your Name" git_email="you@example.com"
 ```
 
-The home dotfile group deploys `~/.config/mise/config.toml`. The first final hook starts a fresh `mise install` invocation with the checkout and profile explicitly selected, so it loads that newly deployed config and installs the shared tools on the first bootstrap. The tool manifest remains solely in `dots/.config/mise/config.toml`. On later runs, already-installed matching tools are kept. Other final hooks then install Flox and fonts and prepare SSH keys.
+The first final hook loads the newly deployed global tool config in a fresh mise invocation, installing shared tools on the first bootstrap.
 
 This direct path uses mise's dotfile conflict handling. It does not run the setup helper's config backup and legacy migration logic; use `install.sh` when you need those. mise still loads existing global configuration alongside this project. Keep the checkout at its selected location because deployed symlinks and `DOTFILES_REPO` refer to it. Without `--from-dir`, mise uses its data directory's `bootstrap-repo` checkout instead.
 
@@ -111,111 +141,9 @@ flox init --default
 flox install --default <package>
 ```
 
-Following Flox’s official shell setup, `.bashrc` and `.profile` (Bash), and `.zshrc` and `.zprofile` (Zsh), end with `eval "$(flox activate -D -m run)"`, guarded by a check that Flox is installed. The managed `.bash_profile` sources `.bashrc` and `.profile`, since Bash otherwise skips `.profile` when `.bash_profile` exists. Authenticate and initialize the environment before opening a new shell. Authentication and default packages are user-managed, outside these dotfiles.
+Managed Bash and Zsh startup files activate the default environment when Flox is installed. Authenticate and initialize it before opening a new shell. Authentication and default packages remain user-managed.
 
-When Flox is on PATH, `up` runs `flox upgrade --default` to upgrade all default-environment packages, regardless of the current project directory. `up --dry-run` prints this command without running Flox. Failures appear in the updater’s final failure summary. The Flox CLI itself is updated by the OS package manager on Debian/RPM installations; the bootstrap installer does not upgrade it.
-
-## Example expanded repository layout
-
-```
-dots-repo/
-├── install.sh
-├── mise.toml
-├── mise.workstation.toml
-├── mise.server.toml
-├── scripts/
-├── tests/
-└── dots/
-    ├── .bashrc
-    ├── .zshenv
-    └── .config/
-        ├── env.sh.tera
-        └── mise/
-            └── config.toml
-```
-
-Root `mise.toml` sets `settings.dotfiles.root = "dots"`, relative to the checkout. The home group uses `root = "."`, relative to that setting. Hooks use `vars.dotfiles_repo`, derived from `config_root`.
-
-## Configure the repository
-
-Put shared configuration in `mise.toml`:
-
-```
-[vars]
-
-[vars.git_name]
-required = "Set your Git author name"
-prompt = "Git author name"
-
-[vars.git_email]
-required = "Set your Git email"
-prompt = "Git email"
-
-[dotfile_groups.home]
-root = "."
-target = "~"
-mode = "symlink-each"
-
-[dotfile_groups.home.entries]
-"~/.config/env.sh" = { source = ".config/env.sh.tera", mode = "template" }
-"~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
-
-[bootstrap.packages]
-"apt:git" = "latest"
-"apt:curl" = "latest"
-"apt:ripgrep" = "latest"
-"apt:neovim" = "latest"
-
-"pacman:git" = "latest"
-"pacman:curl" = "latest"
-"pacman:ripgrep" = "latest"
-"pacman:neovim" = "latest"
-```
-
-Create the source files before applying. For an existing configuration, copy the desired files into the repository and review them before committing.
-
-Mise skips packages whose package manager is unavailable. A `"latest"` package declaration installs a missing package but accepts the version already installed. Upgrades are explicit. See [bootstrap packages](https://mise.jdx.dev/bootstrap/packages/).
-
-Add workstation configuration in `mise.workstation.toml`:
-
-```
-[vars]
-dotfiles_profile = "workstation"
-
-[dotfiles]
-"~/.config/kitty/kitty.conf" = {
-  source = ".config/kitty/kitty.conf",
-  mode = "symlink"
-}
-
-[bootstrap.packages]
-"apt:kitty" = "latest"
-"pacman:kitty" = "latest"
-```
-
-Add server configuration in `mise.server.toml`:
-
-```
-[vars]
-dotfiles_profile = "server"
-
-[bootstrap.packages]
-"apt:tmux" = "latest"
-"pacman:tmux" = "latest"
-```
-
-Select a profile with `-E workstation` or `-E server`. The profile adds to the shared configuration. Use the same profile for subsequent commands. See [configuration environments](https://mise.jdx.dev/configuration/environments.html).
-
-Add these exclusions to `.gitignore`:
-
-```
-mise.local.toml
-mise.*.local.toml
-/dots/.config/mise/config.local.toml
-/dots/.config/mise/config.*.local.toml
-.env
-.env.*
-```
+`up` upgrades default-environment packages from any directory. The OS package manager updates the Flox CLI on Debian/RPM installations; the bootstrap installer does not upgrade it.
 
 ## Choose deployment modes
 
@@ -275,107 +203,48 @@ git_email = "work@example.com"
 
 See [configuration variables](https://mise.jdx.dev/configuration/vars.html).
 
-## Set up a new machine
+## Manual setup
 
-### 1. Install prerequisites
+Prefer [install.sh](../README.md#full-machine-setup) for a new machine. To prepare an existing checkout manually:
 
-On Debian or Ubuntu:
-
-```
-sudo apt-get update
-sudo apt-get install -y git curl
-```
-
-On Arch:
-
-```
-sudo pacman -Syu --needed git curl
-```
-
-Install mise:
-
-```
-curl -fsSL https://mise.run | sh
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-### 2. Authenticate with GitHub
-
-For a private repository using HTTPS:
-
-```
-mise exec gh@latest -- gh auth login \
-  --hostname github.com --git-protocol https --web
-```
-
-When connected over SSH, open the displayed login URL in your workstation’s browser and enter the provided code. The server receives the authorization.
-
-The clone below uses `gh` directly. After bootstrap, configure Git to use `gh` as a credential helper, and keep it available whenever fetching or pushing. These instructions run Git commands through `mise exec gh@latest` for that reason.
-
-Existing working SSH authentication is also suitable. See [repository authentication](https://mise.jdx.dev/dotfiles/sync.html#repository-authentication).
-
-### 3. Clone and review
-
-Replace `YOUR_USER` with your GitHub username:
-
-```
-mise exec gh@latest -- gh repo clone \
-  https://github.com/YOUR_USER/dotfiles.git ~/path/to/dotfiles
-
-cd ~/path/to/dotfiles
-```
-
-Review the configuration and sources, then trust the repo:
-
-```
+```sh
 sh scripts/bootstrap/configure_mise.sh
 mise trust
-```
-
-Before the first apply, review and back up existing target files. For symlink mappings, move conflicting files or directories out of the way; copying a backup alone leaves the conflict unresolved. For example, after copying any settings you want into `dots/.bashrc`:
-
-```
-mv ~/.bashrc ~/.bashrc.bak
-```
-
-Choose an unused backup name. Repeat for other conflicting symlink targets, including `~/.config/nvim`. Copy and template mappings overwrite existing target contents, so back those up too.
-
-### 4. Bootstrap
-
-For a workstation:
-
-```
 mise -E workstation vars prompt
 mise -E workstation bootstrap --dry-run
 mise -E workstation bootstrap
-mise exec gh@latest -- gh auth setup-git --hostname github.com
 mise -E workstation bootstrap status
 ```
 
-For a server:
+Open a new shell and run `mise doctor`. Earlier successful steps remain applied if a later step fails.
 
+### Back up conflicts
+
+Before applying, review the sources and back up existing target files. Move conflicting symlink targets out of the way; a backup copy alone leaves the conflict unresolved. After incorporating desired settings into `dots/.bashrc`, for example:
+
+```sh
+mv ~/.bashrc ~/.bashrc.bak
 ```
-mise -E server vars prompt
-mise -E server bootstrap --dry-run
-mise -E server bootstrap
-mise exec gh@latest -- gh auth setup-git --hostname github.com
-mise -E server bootstrap status
+
+Choose an unused backup name and repeat for other conflicts, including `~/.config/nvim`. Back up copy and template targets too: applying overwrites their contents.
+
+### Private repository authentication
+
+For a private fork over HTTPS:
+
+```sh
+mise exec gh@latest -- gh auth login --hostname github.com --git-protocol https --web
+mise exec gh@latest -- gh repo clone YOUR_USER/dotfiles ~/dotfiles
 ```
 
-Open a new shell after bootstrap and run `mise doctor` to verify shell activation.
-
-Bootstrap applies the declared setup, including packages and dotfiles. Run it again after changing bootstrap declarations. Earlier successful steps remain applied if a later step fails.
-
-For HTTPS authentication, run `gh auth setup-git` after every apply or bootstrap that deploys `~/.gitconfig`: the template replaces the credential helpers configured by that command. The examples below include this repair. With SSH authentication, omit the `gh auth setup-git` commands.
-
-See [mise bootstrap](https://mise.jdx.dev/bootstrap.html).
+For remote sessions, complete browser authentication on your workstation. Run `mise exec gh@latest -- gh auth setup-git --hostname github.com` after deployment if it replaces your credential-helper configuration. Keep `gh` available for later Git operations. Existing SSH authentication also works; omit the HTTPS credential-helper commands below when using SSH.
 
 ## Edit and publish dotfiles
 
 Edit the source files in the repository:
 
 ```
-cd ~/dotfiles
+cd "$DOTFILES_REPO"
 
 # Edit files, then review and apply:
 mise -E workstation dot diff
@@ -399,7 +268,7 @@ mise -E workstation dot edit ~/.bashrc
 ## Update another machine
 
 ```
-cd ~/dotfiles
+cd "$DOTFILES_REPO"
 mise exec gh@latest -- git pull --ff-only
 
 mise -E server dot diff
@@ -439,7 +308,7 @@ Commit the source file and any group entry together.
 For a file already managed in copy mode:
 
 ```
-cd ~/dotfiles
+cd "$DOTFILES_REPO"
 
 mise -E workstation dot diff
 mise -E workstation dot add ~/.config/starship.toml
@@ -510,30 +379,15 @@ To declare removal across machines, replace its mapping with:
 
 The next apply removes that file.
 
-## Tool versions and shell activation
+## Move the checkout or change profiles
 
-Bootstrap packages, directories, dotfile mappings, hooks, and setup variables live in root `mise.toml`. `mise.workstation.toml` adds Flatpak setup; `mise.server.toml` selects the server profile. Run bootstrap and dotfile commands from the checkout, or pass `mise -C "$DOTFILES_REPO" -E "$DOTFILES_PROFILE" ...`.
+The rendered `~/.config/env.sh` records `DOTFILES_REPO` and `DOTFILES_PROFILE`; managed Bash and Zsh startup files load them and set `MISE_ENV`.
 
-Shared `[tools]` declarations live in `dots/.config/mise/config.toml`, linked into global mise configuration. Both profiles install bat, Neovim, Codex, Claude Code, and Herdr. These are user-wide defaults that project configuration can override.
-
-Run `sh scripts/bootstrap/configure_mise.sh` once before direct bootstrap, or use `install.sh`, which runs it automatically. The helper links global tools before bootstrap so the first run installs them. Conflicting global config is backed up and local overrides are preserved. When migrating from the previous layout, legacy profile links, the checkout link, and generated context are moved into a backup directory. Root configuration now supplies checkout context.
-
-After moving the checkout, rerun the helper, apply dotfiles from the new checkout with the selected profile, and reload your shell. `dot apply` deploys files and runs dotfile hooks (including the workstation wallpaper hook); run `mise install` to install newly declared global tools without a full bootstrap. Tool installation does not configure CLI authentication. See the README for [individual setup steps](../README.md#run-individual-setup-steps).
-
-Configure [mise shell activation](https://mise.jdx.dev/getting-started.html) in your managed shell startup file when using mise-installed tools interactively.
+After moving the checkout, run `sh scripts/bootstrap/configure_mise.sh` from its new location. After moving it or changing profiles, reapply dotfiles with the selected profile and open a new shell.
 
 ## Update tools and packages from any directory
 
-Root `mise.toml` derives the repository path from `config_root`. Each root profile sets `dotfiles_profile`. The managed `dots/.config/env.sh.tera` includes these exports alongside the shared shell environment:
-
-```jinja
-export DOTFILES_REPO={{ vars.dotfiles_repo | quote }}
-export DOTFILES_PROFILE={{ vars.dotfiles_profile | quote }}
-```
-
-The `quote` filter formats values safely for Bash, including paths containing spaces. See [mise templates](https://mise.jdx.dev/templates.html).
-
-The managed Bash and Zsh startup files source `~/.config/env.sh`. `MISE_ENV` follows the applied `DOTFILES_PROFILE`. The `up` function calls the managed `~/.local/bin/system-update` script, which works from any directory:
+The `up` shell function runs `~/.local/bin/system-update` from any directory:
 
 ```sh
 up --dry-run  # Print the update commands without executing them.
@@ -546,14 +400,4 @@ Mise installed by the OS or standard Homebrew installation is upgraded through t
 
 Flatpak updates both per-user and default system applications and runtimes when installed. Optional managers that are absent are skipped. Independent update steps continue after failures, with a final failure summary and nonzero exit status. OS and bootstrap updates may request sudo credentials. No automatic reboot is performed.
 
-Apply your chosen profile to deploy the updater and refresh the environment, then reload your shell:
-
-```sh
-mise -E workstation dot apply
-source ~/.bashrc
-```
-
-Use `server` on a server. The updater requires the recorded repository and valid profile when mise is installed, rather than guessing from a desktop session or SSH connection. After moving the repository, rerun the setup helper from its new location. After moving the repository or changing profiles, apply again and reload your shell. You can explicitly override `DOTFILES_REPO` and `DOTFILES_PROFILE` for a run.
-
-## Resources / References
-- [mise - Dotfiles](https://mise.jdx.dev/dotfiles.html)
+Mise updates use the recorded checkout and profile, including global tools. Override `DOTFILES_REPO` and `DOTFILES_PROFILE` explicitly for a single run if needed. See [moving the checkout](#move-the-checkout-or-change-profiles).
