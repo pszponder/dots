@@ -1,14 +1,13 @@
 # TODOs
 
-- [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Install GUIs on Workstation
   - [ ] Yaak (API Client)
-  - [ ] vscode
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 - [ ] Refactor documentation (like REAME so that it's less wordy)
 
 ## Done
 - Install GUIs on Workstation
+  - [x] Visual Studio Code (Flatpak, classic Snap, and Arch's `visual-studio-code-bin` AUR package)
   - [x] Brave origin
   - [x] https://helium.computer/download#all-downloads
   - [x] https://zen-browser.app/

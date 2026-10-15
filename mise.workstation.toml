@@ -13,14 +13,17 @@ dotfiles_profile = "workstation"
 "dnf:podman-compose" = "latest"
 "pacman:podman" = "latest"
 "pacman:podman-compose" = "latest"
-
 "flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
-"flatpak:app.zen_browser.zen" = "latest"
 
+"flatpak:app.zen_browser.zen" = "latest"
 "apt:helium-bin" = "latest"
 "dnf:helium-bin" = "latest"
 "aur:brave-origin-bin" = "latest"
 "aur:helium-browser-bin" = "latest"
+
+"flatpak:com.visualstudio.code" = "latest"
+"snap:code" = { classic = true }
+"aur:visual-studio-code-bin" = "latest"
 
 # Requires mise with native COPR support.
 [bootstrap.dnf.repos]
