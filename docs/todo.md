@@ -1,11 +1,11 @@
 # TODOs
 
-- [ ] Install GUIs on Workstation
-  - [ ] Yaak (API Client)
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
-- [ ] Refactor documentation (like REAME so that it's less wordy)
+- [ ] Refactor documentation (like README so that it's less wordy)
+- [ ] Create a branch for just a server install (is this necessary?)
 
 ## Done
+- [x] Install Yaak (Arch package; official Debian/Fedora downloads).
 - Install GUIs on Workstation
   - [x] Visual Studio Code (Flatpak, classic Snap, and Arch's `visual-studio-code-bin` AUR package)
   - [x] Brave origin

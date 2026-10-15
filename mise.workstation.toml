@@ -25,6 +25,8 @@ dotfiles_profile = "workstation"
 "snap:code" = { classic = true }
 "aur:visual-studio-code-bin" = "latest"
 
+"pacman:yaak" = "latest"
+
 # Requires mise with native COPR support.
 [bootstrap.dnf.repos]
 ghostty = { copr = "scottames/ghostty" }
@@ -39,4 +41,5 @@ pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/helium_repo.sh",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/yaak_install.sh",
 ]
