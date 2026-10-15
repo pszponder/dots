@@ -2,15 +2,21 @@
 
 - [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Install GUIs on Workstation
-  - [ ] Podman Desktop (does it conflict w/ Rancher Desktop?)
-  - [ ] Rancher Desktop (does it conflict w/ Podman Desktop?)
   - [ ] Yaak (API Client)
-- [ ] Install Services (on all machines)
-  - [ ] Podman
-  - [ ] Docker?
+  - [ ] vscode
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
+- [ ] Refactor documentation (like REAME so that it's less wordy)
 
 ## Done
+- Install GUIs on Workstation
+  - [x] Brave origin
+  - [x] https://helium.computer/download#all-downloads
+  - [x] https://zen-browser.app/
+  - [x] Podman Desktop (does it conflict w/ Rancher Desktop?)
+  - [na] Rancher Desktop (does it conflict w/ Podman Desktop?)
+- [x] Install Services (on all machines)
+  - [x] Podman
+  - [x] Docker?
 - [x] Install Zed with its official native Linux installer.
 - [x] Configure Ghostty through available package managers: Snap, apt, native mise COPR on Fedora, and pacman on Arch.
 - [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.

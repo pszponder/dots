@@ -7,9 +7,25 @@ dotfiles_profile = "workstation"
 "pacman:ghostty" = "latest"
 "dnf:ghostty" = "latest"
 
+"apt:podman" = "latest"
+"apt:podman-compose" = "latest"
+"dnf:podman" = "latest"
+"dnf:podman-compose" = "latest"
+"pacman:podman" = "latest"
+"pacman:podman-compose" = "latest"
+
+"flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
+"flatpak:app.zen_browser.zen" = "latest"
+
+"apt:helium-bin" = "latest"
+"dnf:helium-bin" = "latest"
+"aur:brave-origin-bin" = "latest"
+"aur:helium-browser-bin" = "latest"
+
 # Requires mise with native COPR support.
 [bootstrap.dnf.repos]
 ghostty = { copr = "scottames/ghostty" }
+helium = { copr = "imput/helium" }
 
 [bootstrap.hooks]
 post-dotfiles = [
@@ -17,5 +33,7 @@ post-dotfiles = [
 ]
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/helium_repo.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
 ]

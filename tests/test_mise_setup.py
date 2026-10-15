@@ -155,6 +155,10 @@ class MiseSetupTests(unittest.TestCase):
                     "flatpak_install.sh" in preview, profile == "workstation"
                 )
                 self.assertEqual("zed_install.sh" in preview, profile == "workstation")
+                self.assertEqual(
+                    "brave_origin_install.sh" in preview, profile == "workstation"
+                )
+                self.assertEqual("helium_repo.sh" in preview, profile == "workstation")
                 self.assertFalse(config.exists())
                 self.run_command(*args, "--only", "dotfiles")
                 self.assertEqual(
@@ -275,6 +279,10 @@ class MiseSetupTests(unittest.TestCase):
                     output,
                 )
                 self.assertEqual("zed_install.sh" in output, profile == "workstation")
+                self.assertEqual(
+                    "brave_origin_install.sh" in output, profile == "workstation"
+                )
+                self.assertEqual("helium_repo.sh" in output, profile == "workstation")
                 self.env["PATH"] = str(fake_bin) + ":" + original_path
                 self.env.update(DOTFILES_REPO=str(self.repo), DOTFILES_PROFILE=profile)
                 output = self.run_command(
