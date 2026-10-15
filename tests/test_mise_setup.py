@@ -154,6 +154,7 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertEqual(
                     "flatpak_install.sh" in preview, profile == "workstation"
                 )
+                self.assertEqual("zed_install.sh" in preview, profile == "workstation")
                 self.assertFalse(config.exists())
                 self.run_command(*args, "--only", "dotfiles")
                 self.assertEqual(
@@ -273,6 +274,7 @@ class MiseSetupTests(unittest.TestCase):
                     else "nerdfonts_install.sh",
                     output,
                 )
+                self.assertEqual("zed_install.sh" in output, profile == "workstation")
                 self.env["PATH"] = str(fake_bin) + ":" + original_path
                 self.env.update(DOTFILES_REPO=str(self.repo), DOTFILES_PROFILE=profile)
                 output = self.run_command(

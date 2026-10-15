@@ -2,7 +2,6 @@
 
 - [ ] Configure Flatpak applications (through mise bootstrap)
 - [ ] Install GUIs on Workstation
-  - [ ] Zed (flatpak or through official curl installation?)
   - [ ] Podman Desktop (does it conflict w/ Rancher Desktop?)
   - [ ] Rancher Desktop (does it conflict w/ Podman Desktop?)
   - [ ] Yaak (API Client)
@@ -12,6 +11,7 @@
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 
 ## Done
+- [x] Install Zed with its official native Linux installer.
 - [x] Configure Ghostty through available package managers: Snap, apt, native mise COPR on Fedora, and pacman on Arch.
 - [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.
 - [x] Configure desktop background?

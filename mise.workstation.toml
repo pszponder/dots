@@ -2,7 +2,6 @@
 dotfiles_profile = "workstation"
 
 [bootstrap.packages]
-"flatpak:dev.zed.Zed" = "latest"
 "snap:ghostty" = { classic = true }
 "apt:ghostty" = "latest"
 "pacman:ghostty" = "latest"
@@ -18,4 +17,5 @@ post-dotfiles = [
 ]
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
 ]
