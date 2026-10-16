@@ -461,7 +461,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run --force-dotfiles",
-                "-E server bootstrap --force-dotfiles",
+                "-E server bootstrap --force-dotfiles --yes",
                 "-E server bootstrap status",
             ],
         )
@@ -481,7 +481,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                     self.assertEqual(calls[-4:], [
                         "trust",
                         f"-E {profile} bootstrap --dry-run --force-dotfiles",
-                        f"-E {profile} bootstrap --force-dotfiles",
+                        f"-E {profile} bootstrap --force-dotfiles --yes",
                         f"-E {profile} bootstrap status",
                     ])
         (self.repo / "install.sh").write_text(original)
@@ -497,7 +497,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run --force-dotfiles",
-                "-E server bootstrap --force-dotfiles",
+                "-E server bootstrap --force-dotfiles --yes",
                 "-E server bootstrap status",
             ],
         )

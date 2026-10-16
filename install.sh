@@ -157,7 +157,7 @@ main() {
     log_info "Applying $profile setup"
   fi
 
-  mise -E "$profile" bootstrap --force-dotfiles
+  mise -E "$profile" bootstrap --force-dotfiles --yes
   mise -E "$profile" bootstrap status
   log_success "Setup complete"
   log_info "Open a new shell, then run 'mise doctor' to verify shell activation"

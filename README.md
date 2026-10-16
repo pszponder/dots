@@ -104,7 +104,7 @@ git pull --ff-only
 ./install.sh workstation-ubuntu  # Or server, workstation-fedora, etc.
 ```
 
-The installer prepares global mise configuration, trusts the checkout, prompts for missing variables, previews bootstrap, and applies it after confirmation. Noninteractive runs apply both preparation and bootstrap automatically. It applies the current checkout without pulling repository changes itself.
+The installer prepares global mise configuration, trusts the checkout, prompts for missing variables, previews bootstrap, and applies it after confirmation. Once you approve application, mise runs with `--yes`, including dotfile deployment, so it does not ask for a second confirmation. Noninteractive runs apply both preparation and bootstrap automatically. It applies the current checkout without pulling repository changes itself.
 
 Run `up --dry-run`, then `up` from any directory to [update the OS, tools, and packages](docs/mise.md#update-tools-and-packages-from-any-directory).
 
