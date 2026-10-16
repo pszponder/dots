@@ -23,6 +23,8 @@ The setup helper backs up conflicting global mise config, preserves local overri
 
 Bootstrap final hooks install global tools, Flox, SSH keys, and direct-download fonts where applicable, skipping existing matching installations. Universal Blue fonts are bootstrap packages instead. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
 
+Global tools include pinned Betterleaks. After installing tools, bootstrap enables this checkout's pre-commit hook, preserving existing custom hook setups. For another clone without full bootstrap, run `mise run hooks-install` from that checkout. See [security setup](security.md#betterleaks-pre-commit-check).
+
 ## Packages and desktop setup
 
 Traditional workstation profiles and the server profile install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Universal Blue relies on image-provided host prerequisites and declares no native packages. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
@@ -58,15 +60,7 @@ Requirements:
 
 ### Wallpaper
 
-Workstation dotfile deployment sets `~/Pictures/wallpapers/catppuccin-mocha.png` on GNOME (light and dark), Omarchy, or COSMIC (all displays). Unsupported desktops and sessions without a display are skipped.
-
-After installation over SSH or a console, run in a graphical terminal:
-
-```sh
-sh scripts/gui/configure_wallpaper.sh
-```
-
-GNOME and COSMIC require Python 3; GNOME also uses `gsettings`. COSMIC wallpaper files are backed up once with `.before-dotfiles`. Reapplying restores the repository wallpaper.
+Dotfile deployment makes `~/Pictures/wallpapers/catppuccin-mocha.png` available for manual selection in your desktop's background settings. Wallpaper selection is not automated.
 
 ### Nerd Fonts
 
@@ -86,7 +80,7 @@ Flatpak must already be available from the image. The pre-packages hook configur
 
 Caskaydia Cove, Caskaydia Mono, and JetBrains Mono Nerd Fonts are declared as Linux `brew-cask:` bootstrap packages. Mise's cask backend downloads and installs them into the user font directory without requiring Homebrew. Fonts track current cask versions instead of `nerdfonts_version`; the direct font archive installer is skipped. Both full bootstrap and `bootstrap --only packages` include these fonts and the Flatpak apps. Cask metadata may require network access even for a dry run.
 
-Global CLI tools remain in the shared mise manifest. Flox retains its immutable-host skip, and wallpaper configuration retains its existing desktop support.
+Global CLI tools remain in the shared mise manifest. Flox retains its immutable-host skip.
 
 Manual smoke check on Bluefin/Bazzite:
 

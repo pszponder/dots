@@ -111,6 +111,7 @@ class MiseSetupTests(unittest.TestCase):
             shutil.copy(self.repo / name, remote / name)
         for name in ("dots", "scripts"):
             shutil.copytree(REPO / name, remote / name)
+        shutil.copytree(REPO / ".githooks", remote / ".githooks")
         # Unrelated final hooks have their own coverage; don't download fonts,
         # install Flox, or generate keys in this repository-bootstrap test.
         for name in (
@@ -193,6 +194,10 @@ class MiseSetupTests(unittest.TestCase):
                     PATH=str(fake_bin) + ":" + original_path, REAL_MISE=MISE
                 )
                 self.run_command(*args, "--only", "final-hook")
+                self.assertEqual(
+                    self.run_command("git", "-C", str(checkout), "config", "--local", "--get", "core.hooksPath").strip(),
+                    ".githooks",
+                )
                 self.env["PATH"] = original_path
                 tools = json.loads((home / "tools.json").read_text())
                 self.assertIn(str(config), str(tools), tools)
@@ -258,7 +263,7 @@ class MiseSetupTests(unittest.TestCase):
             '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
         )
         preview = self.run_command(MISE, "dot", "apply", "--dry-run")
-        self.assertIn("configure_wallpaper.sh", preview)
+        self.assertNotIn("configure_wallpaper.sh", preview)
         self.assertNotIn("create_ssh_keys.sh", preview)
         self.run_command(MISE, "dot", "apply")
         environment = (self.home / ".config/env.sh").read_text()

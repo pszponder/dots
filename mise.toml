@@ -1,4 +1,18 @@
 # Repository maintenance. Machine setup lives in bootstrap/.
+[tools]
+betterleaks = "latest"
+
+[tasks.hooks-install]
+description = "Install Betterleaks and enable this repository's Git hooks"
+run = [
+    "mise install betterleaks",
+    "sh scripts/bootstrap/configure_git_hooks.sh",
+]
+
+[tasks.secrets]
+description = "Scan all locally available Git history for secrets"
+run = "betterleaks git --redact --log-opts=--all"
+
 [tasks.test]
 description = "Run offline tests with isolated home directories"
 run = "python3 -m unittest discover -s tests -v"

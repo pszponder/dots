@@ -71,7 +71,7 @@ mise dot apply --dry-run
 mise dot apply
 ```
 
-Applying deploys files, renders templates, and configures wallpaper on supported desktops. It does not install packages or tools or run full bootstrap. Open a new shell for shell configuration changes, or reload/restart the affected application. Package or bootstrap changes require the full setup below.
+Applying deploys files and renders templates. It does not install packages or tools or run full bootstrap. Open a new shell for shell configuration changes, or reload/restart the affected application. Package or bootstrap changes require the full setup below.
 
 Review `git diff`, then commit and push the files you changed to share them with other machines. On another machine, run `git pull --ff-only`, then the review/apply commands above. See [editing and publishing dotfiles](docs/mise.md#edit-and-publish-dotfiles) for more options, including capturing changes to copy-managed files.
 
@@ -90,6 +90,10 @@ Run `up --dry-run`, then `up` from any directory to [update the OS, tools, and p
 
 Keep machine-local overrides in `~/.config/mise/config.local.toml`. Profile-specific overrides apply to bootstrap commands that select that profile.
 
+## Security and publishing
+
+Keep credentials, private keys, and machine-specific settings outside the checkout. Review files captured with `mise dot add` before committing them. Before making this repository public, scan its full Git history and review the personal information it exposes. See [security recommendations](docs/security.md) for the publishing checklist and ongoing precautions.
+
 ## Repository checks
 
 Requires mise and Python 3.11+:
@@ -100,6 +104,8 @@ mise run test   # Offline tests with temporary home directories
 mise run lint   # TOML and shell syntax
 mise run check  # Both; also run by CI
 ```
+
+Full bootstrap installs Betterleaks globally through mise and enables this checkout's [pre-commit check](docs/security.md#betterleaks-pre-commit-check). For other clones, run `mise run hooks-install` to install Betterleaks and enable the hook. Existing custom hooks are preserved and need manual integration. Run `mise run secrets` to scan all locally available Git history.
 
 Install Zsh to check its startup-file syntax. Checks do not bootstrap the machine or run ShellCheck.
 

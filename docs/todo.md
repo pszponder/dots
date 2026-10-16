@@ -1,4 +1,11 @@
 # TODOs
+
+## Before publishing
+
+- [ ] Complete the [security publishing checklist](security.md#before-making-the-repository-public), including a dedicated scan of full Git history and a review of personal information and GitHub-only content.
+
+## Ideas
+
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
 - [ ] [How To Setup Minimal Neovim 0.12 Config Guide From Scratch](https://www.youtube.com/watch?v=XQuNoprFW38)
@@ -14,6 +21,8 @@
 
 ## Done
 
+- [x] Add a Betterleaks pre-commit check and a full-history secret-scanning command.
+- [x] Install Betterleaks globally and enable checkout hooks during bootstrap, preserving existing custom hooks.
 - [x] Add Universal Blue workstation support with Flathub GUI apps, declarative font casks, shared mise CLI tools, and atomic OS updates.
 - [x] Split workstation bootstrap into Ubuntu, Debian, Fedora, and Arch profiles with one installation source per application.
 - [x] Add Obsidian and Discord to all workstation profiles.
@@ -32,7 +41,7 @@
 - [x] Install Zed with its official native Linux installer.
 - [x] Configure Ghostty through available package managers: Snap, apt, native mise COPR on Fedora, and pacman on Arch.
 - [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.
-- [x] Configure desktop background?
+- [x] Remove automated wallpaper setup; keep the image for manual selection.
 - [x] Review my old dotfiles and import other configurations
 - [x] Review tmux and herdr bindings/configs. Should we make both use default tmux bindings?
 - [x] Should we integrate [fff.nvim](https://github.com/dmtrKovalenko/fff#fffnvim) into our nvim config? -> Didn't integrate, maybe in the future

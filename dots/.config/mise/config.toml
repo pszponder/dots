@@ -19,6 +19,7 @@ mode = "symlink-each"
 # https://mise.jdx.dev/registry.html
 atuin = "latest"
 bat = "latest"
+betterleaks = "latest"
 btop = "latest"
 bun = "latest"
 claude = "latest"

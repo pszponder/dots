@@ -5,3 +5,17 @@ mise.*.local.toml
 __pycache__/
 /dots/.config/mise/config.local.toml
 /dots/.config/mise/config.*.local.toml
+
+# Credentials and private keys must stay local.
+.ssh/
+.aws/
+.gnupg/
+.git-credentials
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.key
+*.pem
+*.p12
+*.pfx
