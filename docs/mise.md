@@ -396,7 +396,7 @@ Templates require manually incorporating changes into their source while preserv
 
 ### COSMIC desktop preferences
 
-Wallpaper, panel, dock, light and dark themes, interface fonts, and touchpad preferences are tracked under
+Wallpaper, panel, dock (including pinned apps), light and dark themes, interface fonts, and touchpad preferences are tracked under
 `dots/.config/cosmic/`. Each captured setting has an explicit copy-mode entry in
 the home group because COSMIC saves settings by atomically replacing files.
 
@@ -406,6 +406,17 @@ dotfiles again. For example, to capture the wallpaper selection:
 ```sh
 mise dot add ~/.config/cosmic/com.system76.CosmicBackground/v1/all
 ```
+
+Dock pins and their order are stored in
+`com.system76.CosmicAppList/v1/favorites`. After changing pins in the dock, capture
+them with:
+
+```sh
+mise dot add ~/.config/cosmic/com.system76.CosmicAppList/v1/favorites
+```
+
+Pinned applications must be installed with matching desktop IDs on the destination
+machine; native and Flatpak installations can use different IDs.
 
 Use `mise dot add --changed` to capture all changed copy-managed files, including
 other applications. Review the source changes before committing. Newly created
