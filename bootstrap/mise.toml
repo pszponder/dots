@@ -17,6 +17,9 @@ nerdfonts_version = "v3.5.1"
 "~/.ssh/github/pszponder" = { mode = "0700" }
 
 [bootstrap.hooks]
+pre-dotfiles = [
+  "python3 {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/backup_dotfiles.py",
+]
 final = [
   # A fresh invocation reads the global tools config deployed by dotfiles.
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes",

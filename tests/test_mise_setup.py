@@ -73,6 +73,47 @@ class MiseSetupTests(unittest.TestCase):
             "sh", str(self.repo / "scripts/bootstrap/configure_mise.sh"), str(self.repo)
         )
 
+    @unittest.skipUnless(MISE, "mise is required for dotfile backup integration checks")
+    def test_bootstrap_backs_up_conflicts_before_forced_apply(self):
+        self.configure()
+        (self.config / "config.local.toml").write_text(
+            '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
+        )
+        (self.home / ".bashrc").write_text("original bashrc\n")
+        (self.home / ".bashrc.bak").write_text("older backup\n")
+        (self.home / ".bashrc.bak.1").symlink_to("missing-backup")
+        (self.home / ".bash_profile").write_text("original profile\n")
+        (self.home / ".profile").symlink_to("missing-original")
+        (self.home / ".config/git").mkdir()
+        (self.home / ".config/git/config").write_text("original git config\n")
+        (self.home / ".config/keep").write_text("unmanaged\n")
+        (self.home / ".config/zsh").write_text("file where a directory is needed\n")
+        (self.home / ".config/aliases").mkdir()
+        (self.home / ".config/aliases/keep").write_text("original directory\n")
+        (self.home / ".zshenv").symlink_to(self.repo / "dots/.zshenv")
+        args = (
+            MISE, "-C", str(self.repo / "bootstrap"), "-E", "server", "bootstrap",
+            "--only", "dotfiles", "--force-dotfiles", "--yes",
+        )
+        self.run_command(*args, "--dry-run")
+        self.assertFalse((self.home / ".bashrc.bak.2").exists())
+        self.assertEqual((self.home / ".bashrc").read_text(), "original bashrc\n")
+        self.run_command(*args)
+        self.assertEqual((self.home / ".bashrc.bak").read_text(), "older backup\n")
+        self.assertEqual(os.readlink(self.home / ".bashrc.bak.1"), "missing-backup")
+        self.assertEqual((self.home / ".bashrc.bak.2").read_text(), "original bashrc\n")
+        self.assertEqual((self.home / ".bash_profile.bak").read_text(), "original profile\n")
+        self.assertEqual(os.readlink(self.home / ".profile.bak"), "missing-original")
+        self.assertEqual((self.home / ".config/git/config.bak").read_text(), "original git config\n")
+        self.assertEqual((self.home / ".config/zsh.bak").read_text(), "file where a directory is needed\n")
+        self.assertEqual((self.home / ".config/aliases.bak/keep").read_text(), "original directory\n")
+        self.assertFalse((self.home / ".zshenv.bak").exists())
+        self.assertEqual((self.home / ".config/keep").read_text(), "unmanaged\n")
+        self.assertTrue((self.home / ".bashrc").is_symlink())
+        self.run_command(*args)
+        self.assertFalse((self.home / ".bashrc.bak.3").exists())
+        self.assertFalse((self.home / ".bash_profile.bak.1").exists())
+
     def require_profile_support(self, profile):
         if profile != "workstation-ubuntu":
             return
@@ -420,7 +461,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run",
-                "-E server bootstrap",
+                "-E server bootstrap --force-dotfiles",
                 "-E server bootstrap status",
             ],
         )
@@ -440,7 +481,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                     self.assertEqual(calls[-4:], [
                         "trust",
                         f"-E {profile} bootstrap --dry-run",
-                        f"-E {profile} bootstrap",
+                        f"-E {profile} bootstrap --force-dotfiles",
                         f"-E {profile} bootstrap status",
                     ])
         (self.repo / "install.sh").write_text(original)
@@ -456,7 +497,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run",
-                "-E server bootstrap",
+                "-E server bootstrap --force-dotfiles",
                 "-E server bootstrap status",
             ],
         )
@@ -480,7 +521,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         calls = (self.home / "mise-calls").read_text().splitlines()
         self.assertEqual(
             calls[-3:],
-            ["trust", "-E server vars prompt", "-E server bootstrap --dry-run"],
+            [f"-C {self.config} vars prompt", "trust", "-E server bootstrap --dry-run"],
         )
 
     def test_piped_installer_prompts_using_controlling_terminal(self):

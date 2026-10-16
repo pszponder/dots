@@ -230,6 +230,10 @@ Open a new shell and run `mise doctor`. Earlier successful steps remain applied 
 
 ### Back up conflicts
 
+Full bootstrap automatically moves conflicting dotfiles to sibling paths with `.bak` appended before deploying replacements (for example, `~/.bashrc.bak`). Existing backups, including broken symlinks, are preserved by choosing `.bak.1`, `.bak.2`, and so on. Files, directories, and symlinks are moved intact. Correct links are left alone. The installer enables `--force-dotfiles` after this backup hook; if backup fails, bootstrap stops. Dry runs only print the hook and leave files untouched.
+
+For standalone `mise dot apply`, back up conflicts manually as described below, or run full setup with `./install.sh`.
+
 Before applying, review the sources and back up existing target files. Move conflicting symlink targets out of the way; a backup copy alone leaves the conflict unresolved. After incorporating desired settings into `dots/.bashrc`, for example:
 
 ```sh

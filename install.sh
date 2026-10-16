@@ -118,7 +118,6 @@ main() {
 
   [ -f "$REPO_DIR/bootstrap/mise.toml" ] || die "could not find bootstrap/mise.toml in $REPO_DIR"
   profile="$(choose_profile "${1:-}")"
-  cd "$REPO_DIR/bootstrap"
 
   log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves trust"
   if [ -t 0 ]; then
@@ -134,12 +133,15 @@ main() {
   log_info "Linking global mise tool configuration"
   sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR" "$profile"
 
+  if [ -t 0 ]; then
+    log_info "Collecting missing setup variables"
+    # Prompt before loading bootstrap, whose templates may need these values.
+    mise -C "${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}" vars prompt
+  fi
+
+  cd "$REPO_DIR/bootstrap"
   log_info "Trusting mise configuration in $REPO_DIR"
   mise trust
-
-  if [ -t 0 ]; then
-    mise -E "$profile" vars prompt
-  fi
 
   log_info "Previewing $profile setup"
   mise -E "$profile" bootstrap --dry-run
@@ -155,7 +157,7 @@ main() {
     log_info "Applying $profile setup"
   fi
 
-  mise -E "$profile" bootstrap
+  mise -E "$profile" bootstrap --force-dotfiles
   mise -E "$profile" bootstrap status
   log_success "Setup complete"
   log_info "Open a new shell, then run 'mise doctor' to verify shell activation"
