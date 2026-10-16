@@ -343,6 +343,30 @@ Capture copies before reapplying, or the repository version will overwrite the l
 
 Templates require manually incorporating changes into their source while preserving variables and conditions. See [capturing edits](https://mise.jdx.dev/dotfiles/managed.html#adopt-files-and-capture-edits).
 
+### COSMIC desktop preferences
+
+Wallpaper, panel, dock, light and dark themes, and interface fonts are tracked under
+`dots/.config/cosmic/`. Each captured setting has an explicit copy-mode entry in
+the home group because COSMIC saves settings by atomically replacing files.
+
+After changing a tracked setting in COSMIC Settings, capture it before applying
+dotfiles again. For example, to capture the wallpaper selection:
+
+```sh
+mise dot add ~/.config/cosmic/com.system76.CosmicBackground/v1/all
+```
+
+Use `mise dot add --changed` to capture all changed copy-managed files, including
+other applications. Review the source changes before committing. Newly created
+COSMIC settings need to be captured separately and given explicit copy-mode
+entries in `dots/.config/mise/config.toml`; the home group otherwise uses symlinks.
+
+The wallpaper image is already tracked at
+`dots/Pictures/wallpapers/catppuccin-mocha.png`. The captured wallpaper selection
+and custom-image list use `/home/piotr/Pictures/wallpapers/catppuccin-mocha.png`;
+update both paths when restoring under another username. The selected fonts must
+also be installed on the destination machine.
+
 ## Handle credentials
 
 Keep credentials out of committed variables and source files.

@@ -405,6 +405,9 @@ class MiseSetupTests(unittest.TestCase):
             '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
         )
         self.run_command(MISE, "dot", "apply")
+        entries = tomllib.loads(
+            (REPO / "dots/.config/mise/config.toml").read_text()
+        )["dotfile_groups"]["home"]["entries"]
         for source in (REPO / "dots").rglob("*"):
             relative = source.relative_to(REPO / "dots")
             if not source.is_file():
@@ -415,6 +418,10 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertTrue(rendered.is_file(), str(rendered))
                 self.assertFalse(rendered.is_symlink())
                 self.assertFalse(target.exists())
+            elif entries.get("~/" + relative.as_posix(), {}).get("mode") == "copy":
+                self.assertTrue(target.is_file(), str(target))
+                self.assertFalse(target.is_symlink(), str(target))
+                self.assertEqual(target.read_bytes(), source.read_bytes())
             else:
                 self.assertTrue(target.is_symlink(), str(target))
                 self.assertEqual(target.resolve(), source.resolve())
