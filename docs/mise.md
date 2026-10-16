@@ -139,6 +139,8 @@ See [mise scaffolding tasks](https://mise.jdx.dev/mise-cookbook/presets.html) an
 
 Both roles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
 
+The shared shell environment defaults `FLOX_AUTH_NOTIFICATIONS=false` to silence FloxHub login reminders. Commands that require authentication still require login. Set it to `true` before loading the shell environment to restore reminders.
+
 After installation, initialize your user’s [default environment](https://flox.dev/docs/tutorials/default-environment) once:
 
 ```sh
