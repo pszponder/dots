@@ -91,7 +91,7 @@ choose_profile() {
 main() {
   initialize
 
-  if [ -f "$SCRIPT_DIR/mise.toml" ]; then
+  if [ -f "$SCRIPT_DIR/bootstrap/mise.toml" ]; then
     REPO_DIR="$SCRIPT_DIR"
   else
     command -v git >/dev/null 2>&1 || die "git is required to download the dotfiles repository"
@@ -102,9 +102,9 @@ main() {
     fi
   fi
 
-  [ -f "$REPO_DIR/mise.toml" ] || die "could not find mise.toml in $REPO_DIR"
+  [ -f "$REPO_DIR/bootstrap/mise.toml" ] || die "could not find bootstrap/mise.toml in $REPO_DIR"
   profile="$(choose_profile "${1:-}")"
-  cd "$REPO_DIR"
+  cd "$REPO_DIR/bootstrap"
 
   log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves trust"
   if [ -t 0 ]; then
@@ -118,7 +118,7 @@ main() {
   install_mise
 
   log_info "Linking global mise tool configuration"
-  sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR"
+  sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR" "$profile"
 
   log_info "Trusting mise configuration in $REPO_DIR"
   mise trust

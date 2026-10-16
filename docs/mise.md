@@ -2,18 +2,20 @@
 
 Use the [README](../README.md) for installation and individual setup commands.
 
-Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, and `workstation-ublue`; servers use `server`. Commands below use `-E workstation-ubuntu` as an example. Replace it with your machine's profile throughout. `./install.sh workstation` detects the distribution automatically; manual mise commands require the full profile name.
+Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, and `workstation-ublue`; servers use `server`. Run manual setup commands from the checkout root with `-C bootstrap`. Commands below use `-E workstation-ubuntu` as an example. Replace it with your machine's profile throughout. `./install.sh workstation` detects the distribution automatically; manual mise commands require the full profile name.
 
 ## Configuration layout
 
 | File | Purpose |
 | --- | --- |
-| `mise.toml` | Shared directories, dotfiles, variables, and hooks |
-| `mise.workstation-{ubuntu,debian,fedora,arch,ublue}.toml` | Complete distribution-specific desktop packages and hooks |
-| `mise.server.toml` | Server profile |
+| `mise.toml` | Repository test and lint tasks |
+| `bootstrap/mise.toml` | Shared directories and machine setup hooks |
+| `bootstrap/mise.workstation-{ubuntu,debian,fedora,arch,ublue}.toml` | Complete distribution-specific desktop packages and hooks |
+| `bootstrap/mise.server.toml` | Server profile |
 | `dots/` | Sources mirroring home-directory paths |
-| `dots/.config/mise/config.toml` | Global tools and tasks; projects can override them |
-| `~/.config/mise/config.local.toml` | Machine-local overrides |
+| `dots/.config/mise/config.toml` | Global tools, tasks, and shared dotfile deployment |
+| `~/.config/mise/conf.d/01-dotfiles-machine.toml` | Generated checkout path and machine profile |
+| `~/.config/mise/config.local.toml` | User-maintained machine-local overrides |
 
 The home group links individual files under `dots/`, preserving unrelated files. Git configuration and `env.sh` are rendered from templates. New source files deploy automatically unless excluded.
 
@@ -68,11 +70,11 @@ GNOME and COSMIC require Python 3; GNOME also uses `gsettings`. COSMIC wallpaper
 
 ### Nerd Fonts
 
-CaskaydiaCove, CaskaydiaMono, and JetBrainsMono are installed by the download script outside Arch and the ublue workstation profile. Universal Blue installs the same families through declarative Linux font casks. The Arch workstation profile uses pacman packages `ttf-cascadia-code-nerd`, `ttf-cascadia-mono-nerd`, and `ttf-jetbrains-mono-nerd`, installed system-wide and updated through pacman. These packages are declared in `mise.workstation-arch.toml`. The download script skips Arch and its derivatives, so the server profile does not install Nerd Fonts on Arch.
+CaskaydiaCove, CaskaydiaMono, and JetBrainsMono are installed by the download script outside Arch and the ublue workstation profile. Universal Blue installs the same families through declarative Linux font casks. The Arch workstation profile uses pacman packages `ttf-cascadia-code-nerd`, `ttf-cascadia-mono-nerd`, and `ttf-jetbrains-mono-nerd`, installed system-wide and updated through pacman. These packages are declared in `bootstrap/mise.workstation-arch.toml`. The download script skips Arch and its derivatives, so the server profile does not install Nerd Fonts on Arch.
 
 On other Linux distributions, the script installs these families under `${XDG_DATA_HOME:-~/.local/share}/fonts/NerdFonts`; on macOS it uses `~/Library/Fonts/NerdFonts`. The script supports Linux and macOS, independently of the workstation profile.
 
-For downloaded fonts, edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. On Arch workstations, edit the `pacman:ttf-*-nerd` declarations in `mise.workstation-arch.toml`; pacman controls the installed version. Removing a declaration or family leaves installed fonts in place, including any previous downloaded copies. Select fonts in terminal applications separately.
+For downloaded fonts, edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `bootstrap/mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. On Arch workstations, edit the `pacman:ttf-*-nerd` declarations in `bootstrap/mise.workstation-arch.toml`; pacman controls the installed version. Removing a declaration or family leaves installed fonts in place, including any previous downloaded copies. Select fonts in terminal applications separately.
 
 ### Universal Blue workstations
 
@@ -88,56 +90,36 @@ Global CLI tools remain in the shared mise manifest. Flox retains its immutable-
 
 Manual smoke check on Bluefin/Bazzite:
 
-1. Review `mise -E workstation-ublue bootstrap --only packages --dry-run`, then apply without `--dry-run`.
+1. Review `mise -C bootstrap -E workstation-ublue bootstrap --only packages --dry-run`, then apply without `--dry-run`.
 2. Check `flatpak list --system` and `flatpak list --user`; launch the installed GUI apps from the desktop.
 3. Check `fc-list | rg 'Caskaydia|JetBrainsMono'` and select a Nerd Font in a terminal.
 4. Run `up --dry-run` after applying dotfiles and reloading the shell. Confirm an atomic OS upgrade, mise package upgrades, and both Flatpak scopes. A normal `up` must not run DNF or reboot automatically.
 
 ## Bootstrap from a repository
 
-This repository is a mise bootstrap project: its entry point is root `mise.toml`, with `mise.workstation-<distribution>.toml` and `mise.server.toml` profiles. Use `--from`; `--adopt` expects either a global config repository or mise's dotfile-history format, neither of which matches this layout. See [mise repository bootstrap](https://mise.jdx.dev/bootstrap/from-repository.html).
-
-With mise installed, run in a terminal:
-
-```sh
-mise -E workstation-ubuntu bootstrap \
-  --from https://github.com/pszponder/dots.git \
-  --from-dir "$HOME/repos/github/pszponder/dots" \
-  --prompt-vars
-```
-
-Use your full workstation profile, or `server` throughout on servers. `--prompt-vars` collects missing Git identity values and saves them outside the checkout. For unattended setup, save them first, then run the command above with `--yes`:
-
-```sh
-mise vars prompt git_name="Your Name" git_email="you@example.com"
-```
-
-The first final hook loads the newly deployed global tool config in a fresh mise invocation, installing shared tools on the first bootstrap.
-
-This direct path uses mise's dotfile conflict handling. It does not run the setup helper's config backup and legacy migration logic; use `install.sh` when you need those. mise still loads existing global configuration alongside this project. Keep the checkout at its selected location because deployed symlinks and `DOTFILES_REPO` refer to it. Without `--from-dir`, mise uses its data directory's `bootstrap-repo` checkout instead.
-
-Add `--dry-run` to preview. When the checkout does not exist yet, that only prints the clone command. To clone and then preview the actual configuration before applying it:
+Machine setup lives in `bootstrap/`; root `mise.toml` contains repository check tasks. Clone first, then select the bootstrap directory explicitly. `bootstrap --from` expects setup at the repository root and is no longer supported by this layout.
 
 ```sh
 git clone https://github.com/pszponder/dots.git "$HOME/repos/github/pszponder/dots"
-mise -E workstation-ubuntu bootstrap \
-  --from https://github.com/pszponder/dots.git \
-  --from-dir "$HOME/repos/github/pszponder/dots" \
-  --prompt-vars --dry-run
+cd "$HOME/repos/github/pszponder/dots"
+sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-ubuntu
+mise -C bootstrap trust
+mise -C bootstrap -E workstation-ubuntu bootstrap --prompt-vars --dry-run
+mise -C bootstrap -E workstation-ubuntu bootstrap
 ```
 
-The preview prints the tool-install hook without installing tools. Required-variable prompting can still save answers during a dry run. Once reviewed, rerun without `--dry-run` to apply.
+Use your full workstation profile, or `server`. Required-variable prompting saves answers outside the checkout, including during dry runs. For unattended setup, save Git identity first with `mise vars prompt git_name="Your Name" git_email="you@example.com"`, then apply with `--yes`.
 
-To pull and apply new commits later:
+The preparation helper backs up conflicting global configuration and migrates legacy links. It requires Python 3.11+ and preserves user overrides. Dotfile commands then work from any directory without `-C` or `-E`. Keep the checkout because deployed symlinks and `DOTFILES_REPO` refer to it. The first final hook loads the newly deployed global tool config in a fresh invocation.
+
+To update the checkout and reapply:
 
 ```sh
-mise -E workstation-ubuntu bootstrap \
-  --from https://github.com/pszponder/dots.git \
-  --from-dir "$HOME/repos/github/pszponder/dots" \
-  --update
+git pull --ff-only
+mise -C bootstrap -E workstation-ubuntu bootstrap --update
 ```
 
-Without `--update`, mise reuses the checkout's current commit. Updates require a fast-forward and matching origin. `--update` also refreshes bootstrap package metadata and configured repositories; use `up` for the broader machine and tool upgrades described below. Append `?ref=<branch|tag|commit>` to the repository URL to select a specific revision.
+`--update` refreshes bootstrap package metadata and configured repositories. Use `up` for broader machine and tool upgrades.
 
 ## Scaffold a Python application
 
@@ -206,7 +188,7 @@ For example, `dots/.config/git/config.tera`:
 Collect personal values on each machine:
 
 ```
-mise -E workstation-ubuntu vars prompt
+mise vars prompt
 ```
 
 Mise saves answers in `$MISE_STATE_DIR/vars.toml`, outside this repository. Subsequent commands reuse them.
@@ -235,19 +217,19 @@ See [configuration variables](https://mise.jdx.dev/configuration/vars.html).
 
 ## Migrating workstation profiles
 
-The generic `mise.workstation.toml` has been replaced by complete distribution profiles. Run `./install.sh workstation` to detect and apply your distribution, or select one explicitly, such as `./install.sh workstation-fedora`. For dotfiles only, run `mise -E workstation-fedora dot apply`. Reload your shell afterward so `DOTFILES_PROFILE` and `MISE_ENV` contain the new full profile. Final hooks and `up` reuse that profile. Existing duplicate app installations are not uninstalled.
+The generic `bootstrap/mise.workstation.toml` has been replaced by complete distribution profiles. Run `./install.sh workstation` to detect and apply your distribution, or select one explicitly, such as `./install.sh workstation-fedora`. For dotfiles only, save the selected profile with the preparation helper, then run `mise dot apply`. Reload your shell afterward so `DOTFILES_PROFILE` contains the new full profile. Final hooks and `up` reuse that profile. Existing duplicate app installations are not uninstalled.
 
 ## Manual setup
 
 Prefer [install.sh](../README.md#full-machine-setup) for a new machine. To prepare an existing checkout manually:
 
 ```sh
-sh scripts/bootstrap/configure_mise.sh
-mise trust
-mise -E workstation-ubuntu vars prompt
-mise -E workstation-ubuntu bootstrap --dry-run
-mise -E workstation-ubuntu bootstrap
-mise -E workstation-ubuntu bootstrap status
+sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-ubuntu
+mise -C bootstrap trust
+mise vars prompt
+mise -C bootstrap -E workstation-ubuntu bootstrap --dry-run
+mise -C bootstrap -E workstation-ubuntu bootstrap
+mise -C bootstrap -E workstation-ubuntu bootstrap status
 ```
 
 Open a new shell and run `mise doctor`. Earlier successful steps remain applied if a later step fails.
@@ -281,12 +263,12 @@ Edit the source files in the repository:
 cd "$DOTFILES_REPO"
 
 # Edit files, then review and apply:
-mise -E workstation-ubuntu dot diff
-mise -E workstation-ubuntu dot apply
+mise dot diff
+mise dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 
 git diff
-git add dots/ mise*.toml
+git add dots/ bootstrap/ mise.toml
 git commit -m "Update dotfiles"
 mise exec gh@latest -- git push
 ```
@@ -296,7 +278,7 @@ A symlinked source change is already visible through its live path. Reapply when
 You can also open a managed file’s source with:
 
 ```
-mise -E workstation-ubuntu dot edit ~/.bashrc
+mise dot edit ~/.bashrc
 ```
 
 ## Update another machine
@@ -305,22 +287,22 @@ mise -E workstation-ubuntu dot edit ~/.bashrc
 cd "$DOTFILES_REPO"
 mise exec gh@latest -- git pull --ff-only
 
-mise -E server dot diff
-mise -E server dot apply
+mise dot diff
+mise dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
 If package or other bootstrap declarations changed, run the full bootstrap instead:
 
 ```
-mise -E server bootstrap --dry-run
-mise -E server bootstrap
+mise -C bootstrap -E server bootstrap --dry-run
+mise -C bootstrap -E server bootstrap
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
 ## Add a dotfile
 
-Copy the existing file into its matching home-directory path under `dots/`; the home group deploys it automatically. For example, `dots/.config/example/config.toml` becomes `~/.config/example/config.toml`. To override the default linking behavior, add a group entry in `mise.toml`:
+Copy the existing file into its matching home-directory path under `dots/`; the home group deploys it automatically. For example, `dots/.config/example/config.toml` becomes `~/.config/example/config.toml`. To override the default linking behavior, add a group entry in `dots/.config/mise/config.toml`:
 
 ```
 [dotfile_groups.home.entries]
@@ -330,8 +312,8 @@ Copy the existing file into its matching home-directory path under `dots/`; the 
 Review and apply:
 
 ```
-mise -E workstation-ubuntu dot diff
-mise -E workstation-ubuntu dot apply
+mise dot diff
+mise dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
@@ -344,15 +326,15 @@ For a file already managed in copy mode:
 ```
 cd "$DOTFILES_REPO"
 
-mise -E workstation-ubuntu dot diff
-mise -E workstation-ubuntu dot add ~/.config/starship.toml
+mise dot diff
+mise dot add ~/.config/starship.toml
 git diff
 ```
 
 To capture all changed individual copy-managed files:
 
 ```
-mise -E workstation-ubuntu dot add --changed
+mise dot add --changed
 ```
 
 Review, commit, and push afterward.
@@ -365,7 +347,7 @@ Templates require manually incorporating changes into their source while preserv
 
 Keep credentials out of committed variables and source files.
 
-Declare a secret input in `mise.toml`:
+Declare a secret input in `dots/.config/mise/config.toml`:
 
 ```
 [bootstrap.secrets]
@@ -386,7 +368,7 @@ Reference it in the template:
 Supply the environment variable through your secret manager, or prompt during an attended run:
 
 ```
-mise -E workstation-ubuntu dot apply --prompt-secrets
+mise dot apply --prompt-secrets
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
@@ -396,12 +378,12 @@ See [secret inputs](https://mise.jdx.dev/bootstrap/secrets.html).
 
 ## Remove a managed file
 
-Removing a file from the group source tree leaves its deployed target in place as `orphaned`. Review with `mise -E workstation-ubuntu dot status`, then use `mise -E workstation-ubuntu dot apply --prune` to remove unchanged orphaned targets. Deleting an explicit mapping also leaves its target on disk.
+Removing a file from the group source tree leaves its deployed target in place as `orphaned`. Review with `mise dot status`, then use `mise dot apply --prune` to remove unchanged orphaned targets. Deleting an explicit mapping also leaves its target on disk.
 
 To remove a previously deployed target locally, unapply it before deleting its mapping:
 
 ```
-mise -E workstation-ubuntu dot unapply ~/.config/example/config.toml
+mise dot unapply ~/.config/example/config.toml
 ```
 
 To declare removal across machines, replace its mapping with:
@@ -415,9 +397,9 @@ The next apply removes that file.
 
 ## Move the checkout or change profiles
 
-The rendered `~/.config/env.sh` records `DOTFILES_REPO` and `DOTFILES_PROFILE`; managed Bash and Zsh startup files load them and set `MISE_ENV`.
+The rendered `~/.config/env.sh` records `DOTFILES_REPO` and `DOTFILES_PROFILE`; managed Bash and Zsh startup files load them. The machine profile does not set `MISE_ENV` globally.
 
-After moving the checkout, run `sh scripts/bootstrap/configure_mise.sh` from its new location. After moving it or changing profiles, reapply dotfiles with the selected profile and open a new shell.
+After moving the checkout, run `sh scripts/bootstrap/configure_mise.sh` from its new location. To change profiles, run `sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-fedora` (substitute your profile). Then run `mise dot apply` and open a new shell. Rerunning the helper without a profile preserves the saved profile; initial setup defaults to `server`.
 
 
 ## Update tools and packages from any directory
@@ -431,7 +413,7 @@ up
 
 The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On Universal Blue and detected atomic hosts, it checks `bootc status --json`: bootc-managed deployments use `bootc upgrade`; other deployments use `rpm-ostree upgrade`. Missing atomic update support is reported as a failure. These hosts never use DNF. On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
 
-Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected repository profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO` with the explicit server or distribution-specific workstation profile, including global tool configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
+Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected repository profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO/bootstrap` with the explicit server or distribution-specific workstation profile, including global tool configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
 
 Flatpak updates both per-user and default system applications and runtimes when installed. Optional managers that are absent are skipped. Independent update steps continue after failures, with a final failure summary and nonzero exit status. OS and bootstrap updates may request sudo credentials. No automatic reboot is performed.
 

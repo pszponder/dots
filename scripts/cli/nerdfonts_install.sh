@@ -17,7 +17,7 @@ configure_fonts() {
 
   MANIFEST=${NERDFONTS_MANIFEST:-$HOME/.config/nerd-fonts/fonts}
   if [ ! -f "$MANIFEST" ]; then
-    log_error "$MANIFEST not found; run mise -E <your-profile> dot apply first (for example, server or workstation-fedora)"
+    log_error "$MANIFEST not found; run mise dot apply first"
     exit 1
   fi
   for tool in curl tar; do

@@ -49,8 +49,8 @@ class UblueTests(unittest.TestCase):
             self.assertIn('remote-add --user --if-not-exists flathub', lines[1])
 
     def test_profile_has_only_requested_packages(self):
-        base = tomllib.loads((REPO / 'mise.toml').read_text())
-        profile = tomllib.loads((REPO / 'mise.workstation-ublue.toml').read_text())
+        base = tomllib.loads((REPO / 'bootstrap/mise.toml').read_text())
+        profile = tomllib.loads((REPO / 'bootstrap/mise.workstation-ublue.toml').read_text())
         self.assertFalse(base['bootstrap'].get('packages'))
         expected = {
             'flatpak:com.visualstudio.code', 'flatpak:md.obsidian.Obsidian',

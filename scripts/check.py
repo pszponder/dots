@@ -7,7 +7,7 @@ import tomllib
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    for path in [*root.glob('mise*.toml'), *(root / 'dots').rglob('*.toml')]:
+    for path in [*root.glob('mise*.toml'), *(root / 'bootstrap').glob('mise*.toml'), *(root / 'dots').rglob('*.toml')]:
         if path.name.endswith('.local.toml'):
             continue
         with path.open('rb') as source:

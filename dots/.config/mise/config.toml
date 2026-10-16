@@ -1,4 +1,22 @@
+[vars.git_name]
+required = "Set your Git author name"
+prompt = "Git author name"
+
+[vars.git_email]
+required = "Set your Git email"
+prompt = "Git email"
+
+[dotfile_groups.home]
+root = "."
+target = "~"
+mode = "symlink-each"
+
+[dotfile_groups.home.entries]
+"~/.config/env.sh" = { source = ".config/env.sh.tera", mode = "template" }
+"~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
+
 [tools]
+# https://mise.jdx.dev/registry.html
 atuin = "latest"
 bat = "latest"
 btop = "latest"
@@ -31,11 +49,13 @@ ripgrep = "latest"
 ruff = "latest"
 rust = "latest"
 starship = "latest"
+superfile = "latest"
 tmux = "latest"
 topgrade = "latest"
 tree-sitter = "latest"
 ty = "latest"
 uv = "latest"
+viteplus = "latest"
 worktrunk = "latest"
 yazi = "latest"
 zoxide = "latest"

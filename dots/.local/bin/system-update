@@ -45,7 +45,7 @@ validate_profile() {
   if has mise; then
     local config_dir=${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}
     if [[ ! "$profile" =~ ^(server|workstation-(ubuntu|debian|fedora|arch|ublue))$ ]] ||
-        [[ ! -f "$repo/mise.toml" || ! -f "$repo/mise.$profile.toml" ||
+        [[ ! -f "$repo/bootstrap/mise.toml" || ! -f "$repo/bootstrap/mise.$profile.toml" ||
            ! "$config_dir/config.toml" -ef "$repo/dots/.config/mise/config.toml" ]]; then
       log_error "Apply your server or distribution-specific workstation dotfiles profile and reload your shell first."
       log_error "Set DOTFILES_REPO and DOTFILES_PROFILE to override it explicitly."
@@ -124,12 +124,12 @@ update_mise() {
     case "$mise_bin" in
       /usr/bin/*|/bin/*|/usr/local/Cellar/*|/opt/homebrew/Cellar/*|/home/linuxbrew/.linuxbrew/Cellar/*)
         log_info "Mise is managed by the system package manager or Homebrew." ;;
-      *) run mise -C "$repo" -E "$profile" self-update --yes || : ;;
+      *) run mise -C "$repo/bootstrap" -E "$profile" self-update --yes || : ;;
     esac
-    run mise -C "$repo" -E "$profile" plugins update || :
-    run mise -C "$repo" -E "$profile" install --yes || :
-    run mise -C "$repo" -E "$profile" upgrade --yes || :
-    run mise -C "$repo" -E "$profile" bootstrap packages upgrade --yes || :
+    run mise -C "$repo/bootstrap" -E "$profile" plugins update || :
+    run mise -C "$repo/bootstrap" -E "$profile" install --yes || :
+    run mise -C "$repo/bootstrap" -E "$profile" upgrade --yes || :
+    run mise -C "$repo/bootstrap" -E "$profile" bootstrap packages upgrade --yes || :
   else
     log_info "Mise is not installed; skipping."
   fi

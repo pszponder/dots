@@ -1,11 +1,11 @@
 # Home Directory Structure
 
-All profiles create these directories from `[bootstrap.directories]` in [`mise.toml`](../mise.toml). Choose `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, or `server` for your machine. Existing directories and their contents are preserved.
+All profiles create these directories from `[bootstrap.directories]` in [`bootstrap/mise.toml`](../bootstrap/mise.toml). Choose `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, or `server` for your machine. Existing directories and their contents are preserved.
 
 For example, on Debian:
 
 ```sh
-mise -E workstation-debian bootstrap
+mise -C bootstrap -E workstation-debian bootstrap
 ```
 
 ```
@@ -24,4 +24,4 @@ mise -E workstation-debian bootstrap
 └── scratch/                  # Temporary, disposable work and quick experiments
 ```
 
-To add or remove a default directory, edit `[bootstrap.directories]` in `mise.toml`. Removing a declaration leaves the directory on disk. SSH directories are also declared with mode `0700`.
+To add or remove a default directory, edit `[bootstrap.directories]` in `bootstrap/mise.toml`. Removing a declaration leaves the directory on disk. SSH directories are also declared with mode `0700`.

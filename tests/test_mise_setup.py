@@ -26,14 +26,16 @@ class MiseSetupTests(unittest.TestCase):
         self.home.mkdir()
         self.repo = self.root / 'checkout "quoted"'
         self.repo.mkdir()
+        (self.repo / "bootstrap").mkdir()
         for name in (
             "mise.toml",
-            "mise.server.toml",
-            *(f"mise.{profile}.toml" for profile in WORKSTATIONS),
+            "bootstrap/mise.toml",
+            "bootstrap/mise.server.toml",
+            *(f"bootstrap/mise.{profile}.toml" for profile in WORKSTATIONS),
             "install.sh",
         ):
             shutil.copy(REPO / name, self.repo / name)
-            if name == "mise.workstation-ublue.toml":
+            if name == "bootstrap/mise.workstation-ublue.toml":
                 # Cask previews fetch upstream metadata, even in dry runs.
                 # Test declarations separately; keep integration fully offline.
                 target = self.repo / name
@@ -73,7 +75,7 @@ class MiseSetupTests(unittest.TestCase):
         if profile != "workstation-ubuntu":
             return
         probe = subprocess.run(
-            [MISE, "-C", str(self.repo), "-E", profile, "config", "--json"],
+            [MISE, "-C", str(self.repo / "bootstrap"), "-E", profile, "config", "--json"],
             env=self.env, capture_output=True, text=True,
         )
         if probe.returncode and "PackageTomlConfig" in probe.stderr and "classic" in probe.stderr:
@@ -99,12 +101,13 @@ class MiseSetupTests(unittest.TestCase):
         self.assertFalse((self.config / "conf.d/00-dotfiles-context.toml").exists())
 
     @unittest.skipUnless(MISE and shutil.which("git"), "mise and git are required")
-    def test_repository_bootstrap_without_global_preparation(self):
-        # Exercise --from against a real local Git remote, without network or
+    def test_clone_prepare_and_bootstrap(self):
+        # Exercise clone and bootstrap against a local Git remote, without network or
         # package installation. Copy sources so deployed links use the clone.
         remote = self.root / "remote"
         remote.mkdir()
-        for name in ("mise.toml", *(f"mise.{profile}.toml" for profile in PROFILES)):
+        (remote / "bootstrap").mkdir()
+        for name in ("bootstrap/mise.toml", *(f"bootstrap/mise.{profile}.toml" for profile in PROFILES)):
             shutil.copy(self.repo / name, remote / name)
         for name in ("dots", "scripts"):
             shutil.copytree(REPO / name, remote / name)
@@ -147,29 +150,13 @@ class MiseSetupTests(unittest.TestCase):
                     XDG_STATE_HOME=str(base / "state"),
                 )
                 checkout = base / "checkout with spaces"
-                args = (
-                    MISE,
-                    "-E",
-                    profile,
-                    "bootstrap",
-                    "--from",
-                    str(remote),
-                    "--from-dir",
-                    str(checkout),
-                )
-                preview = self.run_command(*args, "--dry-run")
-                self.assertFalse(checkout.exists())
-                self.assertIn("clone", preview.lower())
+                self.run_command("git", "clone", str(remote), str(checkout))
+                args = (MISE, "-C", str(checkout / "bootstrap"), "-E", profile, "bootstrap")
                 self.run_command(
-                    MISE,
-                    "vars",
-                    "prompt",
-                    "git_name=Test",
-                    "git_email=test@example.com",
+                    MISE, "vars", "prompt", "git_name=Test", "git_email=test@example.com",
                 )
-                self.run_command(*args, "--only", "repos")
                 config = home / ".config/mise/config.toml"
-                self.assertFalse(config.exists())
+                self.run_command("sh", str(checkout / "scripts/bootstrap/configure_mise.sh"), str(checkout), profile)
                 preview = self.run_command(*args, "--dry-run", "--skip", "tools")
                 self.assertIn("create_ssh_keys.sh", preview)
                 self.assertEqual(
@@ -180,7 +167,7 @@ class MiseSetupTests(unittest.TestCase):
                     "brave_origin_install.sh" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
                 )
                 self.assertEqual("helium_repo.sh" in preview, profile in ("workstation-ubuntu", "workstation-debian"))
-                self.assertFalse(config.exists())
+                self.assertTrue(config.is_symlink())
                 self.run_command(*args, "--only", "dotfiles")
                 self.assertEqual(
                     config.resolve(), checkout / "dots/.config/mise/config.toml"
@@ -213,7 +200,7 @@ class MiseSetupTests(unittest.TestCase):
                     tomllib.loads(config.read_text())["tools"], expected_tools
                 )
                 self.run_command(*args, "--only", "dotfiles")
-                # --update must refresh the retained checkout from its remote.
+                # Pull updates before reapplying the bootstrap configuration.
                 (remote / "revision").write_text(profile)
                 self.run_command("git", "-C", str(remote), "add", "revision")
                 self.run_command(
@@ -228,6 +215,7 @@ class MiseSetupTests(unittest.TestCase):
                     "-m",
                     profile,
                 )
+                self.run_command("git", "-C", str(checkout), "pull", "--ff-only")
                 self.run_command(*args, "--update", "--only", "dotfiles")
                 self.assertEqual((checkout / "revision").read_text(), profile)
 
@@ -251,6 +239,33 @@ class MiseSetupTests(unittest.TestCase):
         self.assertTrue((backup / context.name).exists())
         self.configure()
         self.assertEqual(len(list(self.config.glob(".dotfiles-backup.*"))), 1)
+
+    @unittest.skipUnless(MISE, "mise is required for dotfile integration checks")
+    def test_saved_profile_and_moved_checkout_from_any_directory(self):
+        self.run_command(
+            "sh", str(self.repo / "scripts/bootstrap/configure_mise.sh"),
+            str(self.repo), "workstation-fedora",
+        )
+        self.configure()
+        context = self.config / "conf.d/01-dotfiles-machine.toml"
+        self.assertEqual(tomllib.loads(context.read_text())["vars"]["dotfiles_profile"],
+                         "workstation-fedora")
+        moved = self.root / 'moved "checkout"'
+        self.repo.rename(moved)
+        self.repo = moved
+        self.configure()
+        (self.config / "config.local.toml").write_text(
+            '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
+        )
+        preview = self.run_command(MISE, "dot", "apply", "--dry-run")
+        self.assertIn("configure_wallpaper.sh", preview)
+        self.assertNotIn("create_ssh_keys.sh", preview)
+        self.run_command(MISE, "dot", "apply")
+        environment = (self.home / ".config/env.sh").read_text()
+        self.assertIn(str(moved), environment)
+        self.assertIn("workstation-fedora", environment)
+        self.assertNotIn('export MISE_ENV=', environment)
+        self.assertEqual(tomllib.loads(context.read_text())["vars"]["dotfiles_repo"], str(moved))
 
     @unittest.skipUnless(MISE, "mise is required for config integration checks")
     def test_profiles_bootstrap_and_updates_from_outside_checkout(self):
@@ -277,7 +292,7 @@ class MiseSetupTests(unittest.TestCase):
                 self.env["PATH"] = original_path
                 self.require_profile_support(profile)
                 configs = self.run_command(
-                    MISE, "-C", str(self.repo), "-E", profile, "config", "--json"
+                    MISE, "-C", str(self.repo / "bootstrap"), "-E", profile, "config", "--json"
                 )
                 self.assertIn(f"mise.{profile}.toml", configs)
                 for other in PROFILES:
@@ -287,7 +302,7 @@ class MiseSetupTests(unittest.TestCase):
                 output = self.run_command(
                     MISE,
                     "-C",
-                    str(self.repo),
+                    str(self.repo / "bootstrap"),
                     "-E",
                     profile,
                     "bootstrap",
@@ -299,7 +314,7 @@ class MiseSetupTests(unittest.TestCase):
                     self.assertNotIn("nerdfonts_install.sh", output)
                     self.assertNotIn("dnf:", output)
                     packages = self.run_command(
-                        MISE, "-C", str(self.repo), "-E", profile,
+                        MISE, "-C", str(self.repo / "bootstrap"), "-E", profile,
                         "bootstrap", "--only", "packages", "--dry-run",
                     )
                     self.assertIn("flatpak_install.sh --ublue", packages)
@@ -341,7 +356,7 @@ class MiseSetupTests(unittest.TestCase):
         (self.config / "config.local.toml").write_text(
             '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
         )
-        self.run_command(MISE, "-C", str(self.repo), "-E", "server", "dot", "apply")
+        self.run_command(MISE, "dot", "apply")
         for source in (REPO / "dots").rglob("*"):
             relative = source.relative_to(REPO / "dots")
             if not source.is_file():
@@ -366,12 +381,12 @@ class MiseSetupTests(unittest.TestCase):
         fragment.parent.mkdir(parents=True)
         fragment.write_text('[vars]\ngroup_extra = "deployed"\n')
         local = self.config / "config.local.toml"
-        project_local = self.repo / "mise.local.toml"
+        project_local = self.config / "conf.d/02-source-override.toml"
         project_local.write_text(
             "[settings.dotfiles]\nroot = " + json.dumps(str(sources)) + "\n"
         )
         local_config = local.read_text()
-        self.run_command(MISE, "-C", str(self.repo), "-E", "server", "dot", "apply")
+        self.run_command(MISE, "dot", "apply")
         deployed = self.config / "conf.d/extra.toml"
         self.assertTrue(deployed.is_symlink())
         self.assertEqual(deployed.resolve(), fragment)

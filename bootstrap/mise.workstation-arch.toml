@@ -31,6 +31,3 @@ dotfiles_profile = "workstation-arch"
 "pacman:zed" = "latest"
 
 [bootstrap.hooks]
-post-dotfiles = [
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
-]

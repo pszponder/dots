@@ -17,6 +17,3 @@ dotfiles_profile = "workstation-ublue"
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh --ublue",
 ]
-post-dotfiles = [
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
-]

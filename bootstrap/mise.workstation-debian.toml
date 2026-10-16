@@ -24,9 +24,6 @@ dotfiles_profile = "workstation-debian"
 "flatpak:app.zen_browser.zen" = "latest"
 
 [bootstrap.hooks]
-post-dotfiles = [
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
-]
 pre-packages = [
   "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
 ]

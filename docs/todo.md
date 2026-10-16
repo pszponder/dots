@@ -9,11 +9,11 @@
 - [ ] [How To ACTUALLY Manage Dotfiles with Stow | Full Guide + Git Workflow - YouTube](https://www.youtube.com/watch?v=TLFsee7DDSI)
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 - [ ] Create a branch for just a server install (is this necessary?)
+- [ ] [DevOps Toolbox - This is the Best Terminal Setup](https://www.youtube.com/watch?v=QpiZOKul1U8)
 
 ## Done
 
 - [x] Add Universal Blue workstation support with Flathub GUI apps, declarative font casks, shared mise CLI tools, and atomic OS updates.
-
 - [x] Split workstation bootstrap into Ubuntu, Debian, Fedora, and Arch profiles with one installation source per application.
 - [x] Add Obsidian and Discord to all workstation profiles.
 - [x] Shorten README and consolidate documentation.

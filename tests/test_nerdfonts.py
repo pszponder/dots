@@ -11,8 +11,8 @@ REPO = Path(__file__).resolve().parents[1]
 
 class NerdFontTests(unittest.TestCase):
     def test_arch_packages_match_configured_families(self):
-        packages = tomllib.loads((REPO / 'mise.workstation-arch.toml').read_text())['bootstrap']['packages']
-        shared = tomllib.loads((REPO / 'mise.toml').read_text())['bootstrap'].get('packages', {})
+        packages = tomllib.loads((REPO / 'bootstrap/mise.workstation-arch.toml').read_text())['bootstrap']['packages']
+        shared = tomllib.loads((REPO / 'bootstrap/mise.toml').read_text())['bootstrap'].get('packages', {})
         for name in ('ttf-cascadia-code-nerd', 'ttf-cascadia-mono-nerd', 'ttf-jetbrains-mono-nerd'):
             self.assertIn(f'pacman:{name}', packages)
             self.assertNotIn(f'pacman:{name}', shared)
@@ -52,6 +52,6 @@ class NerdFontTests(unittest.TestCase):
                         self.assertIn('managed by pacman', result.stdout)
                     else:
                         self.assertNotEqual(result.returncode, 0)
-                        self.assertIn('<your-profile>', result.stderr)
+                        self.assertIn('mise dot apply', result.stderr)
                         self.assertNotIn('workstation-ubuntu', result.stderr)
                     self.assertFalse(marker.exists())

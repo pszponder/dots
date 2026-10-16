@@ -52,7 +52,7 @@ class WorkstationProfileTests(unittest.TestCase):
         for distro in DISTROS:
             with self.subTest(distro=distro):
                 profile = f"workstation-{distro}"
-                config = tomllib.loads((REPO / f"mise.{profile}.toml").read_text())
+                config = tomllib.loads((REPO / f"bootstrap/mise.{profile}.toml").read_text())
                 self.assertEqual(config['vars']['dotfiles_profile'], profile)
                 bootstrap = config['bootstrap']
                 packages = bootstrap['packages']
@@ -93,9 +93,9 @@ class WorkstationProfileTests(unittest.TestCase):
                 self.assertEqual('brave_origin_install.sh' in hooks, distro != 'arch')
                 self.assertEqual('yaak_install.sh' in hooks, distro != 'arch')
                 self.assertEqual('dnf' in bootstrap, distro == 'fedora')
-        server = tomllib.loads((REPO / 'mise.server.toml').read_text())
+        server = tomllib.loads((REPO / 'bootstrap/mise.server.toml').read_text())
         self.assertTrue(server['bootstrap']['packages'])
-        self.assertFalse((REPO / 'mise.workstation.toml').exists())
+        self.assertFalse((REPO / 'bootstrap/mise.workstation.toml').exists())
 
     def test_update_preview_accepts_full_profiles_and_rejects_legacy(self):
         with tempfile.TemporaryDirectory() as directory:
