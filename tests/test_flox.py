@@ -21,6 +21,10 @@ class FloxTests(unittest.TestCase):
             # Isolate host Nix/ostree state from these simulated machines.
             for path in ('/nix/store', '/run/ostree-booted', '/ostree'):
                 script = script.replace(path, str(root / path.lstrip('/')))
+            # Ignore host binaries while still detecting the fixture's Flox.
+            for name in ('flox', 'nix'):
+                script = script.replace('command -v ' + name,
+                                        'test -x "' + str(root / name) + '"')
             installer = root / 'install.sh'
             installer.write_text(script)
             for name, body in {
