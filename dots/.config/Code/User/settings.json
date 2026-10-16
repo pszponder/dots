@@ -61,7 +61,7 @@
     }
   },
 //   "terminal.external.linuxExec": "which $ZSH",
-//   "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.linux": "bash",
   // =============================================
   // ================ WORKBENCH ==================
   // =============================================

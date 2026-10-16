@@ -166,6 +166,8 @@ Edits through a symlink usually change the repository source immediately. Copy a
 
 VS Code settings and keybindings and Codex configuration use copy mode. Run `mise dot apply` to deploy repository changes, and `mise dot add --changed` to capture changes made in the applications back into the repository.
 
+VS Code settings and keybindings deploy to both the native `~/.config/Code/User/` directory and Flatpak's `~/.var/app/com.visualstudio.code/config/Code/User/` directory from the same sources under `dots/.config/Code/User/`.
+
 Some applications replace symlinks when saving. Prefer copies for those files. Applications may need a reload or restart after configuration changes.
 
 See [managed files](https://mise.jdx.dev/dotfiles/managed.html).
@@ -347,7 +349,7 @@ Templates require manually incorporating changes into their source while preserv
 
 ### COSMIC desktop preferences
 
-Wallpaper, panel, dock, light and dark themes, and interface fonts are tracked under
+Wallpaper, panel, dock, light and dark themes, interface fonts, and touchpad preferences are tracked under
 `dots/.config/cosmic/`. Each captured setting has an explicit copy-mode entry in
 the home group because COSMIC saves settings by atomically replacing files.
 
