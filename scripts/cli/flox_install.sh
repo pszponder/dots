@@ -50,11 +50,13 @@ main() {
 
   if command -v flox >/dev/null 2>&1; then
     log_info "Flox is already installed: $(command -v flox)"
-    return 0
+  else
+    check_platform
+    install_flox
   fi
 
-  check_platform
-  install_flox
+  flox config --set auth_notifications false
+  log_success 'Flox login reminders disabled'
 }
 
 main "$@"
