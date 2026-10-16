@@ -10,6 +10,7 @@
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 - [ ] Create a branch for just a server install (is this necessary?)
 - [ ] [DevOps Toolbox - This is the Best Terminal Setup](https://www.youtube.com/watch?v=QpiZOKul1U8)
+- [ ] [Seth Phaeno - The Greatest Minimal Shell Prompt Ever](https://www.youtube.com/watch?v=oe3gadOQk44)
 
 ## Done
 
