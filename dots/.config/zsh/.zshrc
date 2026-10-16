@@ -44,7 +44,7 @@ fi
 # zsh-completions must load before compinit (it only adds to fpath)
 zinit light zsh-users/zsh-completions
 
-# Tiny helper used below to defer atuin/mise init until after the first prompt
+# Load the helper used by deferred plugin initialization
 zinit light romkatv/zsh-defer
 
 # ⚡ Cache generated init scripts (fzf/starship/atuin/mise) instead of
@@ -72,6 +72,12 @@ _cache_init() {
   fi
   [[ -s "$cache_file" ]] && source "$cache_file"
 }
+
+# Activate mise before initializing any tools it manages.
+# 🧠 Mise (tool version manager)
+if command -v mise &> /dev/null; then
+  _cache_init mise "mise --version" "mise activate zsh"
+fi
 
 # fzf ctrl-t (insert file path) / alt-c (cd into dir) widgets. FZF_* env vars
 # live in ~/.config/env.sh (shared with bash). ctrl-r is left to atuin
@@ -152,11 +158,6 @@ fi
 if command -v atuin &> /dev/null; then
   _cache_init atuin "atuin --version" "atuin init zsh"
   _bind_atuin_ctrl_r
-fi
-
-# 🧠 Mise (tool version manager)
-if command -v mise &> /dev/null; then
-  _cache_init mise "mise --version" "mise activate zsh"
 fi
 
 # 🔄 History control

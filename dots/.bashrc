@@ -14,8 +14,7 @@
 [[ $- != *i* ]] && return
 
 # ✨ Update PATH with common user script/tool locations
-# mise's shims dir is included here so tools like zoxide resolve synchronously
-# on the very first prompt — `mise activate` itself is deferred below.
+# Include mise shims for commands that need them during shell startup.
 for dir in "$HOME/bin" "$HOME/.local/bin" "$HOME/scripts" "/usr/local/bin" "$HOME/.local/share/mise/shims"; do
   [[ ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
 done
@@ -43,11 +42,6 @@ if [[ -n $BASH_VERSION ]]; then
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     source /usr/share/bash-completion/bash_completion
   fi
-fi
-
-# Jujutsu dynamic completions (bookmarks, revisions, files, etc.).
-if command -v jj &> /dev/null; then
-  source <(COMPLETE=bash jj)
 fi
 
 # 🔄 History control (set before starship/mise/zoxide below so they each chain
@@ -93,6 +87,17 @@ _cache_init() {
   [[ -s "$cache_file" ]] && source "$cache_file"
 }
 
+# Activate mise before initializing any tools it manages.
+# 🧠 Mise (tool version manager)
+if command -v mise &> /dev/null; then
+  _cache_init mise "mise --version" "mise activate bash"
+fi
+
+# Jujutsu dynamic completions (bookmarks, revisions, files, etc.).
+if command -v jj &> /dev/null; then
+  source <(COMPLETE=bash jj)
+fi
+
 # 🌟 Starship prompt
 if command -v starship &> /dev/null; then
   _cache_init starship "starship --version" "starship init bash"
@@ -119,11 +124,6 @@ _fzf_comprun() {
     *)            fzf --preview "bat --color=always --style=plain,numbers --line-range=:500 {}" "$@" ;;
   esac
 }
-
-# 🧠 Mise (tool version manager)
-if command -v mise &> /dev/null; then
-  _cache_init mise "mise --version" "mise activate bash"
-fi
 
 # 🚀 Zoxide (better cd)
 if command -v zoxide &> /dev/null; then

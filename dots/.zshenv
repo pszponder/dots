@@ -13,10 +13,7 @@ unsetopt HASH_CMDS
 typeset -U path PATH
 
 # Common user script/tool locations should be available in all shell modes.
-# mise's shims dir is included here (not just via `mise activate`) so tools
-# like starship/zoxide/atuin resolve synchronously on the very first prompt —
-# `mise activate` itself is deferred in .zshrc and only runs after the first
-# idle cycle, so `command -v <tool>` guards would otherwise fail on a fresh shell.
+# Include mise shims so managed tools are available in non-interactive shells too.
 for dir in "$HOME/bin" "$HOME/.local/bin" "$HOME/scripts" "/usr/local/bin" "$HOME/.local/share/mise/shims"; do
 	[[ -d "$dir" ]] && PATH="$dir:$PATH"
 done
