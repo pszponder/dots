@@ -93,6 +93,17 @@ choose_profile() {
   esac
 }
 
+configure_ssh_remote() {
+  origin_url=$(git -C "$REPO_DIR" remote get-url origin 2>/dev/null) || return 0
+  case "$origin_url" in
+    https://github.com/*)
+      ssh_url="git@github.com:${origin_url#https://github.com/}"
+      git -C "$REPO_DIR" remote set-url origin "$ssh_url"
+      log_info "Switched origin to SSH: $ssh_url"
+      ;;
+  esac
+}
+
 main() {
   initialize
 
@@ -159,6 +170,7 @@ main() {
 
   mise -E "$profile" bootstrap --force-dotfiles --yes
   mise -E "$profile" bootstrap status
+  configure_ssh_remote
   log_success "Setup complete"
   log_info "Open a new shell, then run 'mise doctor' to verify shell activation"
 }

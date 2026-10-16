@@ -55,7 +55,7 @@ Available profiles:
 
 Pass a profile to `./install.sh <profile>` or `mise -C bootstrap -E <profile>`. The installer shorthand `workstation` detects the distribution; manual bootstrap commands require a full profile name.
 
-When running `./install.sh` from a local checkout, the installer uses that checkout directly. For the curl installer, set `DOTFILES_REPO_URL` to clone a fork. After setup, open a new shell and run `mise doctor`.
+When running `./install.sh` from a local checkout, the installer uses that checkout directly. For the curl installer, set `DOTFILES_REPO_URL` to clone a fork. After successful setup, the installer switches a GitHub HTTPS `origin` to SSH (for example, `git@github.com:pszponder/dots.git`). Add your SSH public key to GitHub before pulling or pushing over SSH. Other remote URLs are preserved. After setup, open a new shell and run `mise doctor`.
 
 ## Managing Dotfiles
 
