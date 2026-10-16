@@ -58,6 +58,53 @@ Requirements:
 - Fedora repositories need mise with [native COPR support](https://mise.jdx.dev/bootstrap/packages/dnf.html#copr).
 - Ghostty on apt needs a [repository providing it](https://ghostty.org/docs/install/binary).
 
+### Kanata home-row mods
+
+The global tools manifest installs Kanata through mise's `cargo:kanata` backend,
+using the shared Rust toolchain. Dotfile deployment includes the keyboard config
+and a Linux systemd user service that resolves Kanata through mise. Workstation
+bootstrap's final hook runs `scripts/bootstrap/configure_kanata.sh` to create
+the device groups, add your login user, configure udev permissions and module
+loading at boot, and enable the service. This step requests sudo. Server
+bootstrap skips device setup, and the script skips non-Linux systems.
+
+On the Linux host, install and test it with:
+
+```bash
+mise install cargo:kanata
+mise exec cargo:kanata -- kanata --cfg ~/.config/kanata/kanata.kbd
+```
+
+Kanata needs access to `/dev/input` and `/dev/uinput`. Follow the
+[upstream Linux setup](https://github.com/jtroo/kanata/blob/main/docs/setup-linux.md)
+to configure the `input` and `uinput` groups, udev permissions, and the `uinput`
+module. To load the module at boot, add `uinput` to
+`/etc/modules-load.d/kanata.conf`. Log out and back in after changing groups.
+Run Kanata on the desktop host; the agent sandbox does not expose these devices.
+
+The config maps held `a`/`;` to Super, `s`/`l` to Alt, `d`/`k` to Shift,
+and `f`/`j` to Ctrl, with a 200 ms hold threshold. Holding Space activates
+the navigation layer. After testing in the foreground, stop that process and
+enable the deployed service:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now kanata.service
+journalctl --user -u kanata.service -f
+```
+
+The service expects mise at `~/.local/bin/mise`. Dotfile deployment alone does
+not enable the service or change device permissions. To configure an existing
+Linux workstation without rerunning full bootstrap:
+
+```bash
+sh scripts/bootstrap/configure_kanata.sh
+```
+
+If your current session lacks either device group, the script enables the service
+for the next login and asks you to reboot. Otherwise it restarts the service
+immediately. Repeated runs preserve existing groups and group memberships.
+
 ### Wallpaper
 
 Dotfile deployment makes `~/Pictures/wallpapers/catppuccin-mocha.png` available for manual selection in your desktop's background settings. Wallpaper selection is not automated.

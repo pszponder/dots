@@ -23,6 +23,7 @@ pre-dotfiles = [
 final = [
   # A fresh invocation reads the global tools config deployed by dotfiles.
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes",
+  "{% if vars.dotfiles_profile != 'server' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_kanata.sh{% else %}true{% endif %}",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git_hooks.sh",
   # Flox installation is disabled for now; uncomment to enable it again.
   # "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",

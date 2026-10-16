@@ -161,6 +161,7 @@ class MiseSetupTests(unittest.TestCase):
             "scripts/cli/flox_install.sh",
             "scripts/cli/nerdfonts_install.sh",
             "scripts/bootstrap/create_ssh_keys.sh",
+            "scripts/bootstrap/configure_kanata.sh",
         ):
             (remote / name).write_text("#!/bin/sh\nexit 0\n")
         self.run_command("git", "init", str(remote))
