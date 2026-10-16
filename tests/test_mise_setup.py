@@ -370,7 +370,7 @@ class MiseSetupTests(unittest.TestCase):
                     self.assertNotIn("nerdfonts_install.sh", packages)
                 self.assertNotIn("fedora_development_tools.sh", output)
                 self.assertIn("create_ssh_keys.sh", output)
-                self.assertIn("flox_install.sh", output)
+                self.assertNotIn("flox_install.sh", output)
                 self.assertIn(
                     "flatpak_install.sh"
                     if profile in WORKSTATIONS and profile != "workstation-arch"

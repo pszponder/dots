@@ -24,7 +24,8 @@ final = [
   # A fresh invocation reads the global tools config deployed by dotfiles.
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes",
   "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git_hooks.sh",
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",
+  # Flox installation is disabled for now; uncomment to enable it again.
+  # "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",
   "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh",
   "{% if vars.dotfiles_profile != 'workstation-ublue' %}NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh{% else %}true{% endif %}",
 ]

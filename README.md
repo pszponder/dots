@@ -40,7 +40,7 @@ Keep the checkout at its chosen location after setup: deployed dotfiles are syml
 
 Before deploying dotfiles, bootstrap moves each conflicting file to a sibling with `.bak` appended (for example, `~/.bashrc.bak`). Existing backups are preserved using `.bak.1`, `.bak.2`, and so on. The installer then forces dotfile application. Existing correct links are left alone, and dry runs do not move files.
 
-Installs packages, directories, dotfiles, global tools, Flox where supported, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs require an explicit profile and apply both stages; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
+Installs packages, directories, dotfiles, global tools, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs require an explicit profile and apply both stages; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
 
 Available profiles:
 

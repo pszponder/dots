@@ -21,7 +21,7 @@ The home group links individual files under `dots/`, preserving unrelated files.
 
 The setup helper backs up conflicting global mise config, preserves local overrides, and retires legacy configuration links. `install.sh` confirms this preparation, then separately confirms bootstrap. Declining bootstrap leaves preparation in place; noninteractive runs apply both stages.
 
-Bootstrap final hooks install global tools, Flox, SSH keys, and direct-download fonts where applicable, skipping existing matching installations. Universal Blue fonts are bootstrap packages instead. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
+Bootstrap final hooks install global tools, SSH keys, and direct-download fonts where applicable, skipping existing matching installations. Universal Blue fonts are bootstrap packages instead. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
 
 Global tools include pinned Betterleaks. After installing tools, bootstrap enables this checkout's pre-commit hook, preserving existing custom hook setups. For another clone without full bootstrap, run `mise run hooks-install` from that checkout. See [security setup](security.md#betterleaks-pre-commit-check).
 
@@ -80,7 +80,7 @@ Flatpak must already be available from the image. The pre-packages hook configur
 
 Caskaydia Cove, Caskaydia Mono, and JetBrains Mono Nerd Fonts are declared as Linux `brew-cask:` bootstrap packages. Mise's cask backend downloads and installs them into the user font directory without requiring Homebrew. Fonts track current cask versions instead of `nerdfonts_version`; the direct font archive installer is skipped. Both full bootstrap and `bootstrap --only packages` include these fonts and the Flatpak apps. Cask metadata may require network access even for a dry run.
 
-Global CLI tools remain in the shared mise manifest. Flox retains its immutable-host skip.
+Global CLI tools remain in the shared mise manifest. The retained Flox installer skips immutable hosts.
 
 Manual smoke check on Bluefin/Bazzite:
 
@@ -137,7 +137,7 @@ See [mise scaffolding tasks](https://mise.jdx.dev/mise-cookbook/presets.html) an
 
 ## Flox
 
-Both roles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
+Flox installation is currently disabled. To re-enable it, uncomment the `scripts/cli/flox_install.sh` final hook in `bootstrap/mise.toml`. The retained script uses the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
 
 The shared shell environment defaults `FLOX_AUTH_NOTIFICATIONS=false` to silence FloxHub login reminders. Commands that require authentication still require login. Set it to `true` before loading the shell environment to restore reminders.
 
