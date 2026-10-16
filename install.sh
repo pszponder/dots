@@ -67,7 +67,7 @@ choose_profile() {
   profile=${1:-}
 
   if [ -z "$profile" ] && [ ! -t 0 ]; then
-    profile=server
+    die "No terminal available; pass a profile explicitly (for example: sh -s -- server)"
   fi
 
   if [ -z "$profile" ]; then
@@ -90,6 +90,15 @@ choose_profile() {
 
 main() {
   initialize
+
+  if [ -z "${1:-}" ] && [ ! -t 0 ]; then
+    # curl | sh uses stdin for the script; read interactive input from the terminal.
+    if ( : < /dev/tty ) 2>/dev/null; then
+      exec < /dev/tty
+    else
+      die "No terminal available; pass a profile explicitly (for example: sh -s -- server)"
+    fi
+  fi
 
   if [ -f "$SCRIPT_DIR/bootstrap/mise.toml" ]; then
     REPO_DIR="$SCRIPT_DIR"

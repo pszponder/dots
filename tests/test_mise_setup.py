@@ -1,12 +1,14 @@
 """Offline integration checks: python3 -m unittest discover -s tests -v."""
 
 import json
+import fcntl
 import os
 import pty
 import shlex
 import shutil
 import subprocess
 import tempfile
+import termios
 import tomllib
 import unittest
 from pathlib import Path
@@ -447,7 +449,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         shutil.copy(self.repo / "install.sh", downloaded)
         (self.repo / ".git").mkdir()
         self.env["DOTFILES_REPO_DIR"] = str(self.repo)
-        self.run_command("sh", str(downloaded))
+        self.run_command("sh", str(downloaded), "server")
         calls = (self.home / "mise-calls").read_text().splitlines()
         self.assertEqual(
             calls[-4:],
@@ -480,6 +482,47 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             calls[-3:],
             ["trust", "-E server vars prompt", "-E server bootstrap --dry-run"],
         )
+
+    def test_piped_installer_prompts_using_controlling_terminal(self):
+        master, slave = pty.openpty()
+
+        def attach_terminal():
+            os.setsid()
+            fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+
+        try:
+            os.write(master, b"2\nn\n")
+            result = subprocess.run(
+                ["sh", "-c", f"cat {shlex.quote(str(self.repo / 'install.sh'))} | sh"],
+                stdin=slave,
+                preexec_fn=attach_terminal,
+                env=self.env,
+                cwd=str(self.repo),
+                text=True,
+                capture_output=True,
+                timeout=10,
+            )
+        finally:
+            os.close(slave)
+            os.close(master)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Select setup profile:", result.stderr)
+        self.assertIn("cancelled before global mise preparation", result.stdout + result.stderr)
+        self.assertFalse(self.config.exists())
+
+    def test_installer_requires_profile_without_terminal(self):
+        result = subprocess.run(
+            ["sh", str(self.repo / "install.sh")],
+            stdin=subprocess.DEVNULL,
+            start_new_session=True,
+            env=self.env,
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pass a profile explicitly", result.stdout + result.stderr)
+        self.assertFalse(self.config.exists())
 
     def test_declining_preparation_leaves_global_config_untouched(self):
         self.config.mkdir(parents=True)

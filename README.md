@@ -14,13 +14,31 @@ From a local checkout:
 ./install.sh workstation-fedora  # Select a profile explicitly
 ```
 
-Without cloning first:
+Without cloning first (requires Git and curl):
+
+The installer asks you to choose workstation or server, confirms preparation, and previews bootstrap before asking to apply it. It reads input from your terminal even when piped from curl.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-Installs packages, directories, dotfiles, global tools, Flox where supported, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs apply both stages and default to `server`; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
+To skip profile selection, pass a profile explicitly (the workstation shorthand automatically detects the distribution):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh -s -- workstation
+```
+
+With an explicit profile, the piped installer applies setup without confirmation. Set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first for these unattended runs.
+
+This clones the repository into `~/repos/github/pszponder/dots` under the home directory of the user running `sh`. To choose another location, set `DOTFILES_REPO_DIR` on the `sh` command:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | DOTFILES_REPO_DIR="$HOME/dotfiles" sh
+```
+
+Keep the checkout at its chosen location after setup: deployed dotfiles are symlinks into it.
+
+Installs packages, directories, dotfiles, global tools, Flox where supported, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs require an explicit profile and apply both stages; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
 
 Available profiles:
 
@@ -35,7 +53,7 @@ Available profiles:
 
 Pass a profile to `./install.sh <profile>` or `mise -C bootstrap -E <profile>`. The installer shorthand `workstation` detects the distribution; manual bootstrap commands require a full profile name.
 
-Keep the checkout: deployed symlinks point into it. The default is `~/repos/github/pszponder/dots`; override it with `DOTFILES_REPO_DIR` (or `DOTFILES_REPO_URL` for a fork). After setup, open a new shell and run `mise doctor`.
+When running `./install.sh` from a local checkout, the installer uses that checkout directly. For the curl installer, set `DOTFILES_REPO_URL` to clone a fork. After setup, open a new shell and run `mise doctor`.
 
 ## Managing Dotfiles
 

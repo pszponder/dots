@@ -27,7 +27,7 @@ class WorkstationProfileTests(unittest.TestCase):
             ('ID=unknown\n', "workstation", None),
             ('ID=unknown\n', "workstation-fedora", "workstation-fedora"),
             ('ID=unknown\n', "server", "server"),
-            ('ID=unknown\n', "", "server"),
+            ('ID=unknown\n', "", None),
             ('ID=ubuntu\n', "workstation-invalid", None),
         ]
         with tempfile.TemporaryDirectory() as directory:
