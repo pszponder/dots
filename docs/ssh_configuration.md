@@ -149,24 +149,32 @@ This is what your global gitconfig (`~/.config/git/config`) should look like
 
 # Include for all .git projects under ~/repos/github/pszponder
 # Copy this pattern for any other git repos, making sure to change the gitdir and path
-[includeIf "gitdir:~/repos/github/pszponder/**"]
+[includeIf "gitdir:~/repos/github/pszponder/"]
 path = ~/.config/git/github_pszponder
 
 # Add other global gitconfig settings here ...
 ```
 
-The repository deploys shared Git defaults and the global author name/email from the `git_name` and `git_email` mise variables. For repositories that need a different identity or SSH key, keep a local `~/.config/git/github_pszponder` fragment and add an `includeIf` rule to `dots/.config/git/config.tera`. Create a separate fragment and include rule for each host or account that needs different settings.
+The repository deploys this conditional include from `dots/.config/git/config.tera`
+and links `dots/.config/git/github_pszponder` into place. All repositories under
+`~/repos/github/pszponder/` select the personal GitHub key automatically. The
+trailing slash includes nested directories. Git author name and email still come
+from the `git_name` and `git_email` mise variables.
 
 ```txt
 # ~/.config/git/github_pszponder
 
-[user]
-    email = <git_email>
-    name = <github_username>
-
 [core]
-    sshCommand = "ssh -i <PATH_TO_YOUR_PERSONAL_PRIVATE_KEY> -o IdentitiesOnly=yes"
+    sshCommand = ssh -i ~/.ssh/github/pszponder/personal -o IdentitiesOnly=yes
 ```
+
+Run `mise dot apply ~/.config/git/config ~/.config/git/github_pszponder` after
+changing these sources. Private keys remain local under `~/.ssh/`; only their
+paths are tracked. Register each machine's public key with GitHub separately.
+Create a separate fragment and include rule for each additional host or account.
+Repository-local `core.sshCommand` values override this shared configuration.
+Check the selected command and its source from a repository with
+`git config --show-origin --get core.sshCommand`.
 
 `core.sshCommand` is enough for Git repositories matched by the include rule; it does not require a `Host github.com` entry in `~/.ssh/config`. Keep the SSH config for services and remote servers that need reusable connection settings.
 
