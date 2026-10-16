@@ -229,6 +229,9 @@ wtcd() {
 alias gclean='git clean -fd'
 
 # Misc
+
+alias j='just'
+
 alias gcf='git config --list'
 alias gg='git gui'
 alias ggi='git gui citool'
