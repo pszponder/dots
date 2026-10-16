@@ -18,9 +18,7 @@ Without cloning first:
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-Installs packages, directories, dotfiles, global tools, Flox, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs apply both stages and default to `server`; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
-
-Workstation detection supports Ubuntu, Debian, Fedora, and Arch, including derivatives declaring a supported `ID_LIKE` family. Unknown systems require an explicit supported profile.
+Installs packages, directories, dotfiles, global tools, Flox where supported, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs apply both stages and default to `server`; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
 
 Available profiles:
 
@@ -30,6 +28,7 @@ Available profiles:
 | Debian workstation | `workstation-debian` |
 | Fedora workstation | `workstation-fedora` |
 | Arch workstation | `workstation-arch` |
+| Universal Blue workstation | `workstation-ublue` |
 | Server | `server` |
 
 Pass a profile to `./install.sh <profile>` or `mise -E <profile>`. The installer shorthand `workstation` detects the distribution; manual mise commands require a full profile name.
@@ -46,7 +45,7 @@ cd "$HOME/repos/github/pszponder/dots"
 mise trust
 ```
 
-Run these commands from the checkout. Ubuntu is only the example: replace `workstation-ubuntu` with `workstation-debian`, `workstation-fedora`, `workstation-arch`, or `server` as appropriate for your machine.
+Run these commands from the checkout, replacing `workstation-ubuntu` with your profile from the table above.
 
 ### Bootstrap only: packages and directories
 
@@ -94,8 +93,6 @@ mise -E workstation-ubuntu bootstrap
 mise -E workstation-ubuntu bootstrap status
 ```
 
-Migrating from the old `workstation` profile: run `./install.sh workstation` and reload your shell. For dotfiles alone, select your full profile with `mise -E workstation-ubuntu dot apply`. Existing duplicate application installations are not removed.
-
 Run `up --dry-run`, then `up` from any directory to [update the OS, tools, and packages](docs/mise.md#update-tools-and-packages-from-any-directory).
 
 Keep machine-local overrides in `~/.config/mise/config.local.toml` or `config.<profile>.local.toml`.
@@ -112,8 +109,6 @@ mise run check  # Both; also run by CI
 ```
 
 Install Zsh to check its startup-file syntax. Checks do not bootstrap the machine or run ShellCheck.
-
-Executable shell scripts define functions and end with `main "$@"`; keep `main` focused on initialization and workflow calls. Sourced libraries and startup files have no entrypoint.
 
 ## Documentation
 

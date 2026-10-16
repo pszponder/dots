@@ -46,8 +46,11 @@ install_mise() {
 
 detect_workstation_profile() {
   ID= ID_LIKE=
-  [ -r /etc/os-release ] || die "Cannot detect distribution; select workstation-ubuntu, workstation-debian, workstation-fedora, or workstation-arch explicitly"
+  [ -r /etc/os-release ] || die "Cannot detect distribution; select workstation-ubuntu, workstation-debian, workstation-fedora, workstation-arch, or workstation-ublue explicitly"
   . /etc/os-release
+  case " $ID $ID_LIKE " in
+    *' bluefin '*|*' bazzite '*|*' aurora '*|*' ublue '*) printf 'workstation-ublue\n'; return ;;
+  esac
   case "$ID" in
     ubuntu|debian|fedora|arch) printf 'workstation-%s\n' "$ID"; return ;;
   esac
@@ -80,8 +83,8 @@ choose_profile() {
 
   case "$profile" in
     workstation) detect_workstation_profile ;;
-    workstation-ubuntu|workstation-debian|workstation-fedora|workstation-arch|server) printf '%s\n' "$profile" ;;
-    *) die "profile must be workstation, server, or workstation-{ubuntu,debian,fedora,arch}" ;;
+    workstation-ubuntu|workstation-debian|workstation-fedora|workstation-arch|workstation-ublue|server) printf '%s\n' "$profile" ;;
+    *) die "profile must be workstation, server, or workstation-{ubuntu,debian,fedora,arch,ublue}" ;;
   esac
 }
 

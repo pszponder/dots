@@ -44,7 +44,7 @@ validate_profile() {
   # Validate the applied profile before changing the host. Never guess based on GUI/SSH.
   if has mise; then
     local config_dir=${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}
-    if [[ ! "$profile" =~ ^(server|workstation-(ubuntu|debian|fedora|arch))$ ]] ||
+    if [[ ! "$profile" =~ ^(server|workstation-(ubuntu|debian|fedora|arch|ublue))$ ]] ||
         [[ ! -f "$repo/mise.toml" || ! -f "$repo/mise.$profile.toml" ||
            ! "$config_dir/config.toml" -ef "$repo/dots/.config/mise/config.toml" ]]; then
       log_error "Apply your server or distribution-specific workstation dotfiles profile and reload your shell first."
@@ -66,6 +66,17 @@ update_system() {
       local ID= ID_LIKE= PRETTY_NAME=Linux
       if [[ -r /etc/os-release ]]; then . /etc/os-release; fi
       log_info "Distribution: $PRETTY_NAME"
+      if [[ "$profile" == workstation-ublue || -e /run/ostree-booted ]] ||
+          [[ " $ID $ID_LIKE " == *" ublue "* || "$ID" == bluefin || "$ID" == bazzite || "$ID" == aurora ]]; then
+        if has bootc && bootc status --json 2>/dev/null | python3 -c 'import json,sys; sys.exit(not (json.load(sys.stdin).get("status", {}).get("booted") or {}).get("image"))' 2>/dev/null; then
+          admin bootc upgrade || :
+        elif has rpm-ostree; then
+          admin rpm-ostree upgrade || :
+        else
+          failures+=("Atomic host requires a bootc-managed deployment or rpm-ostree")
+        fi
+        return
+      fi
       case " $ID $ID_LIKE " in
         *' debian '*|*' ubuntu '*)
           admin apt-get update && admin apt-get full-upgrade -y || : ;;

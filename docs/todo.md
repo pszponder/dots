@@ -1,6 +1,4 @@
 # TODOs
-- Add workstation configuration for ublue based fedora like bluefin or bazzite (https://universal-blue.org/)
-  - For ublue, they use homebrew instead of mise to manage system-level packages (including nerdfonts), how to avoid installing packages managed by mise and only install homebrew pckages but only for ublue based systems?
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
 - [ ] [How To Setup Minimal Neovim 0.12 Config Guide From Scratch](https://www.youtube.com/watch?v=XQuNoprFW38)
@@ -13,6 +11,8 @@
 - [ ] Create a branch for just a server install (is this necessary?)
 
 ## Done
+
+- [x] Add Universal Blue workstation support with Flathub GUI apps, declarative font casks, shared mise CLI tools, and atomic OS updates.
 
 - [x] Split workstation bootstrap into Ubuntu, Debian, Fedora, and Arch profiles with one installation source per application.
 - [x] Add Obsidian and Discord to all workstation profiles.

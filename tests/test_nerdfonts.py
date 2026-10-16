@@ -12,7 +12,7 @@ REPO = Path(__file__).resolve().parents[1]
 class NerdFontTests(unittest.TestCase):
     def test_arch_packages_match_configured_families(self):
         packages = tomllib.loads((REPO / 'mise.workstation-arch.toml').read_text())['bootstrap']['packages']
-        shared = tomllib.loads((REPO / 'mise.toml').read_text())['bootstrap']['packages']
+        shared = tomllib.loads((REPO / 'mise.toml').read_text())['bootstrap'].get('packages', {})
         for name in ('ttf-cascadia-code-nerd', 'ttf-cascadia-mono-nerd', 'ttf-jetbrains-mono-nerd'):
             self.assertIn(f'pacman:{name}', packages)
             self.assertNotIn(f'pacman:{name}', shared)

@@ -3,6 +3,17 @@ dotfiles_profile = "workstation-debian"
 
 # Ghostty requires an existing apt repository providing the package.
 [bootstrap.packages]
+"apt:build-essential" = "latest"
+"apt:curl" = "latest"
+"apt:file" = "latest"
+"apt:fontconfig" = "latest"
+"apt:git" = "latest"
+"apt:less" = "latest"
+"apt:bsdextrautils" = "latest"
+"apt:openssh-client" = "latest"
+"apt:procps" = "latest"
+"apt:tar" = "latest"
+"apt:xz-utils" = "latest"
 "apt:ghostty" = "latest"
 "flatpak:com.visualstudio.code" = "latest"
 "flatpak:md.obsidian.Obsidian" = "latest"

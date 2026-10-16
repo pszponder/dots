@@ -1,0 +1,22 @@
+[vars]
+dotfiles_profile = "workstation-ublue"
+
+[bootstrap.packages]
+"flatpak:com.visualstudio.code" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
+"flatpak:com.discordapp.Discord" = "latest"
+"flatpak:app.zen_browser.zen" = "latest"
+"flatpak:dev.zed.Zed" = "latest"
+"flatpak:com.brave.Browser" = "latest"
+"flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
+"brew-cask:font-caskaydia-cove-nerd-font" = { os = ["linux"] }
+"brew-cask:font-caskaydia-mono-nerd-font" = { os = ["linux"] }
+"brew-cask:font-jetbrains-mono-nerd-font" = { os = ["linux"] }
+
+[bootstrap.hooks]
+pre-packages = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh --ublue",
+]
+post-dotfiles = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
+]

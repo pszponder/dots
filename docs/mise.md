@@ -2,14 +2,14 @@
 
 Use the [README](../README.md) for installation and individual setup commands.
 
-Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, and `workstation-arch`; servers use `server`. Commands below use `-E workstation-ubuntu` as an example. Replace it with your machine's profile throughout. `./install.sh workstation` detects the distribution automatically; manual mise commands require the full profile name.
+Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, and `workstation-ublue`; servers use `server`. Commands below use `-E workstation-ubuntu` as an example. Replace it with your machine's profile throughout. `./install.sh workstation` detects the distribution automatically; manual mise commands require the full profile name.
 
 ## Configuration layout
 
 | File | Purpose |
 | --- | --- |
-| `mise.toml` | Shared packages, directories, dotfiles, variables, and hooks |
-| `mise.workstation-{ubuntu,debian,fedora,arch}.toml` | Complete distribution-specific desktop packages and hooks |
+| `mise.toml` | Shared directories, dotfiles, variables, and hooks |
+| `mise.workstation-{ubuntu,debian,fedora,arch,ublue}.toml` | Complete distribution-specific desktop packages and hooks |
 | `mise.server.toml` | Server profile |
 | `dots/` | Sources mirroring home-directory paths |
 | `dots/.config/mise/config.toml` | Global tools and tasks; projects can override them |
@@ -19,11 +19,11 @@ The home group links individual files under `dots/`, preserving unrelated files.
 
 The setup helper backs up conflicting global mise config, preserves local overrides, and retires legacy configuration links. `install.sh` confirms this preparation, then separately confirms bootstrap. Declining bootstrap leaves preparation in place; noninteractive runs apply both stages.
 
-Bootstrap final hooks install global tools, Flox, SSH keys, and fonts on every run, skipping existing matching installations. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
+Bootstrap final hooks install global tools, Flox, SSH keys, and direct-download fonts where applicable, skipping existing matching installations. Universal Blue fonts are bootstrap packages instead. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
 
 ## Packages and desktop setup
 
-Both roles install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
+Traditional workstation profiles and the server profile install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Universal Blue relies on image-provided host prerequisites and declares no native packages. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
 
 The workstation profiles add:
 
@@ -68,11 +68,30 @@ GNOME and COSMIC require Python 3; GNOME also uses `gsettings`. COSMIC wallpaper
 
 ### Nerd Fonts
 
-CaskaydiaCove, CaskaydiaMono, and JetBrainsMono are installed by the download script on non-Arch systems. The Arch workstation profile uses pacman packages `ttf-cascadia-code-nerd`, `ttf-cascadia-mono-nerd`, and `ttf-jetbrains-mono-nerd`, installed system-wide and updated through pacman. These packages are declared in `mise.workstation-arch.toml`. The download script skips Arch and its derivatives, so the server profile does not install Nerd Fonts on Arch.
+CaskaydiaCove, CaskaydiaMono, and JetBrainsMono are installed by the download script outside Arch and the ublue workstation profile. Universal Blue installs the same families through declarative Linux font casks. The Arch workstation profile uses pacman packages `ttf-cascadia-code-nerd`, `ttf-cascadia-mono-nerd`, and `ttf-jetbrains-mono-nerd`, installed system-wide and updated through pacman. These packages are declared in `mise.workstation-arch.toml`. The download script skips Arch and its derivatives, so the server profile does not install Nerd Fonts on Arch.
 
 On other Linux distributions, the script installs these families under `${XDG_DATA_HOME:-~/.local/share}/fonts/NerdFonts`; on macOS it uses `~/Library/Fonts/NerdFonts`. The script supports Linux and macOS, independently of the workstation profile.
 
 For downloaded fonts, edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. On Arch workstations, edit the `pacman:ttf-*-nerd` declarations in `mise.workstation-arch.toml`; pacman controls the installed version. Removing a declaration or family leaves installed fonts in place, including any previous downloaded copies. Select fonts in terminal applications separately.
+
+### Universal Blue workstations
+
+Use `./install.sh workstation-ublue`, or `./install.sh workstation` for detection on Bluefin, Bazzite, and Aurora. Declared `ublue` ancestry takes precedence over Fedora ancestry. Other custom images can select the profile explicitly.
+
+The profile installs VS Code, Obsidian, Discord, Zen, Zed, and standard Brave as system Flatpaks, plus Podman Desktop as a user Flatpak. Standard Brave replaces the Brave Origin variant used by other profiles. Ghostty, Helium, and Yaak are omitted because no Flathub package was verified. No COPR, native GUI installers, external bundles, or host package layering are configured. Existing installations are preserved.
+
+Flatpak must already be available from the image. The pre-packages hook configures both system and user Flathub remotes; it reports a missing Flatpak installation without attempting DNF. System remote configuration can request sudo.
+
+Caskaydia Cove, Caskaydia Mono, and JetBrains Mono Nerd Fonts are declared as Linux `brew-cask:` bootstrap packages. Mise's cask backend downloads and installs them into the user font directory without requiring Homebrew. Fonts track current cask versions instead of `nerdfonts_version`; the direct font archive installer is skipped. Both full bootstrap and `bootstrap --only packages` include these fonts and the Flatpak apps. Cask metadata may require network access even for a dry run.
+
+Global CLI tools remain in the shared mise manifest. Flox retains its immutable-host skip, and wallpaper configuration retains its existing desktop support.
+
+Manual smoke check on Bluefin/Bazzite:
+
+1. Review `mise -E workstation-ublue bootstrap --only packages --dry-run`, then apply without `--dry-run`.
+2. Check `flatpak list --system` and `flatpak list --user`; launch the installed GUI apps from the desktop.
+3. Check `fc-list | rg 'Caskaydia|JetBrainsMono'` and select a Nerd Font in a terminal.
+4. Run `up --dry-run` after applying dotfiles and reloading the shell. Confirm an atomic OS upgrade, mise package upgrades, and both Flatpak scopes. A normal `up` must not run DNF or reboot automatically.
 
 ## Bootstrap from a repository
 
@@ -400,6 +419,7 @@ The rendered `~/.config/env.sh` records `DOTFILES_REPO` and `DOTFILES_PROFILE`; 
 
 After moving the checkout, run `sh scripts/bootstrap/configure_mise.sh` from its new location. After moving it or changing profiles, reapply dotfiles with the selected profile and open a new shell.
 
+
 ## Update tools and packages from any directory
 
 The `up` shell function runs `~/.local/bin/system-update` from any directory:
@@ -409,7 +429,7 @@ up --dry-run  # Print the update commands without executing them.
 up
 ```
 
-The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
+The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On Universal Blue and detected atomic hosts, it checks `bootc status --json`: bootc-managed deployments use `bootc upgrade`; other deployments use `rpm-ostree upgrade`. Missing atomic update support is reported as a failure. These hosts never use DNF. On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
 
 Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected repository profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO` with the explicit server or distribution-specific workstation profile, including global tool configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
 

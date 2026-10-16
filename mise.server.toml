@@ -2,3 +2,42 @@
 dotfiles_profile = "server"
 
 [bootstrap.packages]
+# Ubuntu / Debian packages
+"apt:build-essential" = "latest"
+"apt:curl" = "latest"
+"apt:file" = "latest"
+"apt:fontconfig" = "latest"
+"apt:git" = "latest"
+"apt:less" = "latest"
+"apt:bsdextrautils" = "latest"
+"apt:openssh-client" = "latest"
+"apt:procps" = "latest"
+"apt:tar" = "latest"
+"apt:xz-utils" = "latest"
+
+# Fedora packages
+# Requires mise with https://github.com/jdx/mise/pull/14347.
+"dnf:@development-tools" = "latest"
+"dnf:curl" = "latest"
+"dnf:file" = "latest"
+"dnf:fontconfig" = "latest"
+"dnf:git" = "latest"
+"dnf:less" = "latest"
+"dnf:util-linux" = "latest"
+"dnf:openssh-clients" = "latest"
+"dnf:procps-ng" = "latest"
+"dnf:tar" = "latest"
+"dnf:xz" = "latest"
+
+# Arch Linux packages
+"pacman:base-devel" = "latest"
+"pacman:curl" = "latest"
+"pacman:file" = "latest"
+"pacman:fontconfig" = "latest"
+"pacman:git" = "latest"
+"pacman:less" = "latest"
+"pacman:util-linux" = "latest"
+"pacman:openssh" = "latest"
+"pacman:procps-ng" = "latest"
+"pacman:tar" = "latest"
+"pacman:xz" = "latest"

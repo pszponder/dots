@@ -3,6 +3,17 @@ dotfiles_profile = "workstation-arch"
 
 # Prefer official Arch packages; use the AUR where needed.
 [bootstrap.packages]
+"pacman:base-devel" = "latest"
+"pacman:curl" = "latest"
+"pacman:file" = "latest"
+"pacman:fontconfig" = "latest"
+"pacman:git" = "latest"
+"pacman:less" = "latest"
+"pacman:util-linux" = "latest"
+"pacman:openssh" = "latest"
+"pacman:procps-ng" = "latest"
+"pacman:tar" = "latest"
+"pacman:xz" = "latest"
 "pacman:ttf-cascadia-code-nerd" = "latest"
 "pacman:ttf-cascadia-mono-nerd" = "latest"
 "pacman:ttf-jetbrains-mono-nerd" = "latest"

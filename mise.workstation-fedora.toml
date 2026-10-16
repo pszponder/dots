@@ -6,6 +6,17 @@ ghostty = { copr = "scottames/ghostty" }
 helium = { copr = "imput/helium" }
 
 [bootstrap.packages]
+"dnf:@development-tools" = "latest"
+"dnf:curl" = "latest"
+"dnf:file" = "latest"
+"dnf:fontconfig" = "latest"
+"dnf:git" = "latest"
+"dnf:less" = "latest"
+"dnf:util-linux" = "latest"
+"dnf:openssh-clients" = "latest"
+"dnf:procps-ng" = "latest"
+"dnf:tar" = "latest"
+"dnf:xz" = "latest"
 "dnf:ghostty" = "latest"
 "flatpak:com.visualstudio.code" = "latest"
 "flatpak:md.obsidian.Obsidian" = "latest"

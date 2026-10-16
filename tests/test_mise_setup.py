@@ -13,7 +13,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 MISE = shutil.which("mise")
-WORKSTATIONS = tuple(f"workstation-{os}" for os in ("ubuntu", "debian", "fedora", "arch"))
+WORKSTATIONS = tuple(f"workstation-{os}" for os in ("ubuntu", "debian", "fedora", "arch", "ublue"))
 PROFILES = ("server", *WORKSTATIONS)
 
 
@@ -33,6 +33,12 @@ class MiseSetupTests(unittest.TestCase):
             "install.sh",
         ):
             shutil.copy(REPO / name, self.repo / name)
+            if name == "mise.workstation-ublue.toml":
+                # Cask previews fetch upstream metadata, even in dry runs.
+                # Test declarations separately; keep integration fully offline.
+                target = self.repo / name
+                target.write_text("\n".join(line for line in target.read_text().splitlines()
+                                             if not line.startswith('"brew-cask:')) + "\n")
         for name in ("scripts", "dots"):
             (self.repo / name).symlink_to(REPO / name, target_is_directory=True)
         self.config = self.home / ".config/mise"
@@ -99,7 +105,7 @@ class MiseSetupTests(unittest.TestCase):
         remote = self.root / "remote"
         remote.mkdir()
         for name in ("mise.toml", *(f"mise.{profile}.toml" for profile in PROFILES)):
-            shutil.copy(REPO / name, remote / name)
+            shutil.copy(self.repo / name, remote / name)
         for name in ("dots", "scripts"):
             shutil.copytree(REPO / name, remote / name)
         # Unrelated final hooks have their own coverage; don't download fonts,
@@ -169,9 +175,9 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertEqual(
                     "flatpak_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
                 )
-                self.assertEqual("zed_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch")
+                self.assertEqual("zed_install.sh" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
                 self.assertEqual(
-                    "brave_origin_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
+                    "brave_origin_install.sh" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
                 )
                 self.assertEqual("helium_repo.sh" in preview, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.assertFalse(config.exists())
@@ -262,6 +268,9 @@ class MiseSetupTests(unittest.TestCase):
         flatpak = fake_bin / "flatpak"
         flatpak.write_text("#!/bin/sh\nexit 99\n")
         flatpak.chmod(0o755)
+        rpm = fake_bin / "rpm-ostree"
+        rpm.write_text("#!/bin/sh\nexit 99\n")
+        rpm.chmod(0o755)
         original_path = self.env["PATH"]
         for profile in PROFILES:
             with self.subTest(profile=profile):
@@ -286,6 +295,16 @@ class MiseSetupTests(unittest.TestCase):
                     "--skip",
                     "tools",
                 )
+                if profile == "workstation-ublue":
+                    self.assertNotIn("nerdfonts_install.sh", output)
+                    self.assertNotIn("dnf:", output)
+                    packages = self.run_command(
+                        MISE, "-C", str(self.repo), "-E", profile,
+                        "bootstrap", "--only", "packages", "--dry-run",
+                    )
+                    self.assertIn("flatpak_install.sh --ublue", packages)
+                    self.assertNotIn("create_ssh_keys.sh", packages)
+                    self.assertNotIn("nerdfonts_install.sh", packages)
                 self.assertNotIn("fedora_development_tools.sh", output)
                 self.assertIn("create_ssh_keys.sh", output)
                 self.assertIn("flox_install.sh", output)
@@ -295,9 +314,9 @@ class MiseSetupTests(unittest.TestCase):
                     else "nerdfonts_install.sh",
                     output,
                 )
-                self.assertEqual("zed_install.sh" in output, profile in WORKSTATIONS and profile != "workstation-arch")
+                self.assertEqual("zed_install.sh" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
                 self.assertEqual(
-                    "brave_origin_install.sh" in output, profile in WORKSTATIONS and profile != "workstation-arch"
+                    "brave_origin_install.sh" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
                 )
                 self.assertEqual("helium_repo.sh" in output, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.env["PATH"] = str(fake_bin) + ":" + original_path

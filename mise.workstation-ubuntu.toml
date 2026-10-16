@@ -4,6 +4,17 @@ dotfiles_profile = "workstation-ubuntu"
 # Prefer project-published, project-endorsed, or Snapcrafters Snaps.
 # Zed uses its official installer; other apps use explicit fallback sources.
 [bootstrap.packages]
+"apt:build-essential" = "latest"
+"apt:curl" = "latest"
+"apt:file" = "latest"
+"apt:fontconfig" = "latest"
+"apt:git" = "latest"
+"apt:less" = "latest"
+"apt:bsdextrautils" = "latest"
+"apt:openssh-client" = "latest"
+"apt:procps" = "latest"
+"apt:tar" = "latest"
+"apt:xz-utils" = "latest"
 "snap:ghostty" = { classic = true }
 "snap:code" = { classic = true }
 "snap:obsidian" = { classic = true }

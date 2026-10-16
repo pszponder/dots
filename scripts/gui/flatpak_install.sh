@@ -41,8 +41,18 @@ main() {
     return 0
   fi
 
-  install_flatpak
+  case "${1:-}" in
+    --ublue)
+      command -v flatpak >/dev/null 2>&1 || {
+        log_error 'Flatpak is required on ublue; enable the Flatpak installation supplied by your image'
+        exit 1
+      } ;;
+    "") install_flatpak ;;
+    *) log_error "Unknown option: $1"; exit 1 ;;
+  esac
   configure_flathub
+  flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+  log_success 'User Flathub remote configured'
 }
 
 main "$@"

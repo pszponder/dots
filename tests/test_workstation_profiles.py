@@ -7,7 +7,7 @@ import tomllib
 import unittest
 
 REPO = Path(__file__).resolve().parents[1]
-DISTROS = ("ubuntu", "debian", "fedora", "arch")
+DISTROS = ("ubuntu", "debian", "fedora", "arch", "ublue")
 
 
 class WorkstationProfileTests(unittest.TestCase):
@@ -20,6 +20,10 @@ class WorkstationProfileTests(unittest.TestCase):
             ('ID=linuxmint\nID_LIKE=debian\n', "workstation", "workstation-debian"),
             ('ID=derivative\nID_LIKE=fedora\n', "workstation", "workstation-fedora"),
             ('ID=manjaro\nID_LIKE=arch\n', "workstation", "workstation-arch"),
+            ('ID=bluefin\nID_LIKE=fedora\n', "workstation", "workstation-ublue"),
+            ('ID=bazzite\nID_LIKE=fedora\n', "workstation", "workstation-ublue"),
+            ('ID=aurora\nID_LIKE=fedora\n', "workstation", "workstation-ublue"),
+            ('ID=custom\nID_LIKE="fedora ublue"\n', "workstation", "workstation-ublue"),
             ('ID=unknown\n', "workstation", None),
             ('ID=unknown\n', "workstation-fedora", "workstation-fedora"),
             ('ID=unknown\n', "server", "server"),
@@ -54,6 +58,12 @@ class WorkstationProfileTests(unittest.TestCase):
                 packages = bootstrap['packages']
                 names = [key.split(':', 1)[1] for key in packages]
                 self.assertEqual(len(names), len(set(names)))
+                if distro == "ublue":
+                    self.assertEqual(set(key.split(":")[0] for key in packages), {"flatpak", "flatpak-user", "brew-cask"})
+                    self.assertEqual(sum(key.startswith("brew-cask:") for key in packages), 3)
+                    self.assertIn("--ublue", str(bootstrap["hooks"]))
+                    self.assertNotIn("post-packages", bootstrap["hooks"])
+                    continue
                 manager = {'ubuntu': 'apt', 'debian': 'apt', 'fedora': 'dnf', 'arch': 'pacman'}[distro]
                 allowed = {manager, 'flatpak', 'flatpak-user', 'snap' if distro == 'ubuntu' else 'aur' if distro == 'arch' else manager}
                 if distro == 'arch':
@@ -84,7 +94,7 @@ class WorkstationProfileTests(unittest.TestCase):
                 self.assertEqual('yaak_install.sh' in hooks, distro != 'arch')
                 self.assertEqual('dnf' in bootstrap, distro == 'fedora')
         server = tomllib.loads((REPO / 'mise.server.toml').read_text())
-        self.assertFalse(server['bootstrap']['packages'])
+        self.assertTrue(server['bootstrap']['packages'])
         self.assertFalse((REPO / 'mise.workstation.toml').exists())
 
     def test_update_preview_accepts_full_profiles_and_rejects_legacy(self):
@@ -96,6 +106,9 @@ class WorkstationProfileTests(unittest.TestCase):
             fake_mise = root / 'mise'
             fake_mise.write_text('#!/bin/sh\nexit 99\n')
             fake_mise.chmod(0o755)
+            atomic = root / 'rpm-ostree'
+            atomic.write_text('#!/bin/sh\nexit 99\n')
+            atomic.chmod(0o755)
             env = {key: value for key, value in os.environ.items()
                    if not key.startswith(('MISE_', 'XDG_', 'DOTFILES_'))}
             env.update(HOME=str(root), PATH=f'{root}:/usr/bin:/bin', DOTFILES_REPO=str(REPO))
