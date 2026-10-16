@@ -164,6 +164,8 @@ Managed Bash and Zsh startup files activate the default environment when Flox is
 
 Edits through a symlink usually change the repository source immediately. Copy and template changes require another apply.
 
+VS Code settings and keybindings and Codex configuration use copy mode. Run `mise dot apply` to deploy repository changes, and `mise dot add --changed` to capture changes made in the applications back into the repository.
+
 Some applications replace symlinks when saving. Prefer copies for those files. Applications may need a reload or restart after configuration changes.
 
 See [managed files](https://mise.jdx.dev/dotfiles/managed.html).

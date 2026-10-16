@@ -97,6 +97,12 @@ alias cx='codex'
 alias oc='opencode'
 
 # Editors
+if ! command -v code >/dev/null 2>&1 &&
+   command -v flatpak >/dev/null 2>&1 &&
+   flatpak info com.visualstudio.code >/dev/null 2>&1; then
+  alias code='flatpak run com.visualstudio.code'
+fi
+
 _nv() {
   NVIM_APPNAME="$1" command nvim "${@:2}"
 }

@@ -16,6 +16,11 @@ mode = "symlink-each"
 "~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
 "~/.config/git/github_pszponder" = { source = ".config/git/github_pszponder", mode = "symlink" }
 
+# Keep application-managed configuration independent of repository sources.
+"~/.config/Code/User/settings.json" = { mode = "copy" }
+"~/.config/Code/User/keybindings.json" = { mode = "copy" }
+"~/.codex/config.toml" = { mode = "copy" }
+
 # COSMIC writes settings atomically; keep live files as independent copies.
 "~/.config/cosmic/com.system76.CosmicBackground/v1/all" = { mode = "copy" }
 "~/.config/cosmic/com.system76.CosmicPanel.Dock/v1/anchor" = { mode = "copy" }
