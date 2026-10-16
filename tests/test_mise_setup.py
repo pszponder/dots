@@ -460,7 +460,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             calls,
             [
                 "trust",
-                "-E server bootstrap --dry-run",
+                "-E server bootstrap --dry-run --force-dotfiles",
                 "-E server bootstrap --force-dotfiles",
                 "-E server bootstrap status",
             ],
@@ -480,7 +480,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                     calls = (self.home / "mise-calls").read_text().splitlines()
                     self.assertEqual(calls[-4:], [
                         "trust",
-                        f"-E {profile} bootstrap --dry-run",
+                        f"-E {profile} bootstrap --dry-run --force-dotfiles",
                         f"-E {profile} bootstrap --force-dotfiles",
                         f"-E {profile} bootstrap status",
                     ])
@@ -496,7 +496,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             calls[-4:],
             [
                 "trust",
-                "-E server bootstrap --dry-run",
+                "-E server bootstrap --dry-run --force-dotfiles",
                 "-E server bootstrap --force-dotfiles",
                 "-E server bootstrap status",
             ],
@@ -521,7 +521,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         calls = (self.home / "mise-calls").read_text().splitlines()
         self.assertEqual(
             calls[-3:],
-            [f"-C {self.config} vars prompt", "trust", "-E server bootstrap --dry-run"],
+            [f"-C {self.config} vars prompt", "trust", "-E server bootstrap --dry-run --force-dotfiles"],
         )
 
     def test_piped_installer_prompts_using_controlling_terminal(self):

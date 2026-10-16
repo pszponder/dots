@@ -144,7 +144,7 @@ main() {
   mise trust
 
   log_info "Previewing $profile setup"
-  mise -E "$profile" bootstrap --dry-run
+  mise -E "$profile" bootstrap --dry-run --force-dotfiles
 
   if [ -t 0 ]; then
     printf 'Apply bootstrap now? (Global mise preparation is already complete.) [y/N] '
