@@ -44,10 +44,10 @@ validate_profile() {
   # Validate the applied profile before changing the host. Never guess based on GUI/SSH.
   if has mise; then
     local config_dir=${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}
-    if [[ "$profile" != server && "$profile" != workstation ]] ||
+    if [[ ! "$profile" =~ ^(server|workstation-(ubuntu|debian|fedora|arch))$ ]] ||
         [[ ! -f "$repo/mise.toml" || ! -f "$repo/mise.$profile.toml" ||
            ! "$config_dir/config.toml" -ef "$repo/dots/.config/mise/config.toml" ]]; then
-      log_error "Apply your server or workstation dotfiles profile and reload your shell first."
+      log_error "Apply your server or distribution-specific workstation dotfiles profile and reload your shell first."
       log_error "Set DOTFILES_REPO and DOTFILES_PROFILE to override it explicitly."
       log_error "Run sh \"\$DOTFILES_REPO/scripts/bootstrap/configure_mise.sh\" to link global mise configuration."
       return 2

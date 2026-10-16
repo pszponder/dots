@@ -10,6 +10,44 @@ LOGGING = REPO / "scripts/utils/utils_logging.sh"
 
 
 class BrowserTests(unittest.TestCase):
+    def test_helium_installs_with_existing_repository_and_skips_existing_app(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            keyring = root / 'helium.gpg'
+            sources = root / 'helium.list'
+            keyring.touch()
+            sources.touch()
+            release = root / 'os-release'
+            release.write_text('ID=debian\n')
+            source = (REPO / 'scripts/gui/helium_repo.sh').read_text()
+            source = source.replace('"$SCRIPT_DIR/../utils/utils_logging.sh"', f'"{LOGGING}"')
+            source = source.replace('/etc/os-release', str(release))
+            source = source.replace('/usr/share/keyrings/helium.gpg', str(keyring))
+            source = source.replace('/etc/apt/sources.list.d/helium.list', str(sources))
+            source = source.replace('command -v helium ', 'command -v test-helium ')
+            script = root / 'installer.sh'
+            script.write_text(source)
+            for name, body in {
+                'uname': 'echo Linux',
+                'id': 'echo 0',
+                'apt-get': 'echo "$*" >> "$CALLS"',
+            }.items():
+                target = root / name
+                target.write_text('#!/bin/sh\n' + body + '\n')
+                target.chmod(0o755)
+            calls = root / 'calls'
+            env = dict(os.environ, PATH=f'{root}:/usr/bin:/bin', CALLS=str(calls))
+            result = subprocess.run(['sh', str(script)], env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(calls.read_text().strip(), 'install -y helium-bin')
+            calls.unlink()
+            app = root / 'test-helium'
+            app.write_text('#!/bin/sh\nexit 0\n')
+            app.chmod(0o755)
+            result = subprocess.run(['sh', str(script)], env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertFalse(calls.exists())
+
     def test_brave_origin_existing_install_and_download_failure(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

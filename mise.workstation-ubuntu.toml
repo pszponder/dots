@@ -1,0 +1,28 @@
+[vars]
+dotfiles_profile = "workstation-ubuntu"
+
+# Prefer project-published, project-endorsed, or Snapcrafters Snaps.
+# Zed uses its official installer; other apps use explicit fallback sources.
+[bootstrap.packages]
+"snap:ghostty" = { classic = true }
+"snap:code" = { classic = true }
+"snap:obsidian" = { classic = true }
+"snap:discord" = "latest"
+"apt:podman" = "latest"
+"apt:podman-compose" = "latest"
+"flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
+"flatpak:app.zen_browser.zen" = "latest"
+
+[bootstrap.hooks]
+post-dotfiles = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
+]
+pre-packages = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
+]
+post-packages = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/helium_repo.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/yaak_install.sh",
+]

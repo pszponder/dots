@@ -44,6 +44,22 @@ install_mise() {
   command -v mise >/dev/null 2>&1 || die "mise installation finished, but mise is not on PATH"
 }
 
+detect_workstation_profile() {
+  ID= ID_LIKE=
+  [ -r /etc/os-release ] || die "Cannot detect distribution; select workstation-ubuntu, workstation-debian, workstation-fedora, or workstation-arch explicitly"
+  . /etc/os-release
+  case "$ID" in
+    ubuntu|debian|fedora|arch) printf 'workstation-%s\n' "$ID"; return ;;
+  esac
+  # Follow the distribution's declared ancestry order.
+  for family in $ID_LIKE; do
+    case "$family" in
+      ubuntu|debian|fedora|arch) printf 'workstation-%s\n' "$family"; return ;;
+    esac
+  done
+  die "Unsupported workstation distribution: ${ID:-unknown}; select a supported workstation-<distribution> profile explicitly"
+}
+
 choose_profile() {
   profile=${1:-}
 
@@ -63,8 +79,9 @@ choose_profile() {
   fi
 
   case "$profile" in
-    workstation|server) printf '%s\n' "$profile" ;;
-    *) die "profile must be 'workstation' or 'server'" ;;
+    workstation) detect_workstation_profile ;;
+    workstation-ubuntu|workstation-debian|workstation-fedora|workstation-arch|server) printf '%s\n' "$profile" ;;
+    *) die "profile must be workstation, server, or workstation-{ubuntu,debian,fedora,arch}" ;;
   esac
 }
 

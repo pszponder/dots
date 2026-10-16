@@ -1,6 +1,12 @@
 # Home Directory Structure
 
-`mise -E workstation bootstrap` (or `-E server`) creates these directories from `[bootstrap.directories]` in [`mise.toml`](../mise.toml). Existing directories and their contents are preserved.
+All profiles create these directories from `[bootstrap.directories]` in [`mise.toml`](../mise.toml). Choose `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, or `server` for your machine. Existing directories and their contents are preserved.
+
+For example, on Debian:
+
+```sh
+mise -E workstation-debian bootstrap
+```
 
 ```
 ~/

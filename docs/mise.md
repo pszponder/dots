@@ -1,13 +1,15 @@
 # Setup and usage
 
-Use the [README](../README.md) for installation and individual setup commands. Commands here run from the checkout with `-E workstation`; substitute `server` on servers.
+Use the [README](../README.md) for installation and individual setup commands.
+
+Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, and `workstation-arch`; servers use `server`. Commands below use `-E workstation-ubuntu` as an example. Replace it with your machine's profile throughout. `./install.sh workstation` detects the distribution automatically; manual mise commands require the full profile name.
 
 ## Configuration layout
 
 | File | Purpose |
 | --- | --- |
 | `mise.toml` | Shared packages, directories, dotfiles, variables, and hooks |
-| `mise.workstation.toml` | Desktop packages and wallpaper hook |
+| `mise.workstation-{ubuntu,debian,fedora,arch}.toml` | Complete distribution-specific desktop packages and hooks |
 | `mise.server.toml` | Server profile |
 | `dots/` | Sources mirroring home-directory paths |
 | `dots/.config/mise/config.toml` | Global tools and tasks; projects can override them |
@@ -21,27 +23,34 @@ Bootstrap final hooks install global tools, Flox, SSH keys, and fonts on every r
 
 ## Packages and desktop setup
 
-Both profiles install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
+Both roles install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
 
-The workstation profile adds:
+The workstation profiles add:
 
-| Application | Installation |
-| --- | --- |
-| Zed | Official Linux installer |
-| Brave Origin | Official installer; binary AUR package on Arch |
-| Helium | apt repository, Fedora COPR, or binary AUR package |
-| Zen | System Flatpak |
-| Visual Studio Code | System Flatpak, classic Snap, or binary AUR package |
-| Ghostty | Classic Snap, apt, pacman, or Fedora `scottames/ghostty` COPR |
-| Yaak | Arch package; official 2026.9.0 Debian/RPM download on x64 or ARM64 |
-| Podman | Native packages; Podman Desktop via user Flatpak |
+| Application | Ubuntu | Debian | Fedora | Arch |
+| --- | --- | --- | --- | --- |
+| Ghostty | Classic Snap | apt (repository required) | COPR/dnf | pacman |
+| Visual Studio Code | Classic Snap | System Flatpak | System Flatpak | AUR |
+| Obsidian | Classic Snap | System Flatpak | System Flatpak | pacman |
+| Discord | Snap (Snapcrafters) | System Flatpak | System Flatpak | pacman |
+| Zen | System Flatpak | System Flatpak | System Flatpak | AUR |
+| Podman Desktop | User Flatpak | User Flatpak | User Flatpak | pacman |
+| Helium | apt repository | apt repository | COPR/dnf | AUR |
+| Brave Origin | Official installer | Official installer | Official installer | AUR |
+| Yaak | Official Debian download | Official Debian download | Official RPM download | pacman |
+| Zed | Official install script | Official install script | Official install script | pacman |
+| Podman and Compose | apt | apt | dnf | pacman |
 
-Package hooks prepare system-wide Flatpak/Flathub and native installers. Existing native installations are preserved. Yaak's direct downloads do not configure an update repository; update those installations separately. Add system Flatpak apps as `"flatpak:APPLICATION_ID" = "latest"` in `mise.workstation.toml`.
+Ubuntu prefers project-published, project-endorsed, or Snapcrafters Snap packages, then Flatpak, then apt. Zed uses its official script on Ubuntu, Debian, and Fedora. Arch uses pacman packages where available and AUR packages otherwise, with no Flatpak setup or standalone app installers. Each application has one declared source; fallback choices are explicit, not retries after failed installations. The Ubuntu profile uses the existing Snap installation and expects snapd to be installed and running.
+
+Sources checked for the Ubuntu Snap choices: [Ghostty's package documentation](https://ghostty.org/docs/install/binary), [VS Code](https://snapcraft.io/code), [Obsidian](https://snapcraft.io/obsidian), and [Discord](https://snapcraft.io/discord). The [Zen Snap](https://snapcraft.io/zen-browser-snap) has a different community publisher, so Zen uses Flatpak. No eligible Snap was found for Podman Desktop, Helium, Brave Origin, or Yaak; Brave's standard browser is a different application from Brave Origin.
+
+`pre-packages` hooks only prepare system-wide Flatpak/Flathub on Ubuntu, Debian, and Fedora. `post-packages` hooks run the Zed, Brave Origin, and Yaak installers where applicable. On Ubuntu and Debian, the Helium post-packages hook configures its apt repository and installs `helium-bin`; Fedora and Arch retain declarative Helium packages. Existing native installations are preserved. Yaak's direct downloads remain pinned to 2026.9.0 and do not configure an update repository. Add system Flatpak apps as `"flatpak:APPLICATION_ID" = "latest"` in the appropriate workstation profile.
 
 Requirements:
 
 - Fedora development groups need mise with [PR #14347](https://github.com/jdx/mise/pull/14347); v2026.10.8 and earlier lack the fix.
-- Snap declarations need mise with [Snap support](https://github.com/jdx/mise/pull/14402) and working snapd.
+- Ubuntu requires systemd and mise with native Snap support; mise v2026.10.9 cannot parse Snap options. Snap declarations need mise with [Snap support](https://github.com/jdx/mise/pull/14402) and working snapd.
 - Fedora repositories need mise with [native COPR support](https://mise.jdx.dev/bootstrap/packages/dnf.html#copr).
 - Ghostty on apt needs a [repository providing it](https://ghostty.org/docs/install/binary).
 
@@ -59,24 +68,26 @@ GNOME and COSMIC require Python 3; GNOME also uses `gsettings`. COSMIC wallpaper
 
 ### Nerd Fonts
 
-Both profiles install CaskaydiaCove, CaskaydiaMono, and JetBrainsMono under `${XDG_DATA_HOME:-~/.local/share}/fonts/NerdFonts`.
+CaskaydiaCove, CaskaydiaMono, and JetBrainsMono are installed by the download script on non-Arch systems. The Arch workstation profile uses pacman packages `ttf-cascadia-code-nerd`, `ttf-cascadia-mono-nerd`, and `ttf-jetbrains-mono-nerd`, installed system-wide and updated through pacman. These packages are declared in `mise.workstation-arch.toml`. The download script skips Arch and its derivatives, so the server profile does not install Nerd Fonts on Arch.
 
-Edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. Removing a family leaves installed files in place; select fonts in terminal applications separately.
+On other Linux distributions, the script installs these families under `${XDG_DATA_HOME:-~/.local/share}/fonts/NerdFonts`; on macOS it uses `~/Library/Fonts/NerdFonts`. The script supports Linux and macOS, independently of the workstation profile.
+
+For downloaded fonts, edit `dots/.config/nerd-fonts/fonts` for families and `nerdfonts_version` in `mise.toml` for the release. The installer skips matching versions and refreshes the font cache after changes. On Arch workstations, edit the `pacman:ttf-*-nerd` declarations in `mise.workstation-arch.toml`; pacman controls the installed version. Removing a declaration or family leaves installed fonts in place, including any previous downloaded copies. Select fonts in terminal applications separately.
 
 ## Bootstrap from a repository
 
-This repository is a mise bootstrap project: its entry point is root `mise.toml`, with `mise.workstation.toml` and `mise.server.toml` profiles. Use `--from`; `--adopt` expects either a global config repository or mise's dotfile-history format, neither of which matches this layout. See [mise repository bootstrap](https://mise.jdx.dev/bootstrap/from-repository.html).
+This repository is a mise bootstrap project: its entry point is root `mise.toml`, with `mise.workstation-<distribution>.toml` and `mise.server.toml` profiles. Use `--from`; `--adopt` expects either a global config repository or mise's dotfile-history format, neither of which matches this layout. See [mise repository bootstrap](https://mise.jdx.dev/bootstrap/from-repository.html).
 
 With mise installed, run in a terminal:
 
 ```sh
-mise -E workstation bootstrap \
+mise -E workstation-ubuntu bootstrap \
   --from https://github.com/pszponder/dots.git \
   --from-dir "$HOME/repos/github/pszponder/dots" \
   --prompt-vars
 ```
 
-Use `server` instead of `workstation` throughout on servers. `--prompt-vars` collects missing Git identity values and saves them outside the checkout. For unattended setup, save them first, then run the command above with `--yes`:
+Use your full workstation profile, or `server` throughout on servers. `--prompt-vars` collects missing Git identity values and saves them outside the checkout. For unattended setup, save them first, then run the command above with `--yes`:
 
 ```sh
 mise vars prompt git_name="Your Name" git_email="you@example.com"
@@ -90,7 +101,7 @@ Add `--dry-run` to preview. When the checkout does not exist yet, that only prin
 
 ```sh
 git clone https://github.com/pszponder/dots.git "$HOME/repos/github/pszponder/dots"
-mise -E workstation bootstrap \
+mise -E workstation-ubuntu bootstrap \
   --from https://github.com/pszponder/dots.git \
   --from-dir "$HOME/repos/github/pszponder/dots" \
   --prompt-vars --dry-run
@@ -101,7 +112,7 @@ The preview prints the tool-install hook without installing tools. Required-vari
 To pull and apply new commits later:
 
 ```sh
-mise -E workstation bootstrap \
+mise -E workstation-ubuntu bootstrap \
   --from https://github.com/pszponder/dots.git \
   --from-dir "$HOME/repos/github/pszponder/dots" \
   --update
@@ -131,7 +142,7 @@ See [mise scaffolding tasks](https://mise.jdx.dev/mise-cookbook/presets.html) an
 
 ## Flox
 
-Both profiles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
+Both roles run `scripts/cli/flox_install.sh` during bootstrap, using the [official curl installer](https://flox.dev/docs/install-flox/install). Existing Flox installations are kept. Installation supports macOS, Debian/Ubuntu, and Fedora/RHEL-family systems on x86_64 and ARM64; unsupported systems (including Arch/Omarchy), immutable Linux systems, and existing Nix installations are skipped with a message. The installer may request sudo. Bootstrap dry runs only print the hook.
 
 After installation, initialize your user’s [default environment](https://flox.dev/docs/tutorials/default-environment) once:
 
@@ -176,7 +187,7 @@ For example, `dots/.config/git/config.tera`:
 Collect personal values on each machine:
 
 ```
-mise -E workstation vars prompt
+mise -E workstation-ubuntu vars prompt
 ```
 
 Mise saves answers in `$MISE_STATE_DIR/vars.toml`, outside this repository. Subsequent commands reuse them.
@@ -203,6 +214,10 @@ git_email = "work@example.com"
 
 See [configuration variables](https://mise.jdx.dev/configuration/vars.html).
 
+## Migrating workstation profiles
+
+The generic `mise.workstation.toml` has been replaced by complete distribution profiles. Run `./install.sh workstation` to detect and apply your distribution, or select one explicitly, such as `./install.sh workstation-fedora`. For dotfiles only, run `mise -E workstation-fedora dot apply`. Reload your shell afterward so `DOTFILES_PROFILE` and `MISE_ENV` contain the new full profile. Final hooks and `up` reuse that profile. Existing duplicate app installations are not uninstalled.
+
 ## Manual setup
 
 Prefer [install.sh](../README.md#full-machine-setup) for a new machine. To prepare an existing checkout manually:
@@ -210,10 +225,10 @@ Prefer [install.sh](../README.md#full-machine-setup) for a new machine. To prepa
 ```sh
 sh scripts/bootstrap/configure_mise.sh
 mise trust
-mise -E workstation vars prompt
-mise -E workstation bootstrap --dry-run
-mise -E workstation bootstrap
-mise -E workstation bootstrap status
+mise -E workstation-ubuntu vars prompt
+mise -E workstation-ubuntu bootstrap --dry-run
+mise -E workstation-ubuntu bootstrap
+mise -E workstation-ubuntu bootstrap status
 ```
 
 Open a new shell and run `mise doctor`. Earlier successful steps remain applied if a later step fails.
@@ -247,8 +262,8 @@ Edit the source files in the repository:
 cd "$DOTFILES_REPO"
 
 # Edit files, then review and apply:
-mise -E workstation dot diff
-mise -E workstation dot apply
+mise -E workstation-ubuntu dot diff
+mise -E workstation-ubuntu dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 
 git diff
@@ -262,7 +277,7 @@ A symlinked source change is already visible through its live path. Reapply when
 You can also open a managed file’s source with:
 
 ```
-mise -E workstation dot edit ~/.bashrc
+mise -E workstation-ubuntu dot edit ~/.bashrc
 ```
 
 ## Update another machine
@@ -296,8 +311,8 @@ Copy the existing file into its matching home-directory path under `dots/`; the 
 Review and apply:
 
 ```
-mise -E workstation dot diff
-mise -E workstation dot apply
+mise -E workstation-ubuntu dot diff
+mise -E workstation-ubuntu dot apply
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
@@ -310,15 +325,15 @@ For a file already managed in copy mode:
 ```
 cd "$DOTFILES_REPO"
 
-mise -E workstation dot diff
-mise -E workstation dot add ~/.config/starship.toml
+mise -E workstation-ubuntu dot diff
+mise -E workstation-ubuntu dot add ~/.config/starship.toml
 git diff
 ```
 
 To capture all changed individual copy-managed files:
 
 ```
-mise -E workstation dot add --changed
+mise -E workstation-ubuntu dot add --changed
 ```
 
 Review, commit, and push afterward.
@@ -352,7 +367,7 @@ Reference it in the template:
 Supply the environment variable through your secret manager, or prompt during an attended run:
 
 ```
-mise -E workstation dot apply --prompt-secrets
+mise -E workstation-ubuntu dot apply --prompt-secrets
 mise exec gh@latest -- gh auth setup-git --hostname github.com
 ```
 
@@ -362,12 +377,12 @@ See [secret inputs](https://mise.jdx.dev/bootstrap/secrets.html).
 
 ## Remove a managed file
 
-Removing a file from the group source tree leaves its deployed target in place as `orphaned`. Review with `mise -E workstation dot status`, then use `mise -E workstation dot apply --prune` to remove unchanged orphaned targets. Deleting an explicit mapping also leaves its target on disk.
+Removing a file from the group source tree leaves its deployed target in place as `orphaned`. Review with `mise -E workstation-ubuntu dot status`, then use `mise -E workstation-ubuntu dot apply --prune` to remove unchanged orphaned targets. Deleting an explicit mapping also leaves its target on disk.
 
 To remove a previously deployed target locally, unapply it before deleting its mapping:
 
 ```
-mise -E workstation dot unapply ~/.config/example/config.toml
+mise -E workstation-ubuntu dot unapply ~/.config/example/config.toml
 ```
 
 To declare removal across machines, replace its mapping with:
@@ -396,7 +411,7 @@ up
 
 The updater detects Linux using `/etc/os-release`, supporting Debian/Ubuntu (apt), Fedora/RHEL (dnf), Arch (pacman, or paru/yay when installed), openSUSE (zypper), and Alpine (apk). On macOS it runs `softwareupdate`. Homebrew is updated when installed, followed by its formulae and eligible casks. Arch AUR helpers retain their normal review prompts.
 
-Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected repository profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO` with the explicit server or workstation profile, including global tool configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
+Mise installed by the OS or standard Homebrew installation is upgraded through that manager. Standalone mise installations use `mise self-update`. The updater then updates mise plugins, installs missing configured tools, upgrades configured tools within their version ranges, and upgrades installed `[bootstrap.packages]`. Shared global tools and the selected repository profile are included, so `latest` declarations receive new releases. Mise commands run from `DOTFILES_REPO` with the explicit server or distribution-specific workstation profile, including global tool configuration. It does not scan unrelated project configurations or upgrade unconfigured tool versions. See [tool upgrades](https://mise.jdx.dev/cli/upgrade.html) and [package upgrades](https://mise.jdx.dev/cli/bootstrap/packages/upgrade.html).
 
 Flatpak updates both per-user and default system applications and runtimes when installed. Optional managers that are absent are skipped. Independent update steps continue after failures, with a final failure summary and nonzero exit status. OS and bootstrap updates may request sudo credentials. No automatic reboot is performed.
 

@@ -21,6 +21,16 @@ main() {
     *) return 0 ;;
   esac
 
+  configure_repository
+  if command -v helium >/dev/null 2>&1; then
+    log_info 'Helium is already installed'
+    return 0
+  fi
+  as_root apt-get install -y helium-bin
+  log_success 'Helium installed from its apt repository'
+}
+
+configure_repository() {
   keyring=/usr/share/keyrings/helium.gpg
   source_list=/etc/apt/sources.list.d/helium.list
   if [ -f "$keyring" ] && [ -f "$source_list" ]; then
@@ -33,8 +43,7 @@ main() {
     return 1
   }
   command -v gpg >/dev/null 2>&1 || {
-    log_error 'gpg is required to configure the Helium repository'
-    return 1
+    as_root apt-get install -y gnupg
   }
 
   temp_dir=$(mktemp -d)

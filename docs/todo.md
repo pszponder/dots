@@ -1,10 +1,21 @@
 # TODOs
-
+- Add workstation configuration for ublue based fedora like bluefin or bazzite (https://universal-blue.org/)
+  - For ublue, they use homebrew instead of mise to manage system-level packages (including nerdfonts), how to avoid installing packages managed by mise and only install homebrew pckages but only for ublue based systems?
+- [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
+- [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
+- [ ] [How To Setup Minimal Neovim 0.12 Config Guide From Scratch](https://www.youtube.com/watch?v=XQuNoprFW38)
+- [ ] [The Greatest Minimal Shell Prompt Ever Existed | 2033 Starship](https://www.youtube.com/watch?v=oe3gadOQk44)
+- [ ] [Tmux Didn’t Need a Replacement, It Needed Workmux](https://www.youtube.com/watch?v=0RGyt3EDP-E)
+- [ ] [5 Underrated CLI Tools That Made My Terminal Experience Better](https://www.youtube.com/watch?v=II17TPAb4AQ)
+- [ ] [11 Amazing Terminal Tools Worth Knowing About](https://www.youtube.com/watch?v=b5SUAuQ69jU)
+- [ ] [How To ACTUALLY Manage Dotfiles with Stow | Full Guide + Git Workflow - YouTube](https://www.youtube.com/watch?v=TLFsee7DDSI)
 - [ ] [Nvim Exrc is Criminally Underrated - YouTube](https://www.youtube.com/watch?v=fx0TGvXDrxQ)
 - [ ] Create a branch for just a server install (is this necessary?)
 
 ## Done
 
+- [x] Split workstation bootstrap into Ubuntu, Debian, Fedora, and Arch profiles with one installation source per application.
+- [x] Add Obsidian and Discord to all workstation profiles.
 - [x] Shorten README and consolidate documentation.
 - [x] Install Yaak (Arch package; official Debian/Fedora downloads).
 - Install GUIs on Workstation

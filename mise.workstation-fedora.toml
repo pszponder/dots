@@ -1,0 +1,30 @@
+[vars]
+dotfiles_profile = "workstation-fedora"
+
+[bootstrap.dnf.repos]
+ghostty = { copr = "scottames/ghostty" }
+helium = { copr = "imput/helium" }
+
+[bootstrap.packages]
+"dnf:ghostty" = "latest"
+"flatpak:com.visualstudio.code" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
+"flatpak:com.discordapp.Discord" = "latest"
+"dnf:podman" = "latest"
+"dnf:podman-compose" = "latest"
+"flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
+"flatpak:app.zen_browser.zen" = "latest"
+"dnf:helium-bin" = "latest"
+
+[bootstrap.hooks]
+post-dotfiles = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
+]
+pre-packages = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
+]
+post-packages = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/yaak_install.sh",
+]

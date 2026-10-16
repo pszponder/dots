@@ -3,6 +3,7 @@
 import json
 import os
 import pty
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -12,6 +13,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 MISE = shutil.which("mise")
+WORKSTATIONS = tuple(f"workstation-{os}" for os in ("ubuntu", "debian", "fedora", "arch"))
+PROFILES = ("server", *WORKSTATIONS)
 
 
 class MiseSetupTests(unittest.TestCase):
@@ -26,7 +29,7 @@ class MiseSetupTests(unittest.TestCase):
         for name in (
             "mise.toml",
             "mise.server.toml",
-            "mise.workstation.toml",
+            *(f"mise.{profile}.toml" for profile in WORKSTATIONS),
             "install.sh",
         ):
             shutil.copy(REPO / name, self.repo / name)
@@ -60,6 +63,17 @@ class MiseSetupTests(unittest.TestCase):
             "sh", str(self.repo / "scripts/bootstrap/configure_mise.sh"), str(self.repo)
         )
 
+    def require_profile_support(self, profile):
+        if profile != "workstation-ubuntu":
+            return
+        probe = subprocess.run(
+            [MISE, "-C", str(self.repo), "-E", profile, "config", "--json"],
+            env=self.env, capture_output=True, text=True,
+        )
+        if probe.returncode and "PackageTomlConfig" in probe.stderr and "classic" in probe.stderr:
+            self.skipTest("Installed mise lacks native Snap support; upgrade mise to exercise Ubuntu integration")
+        self.assertEqual(probe.returncode, 0, probe.stdout + probe.stderr)
+
     def test_config_backups_and_repeat_setup(self):
         self.config.mkdir(parents=True)
         (self.config / "config.toml").write_text("# existing configuration\n")
@@ -84,7 +98,7 @@ class MiseSetupTests(unittest.TestCase):
         # package installation. Copy sources so deployed links use the clone.
         remote = self.root / "remote"
         remote.mkdir()
-        for name in ("mise.toml", "mise.server.toml", "mise.workstation.toml"):
+        for name in ("mise.toml", *(f"mise.{profile}.toml" for profile in PROFILES)):
             shutil.copy(REPO / name, remote / name)
         for name in ("dots", "scripts"):
             shutil.copytree(REPO / name, remote / name)
@@ -113,8 +127,9 @@ class MiseSetupTests(unittest.TestCase):
         expected_tools = tomllib.loads(
             (REPO / "dots/.config/mise/config.toml").read_text()
         )["tools"]
-        for profile in ("server", "workstation"):
+        for profile in PROFILES:
             with self.subTest(profile=profile):
+                self.require_profile_support(profile)
                 base = self.root / profile
                 home = base / "home"
                 home.mkdir(parents=True)
@@ -152,13 +167,13 @@ class MiseSetupTests(unittest.TestCase):
                 preview = self.run_command(*args, "--dry-run", "--skip", "tools")
                 self.assertIn("create_ssh_keys.sh", preview)
                 self.assertEqual(
-                    "flatpak_install.sh" in preview, profile == "workstation"
+                    "flatpak_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
                 )
-                self.assertEqual("zed_install.sh" in preview, profile == "workstation")
+                self.assertEqual("zed_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch")
                 self.assertEqual(
-                    "brave_origin_install.sh" in preview, profile == "workstation"
+                    "brave_origin_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
                 )
-                self.assertEqual("helium_repo.sh" in preview, profile == "workstation")
+                self.assertEqual("helium_repo.sh" in preview, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.assertFalse(config.exists())
                 self.run_command(*args, "--only", "dotfiles")
                 self.assertEqual(
@@ -248,15 +263,17 @@ class MiseSetupTests(unittest.TestCase):
         flatpak.write_text("#!/bin/sh\nexit 99\n")
         flatpak.chmod(0o755)
         original_path = self.env["PATH"]
-        for profile in ("server", "workstation"):
+        for profile in PROFILES:
             with self.subTest(profile=profile):
                 self.env["PATH"] = original_path
+                self.require_profile_support(profile)
                 configs = self.run_command(
                     MISE, "-C", str(self.repo), "-E", profile, "config", "--json"
                 )
                 self.assertIn(f"mise.{profile}.toml", configs)
-                other = "server" if profile == "workstation" else "workstation"
-                self.assertNotIn(f"mise.{other}.toml", configs)
+                for other in PROFILES:
+                    if other != profile:
+                        self.assertNotIn(f"mise.{other}.toml", configs)
                 # Skip version resolution/downloads; exercise all bootstrap path rendering.
                 output = self.run_command(
                     MISE,
@@ -274,15 +291,15 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertIn("flox_install.sh", output)
                 self.assertIn(
                     "flatpak_install.sh"
-                    if profile == "workstation"
+                    if profile in WORKSTATIONS and profile != "workstation-arch"
                     else "nerdfonts_install.sh",
                     output,
                 )
-                self.assertEqual("zed_install.sh" in output, profile == "workstation")
+                self.assertEqual("zed_install.sh" in output, profile in WORKSTATIONS and profile != "workstation-arch")
                 self.assertEqual(
-                    "brave_origin_install.sh" in output, profile == "workstation"
+                    "brave_origin_install.sh" in output, profile in WORKSTATIONS and profile != "workstation-arch"
                 )
-                self.assertEqual("helium_repo.sh" in output, profile == "workstation")
+                self.assertEqual("helium_repo.sh" in output, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.env["PATH"] = str(fake_bin) + ":" + original_path
                 self.env.update(DOTFILES_REPO=str(self.repo), DOTFILES_PROFILE=profile)
                 output = self.run_command(
@@ -366,18 +383,26 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                 "-E server bootstrap status",
             ],
         )
-        # An explicit workstation profile overrides the noninteractive default.
-        self.run_command("sh", str(self.repo / "install.sh"), "workstation")
-        calls = (self.home / "mise-calls").read_text().splitlines()
-        self.assertEqual(
-            calls[-4:],
-            [
-                "trust",
-                "-E workstation bootstrap --dry-run",
-                "-E workstation bootstrap",
-                "-E workstation bootstrap status",
-            ],
+        # Exercise both explicit selection and the workstation shorthand through
+        # the full installer, without installing mise or any host packages.
+        original = (self.repo / "install.sh").read_text()
+        release = self.root / "os-release"
+        (self.repo / "install.sh").write_text(
+            original.replace("/etc/os-release", shlex.quote(str(release)))
         )
+        for profile in WORKSTATIONS:
+            release.write_text(f"ID={profile.removeprefix('workstation-')}\n")
+            for selection in (profile, "workstation"):
+                with self.subTest(selection=selection, profile=profile):
+                    self.run_command("sh", str(self.repo / "install.sh"), selection)
+                    calls = (self.home / "mise-calls").read_text().splitlines()
+                    self.assertEqual(calls[-4:], [
+                        "trust",
+                        f"-E {profile} bootstrap --dry-run",
+                        f"-E {profile} bootstrap",
+                        f"-E {profile} bootstrap status",
+                    ])
+        (self.repo / "install.sh").write_text(original)
         # A standalone downloaded installer must work before logging helpers exist.
         downloaded = self.root / "downloaded-install.sh"
         shutil.copy(self.repo / "install.sh", downloaded)

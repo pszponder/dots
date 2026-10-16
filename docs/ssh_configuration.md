@@ -62,11 +62,10 @@ You should create a new SSH key for each service which you wish to connect to vi
 
 ## Bootstrap default SSH keys
 
-The final bootstrap hook in [`config.toml`](../dots/.config/mise/config.toml) runs [`scripts/bootstrap/create_ssh_keys.sh`](../scripts/bootstrap/create_ssh_keys.sh) on both profiles, after packages and dotfiles are installed:
+The final bootstrap hook in [`mise.toml`](../mise.toml) runs [`scripts/bootstrap/create_ssh_keys.sh`](../scripts/bootstrap/create_ssh_keys.sh) on all profiles, after packages and dotfiles are installed. Select `workstation-ubuntu`, `workstation-debian`, `workstation-fedora`, `workstation-arch`, or `server` for your machine. For example:
 
 ```sh
-mise -E workstation bootstrap
-# Or: mise -E server bootstrap
+mise -E workstation-fedora bootstrap
 ```
 
 Edit `DEFAULT_KEYS` in the script to customize the default set:

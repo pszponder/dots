@@ -17,7 +17,7 @@ configure_fonts() {
 
   MANIFEST=${NERDFONTS_MANIFEST:-$HOME/.config/nerd-fonts/fonts}
   if [ ! -f "$MANIFEST" ]; then
-    log_error "$MANIFEST not found; run mise -E workstation dot apply first"
+    log_error "$MANIFEST not found; run mise -E <your-profile> dot apply first (for example, server or workstation-fedora)"
     exit 1
   fi
   for tool in curl tar; do
@@ -68,6 +68,16 @@ install_fonts() {
 main() {
   SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
   . "$SCRIPT_DIR/../utils/utils_logging.sh"
+
+  if [ "$(uname -s)" = Linux ] && [ -r /etc/os-release ]; then
+    ID= ID_LIKE=
+    . /etc/os-release
+    case " ${ID:-} ${ID_LIKE:-} " in
+      *' arch '*)
+        log_info 'Nerd Fonts are managed by pacman on Arch; run bootstrap packages to install them'
+        return 0 ;;
+    esac
+  fi
 
   configure_fonts
   install_fonts

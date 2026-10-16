@@ -1,0 +1,25 @@
+[vars]
+dotfiles_profile = "workstation-arch"
+
+# Prefer official Arch packages; use the AUR where needed.
+[bootstrap.packages]
+"pacman:ttf-cascadia-code-nerd" = "latest"
+"pacman:ttf-cascadia-mono-nerd" = "latest"
+"pacman:ttf-jetbrains-mono-nerd" = "latest"
+"pacman:ghostty" = "latest"
+"aur:visual-studio-code-bin" = "latest"
+"pacman:obsidian" = "latest"
+"pacman:discord" = "latest"
+"pacman:podman" = "latest"
+"pacman:podman-compose" = "latest"
+"pacman:podman-desktop" = "latest"
+"aur:zen-browser-bin" = "latest"
+"aur:helium-browser-bin" = "latest"
+"aur:brave-origin-bin" = "latest"
+"pacman:yaak" = "latest"
+"pacman:zed" = "latest"
+
+[bootstrap.hooks]
+post-dotfiles = [
+  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/configure_wallpaper.sh",
+]
