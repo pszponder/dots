@@ -9,14 +9,14 @@ Requires Python 3.11+. The installer installs mise if needed.
 From a local checkout:
 
 ```sh
-./install.sh              # Choose workstation or server
+./install.sh              # Choose a profile interactively
 ./install.sh workstation  # Detect the workstation distribution
 ./install.sh workstation-fedora  # Select a profile explicitly
 ```
 
 Without cloning first (requires Git and curl):
 
-The installer asks you to choose workstation or server, confirms preparation, and previews bootstrap before asking to apply it. It reads input from your terminal even when piped from curl.
+The installer offers automatic workstation detection, server, or an explicit workstation distribution (Ubuntu, Debian, Fedora, Arch, or Universal Blue). It confirms preparation and previews bootstrap before asking to apply it. It reads input from your terminal even when piped from curl.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh

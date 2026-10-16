@@ -71,13 +71,18 @@ choose_profile() {
   fi
 
   if [ -z "$profile" ]; then
-    printf 'Select setup profile:\n  1) workstation\n  2) server\n' >&2
+    printf 'Select setup profile:\n  1) workstation (detect distribution automatically)\n  2) server\n  3) workstation-ubuntu\n  4) workstation-debian\n  5) workstation-fedora\n  6) workstation-arch\n  7) workstation-ublue (Universal Blue)\n' >&2
     printf 'Profile [1]: ' >&2
     IFS= read -r profile
     profile="${profile:-1}"
     case "$profile" in
       1) profile=workstation ;;
       2) profile=server ;;
+      3) profile=workstation-ubuntu ;;
+      4) profile=workstation-debian ;;
+      5) profile=workstation-fedora ;;
+      6) profile=workstation-arch ;;
+      7) profile=workstation-ublue ;;
     esac
   fi
 

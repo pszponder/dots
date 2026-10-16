@@ -1,6 +1,7 @@
 """Offline checks for distribution selection and desktop installation policy."""
 from pathlib import Path
 import os
+import pty
 import subprocess
 import tempfile
 import tomllib
@@ -11,6 +12,31 @@ DISTROS = ("ubuntu", "debian", "fedora", "arch", "ublue")
 
 
 class WorkstationProfileTests(unittest.TestCase):
+    def test_interactive_profile_menu(self):
+        source = (REPO / "install.sh").read_text().rsplit('main "$@"', 1)[0]
+        harness = source + '\nlog_error() { printf "%s\\n" "$*" >&2; }\nchoose_profile\n'
+        for selection, expected in (
+            ("2", "server"),
+            *((str(index), f"workstation-{distro}")
+              for index, distro in enumerate(DISTROS, start=3)),
+            ("workstation-fedora", "workstation-fedora"),
+        ):
+            with self.subTest(selection=selection):
+                master, slave = pty.openpty()
+                try:
+                    os.write(master, (selection + "\n").encode())
+                    result = subprocess.run(
+                        ["sh", "-c", harness], stdin=slave,
+                        capture_output=True, text=True, timeout=10,
+                    )
+                finally:
+                    os.close(slave)
+                    os.close(master)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.strip(), expected)
+                for distro in DISTROS:
+                    self.assertIn(f"workstation-{distro}", result.stderr)
+
     def test_selection_and_unsupported_systems(self):
         source = (REPO / "install.sh").read_text().rsplit('main "$@"', 1)[0]
         cases = [
