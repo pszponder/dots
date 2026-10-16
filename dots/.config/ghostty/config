@@ -1,5 +1,5 @@
 # Theme
-theme = catppuccin-mocha
+theme = Catppuccin Mocha
 
 # Font (CaskaydiaCove is primary, JetBrainsMono is backup/secondary)
 font-family = "CaskaydiaCove Nerd Font"
