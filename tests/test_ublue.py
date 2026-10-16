@@ -75,7 +75,7 @@ class UblueTests(unittest.TestCase):
             script = root / 'update'
             script.write_text(source)
             calls = root / 'calls'
-            for name in ('bootc', 'rpm-ostree', 'flatpak', 'mise', 'brew', 'sudo'):
+            for name in ('bootc', 'rpm-ostree', 'flatpak', 'mise', 'brew', 'sudo', 'flox'):
                 target = root / name
                 body = 'echo "' + name + ' $*" >> "$CALLS"\n'
                 if name == 'sudo':
