@@ -4,6 +4,8 @@ Linux workstation and server bootstrap & dotfiles, deployed with [mise](https://
 
 ## Bootstrapping a New Machine
 
+Requires Python 3.11+. The installer installs mise if needed.
+
 From a local checkout:
 
 ```sh
@@ -31,68 +33,26 @@ Available profiles:
 | Universal Blue workstation | `workstation-ublue`  |
 | Server                     | `server`             |
 
-Pass a profile to `./install.sh <profile>` or `mise -C bootstrap -E <profile>`. The installer shorthand `workstation` detects the distribution; manual mise commands require a full profile name.
+Pass a profile to `./install.sh <profile>` or `mise -C bootstrap -E <profile>`. The installer shorthand `workstation` detects the distribution; manual bootstrap commands require a full profile name.
 
 Keep the checkout: deployed symlinks point into it. The default is `~/repos/github/pszponder/dots`; override it with `DOTFILES_REPO_DIR` (or `DOTFILES_REPO_URL` for a fork). After setup, open a new shell and run `mise doctor`.
 
-## Run individual setup steps
-
-Requires Git, Python 3.11+, mise on `PATH`, and a trusted checkout:
-
-```sh
-git clone https://github.com/pszponder/dots.git "$HOME/repos/github/pszponder/dots"
-cd "$HOME/repos/github/pszponder/dots"
-mise -C bootstrap trust
-```
-
-Run preparation and bootstrap commands from the checkout, replacing `workstation-ubuntu` with your profile from the table above. After preparation, `mise dot` and global tool commands work from any directory.
-
-### Bootstrap only: packages and directories
-
-```sh
-mise -C bootstrap -E workstation-ubuntu bootstrap --only packages,files --dry-run
-mise -C bootstrap -E workstation-ubuntu bootstrap --only packages,files
-```
-
-Runs package hooks but skips dotfiles and final hooks. Use `--only packages` for packages alone. See [package notes](docs/mise.md#packages-and-desktop-setup) for platform requirements.
-
-### Deploy dotfiles only
-
-Prepare global configuration once from the checkout (also done by `install.sh`):
-
-```sh
-sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-ubuntu
-```
-
-Use your machine profile for preparation. Then run the following commands from any directory, without profile flags. The same dotfiles deploy on servers and workstations.
-
-[Back up conflicting files](docs/mise.md#back-up-conflicts), then review and apply:
-
-```
-mise vars prompt
-mise dot diff
-mise dot apply --dry-run
-mise dot apply
-mise dot status
-```
-
-Deploys files and runs dotfile hooks, including workstation wallpaper setup. Open a new shell afterward. Packages, tools, and CLI authentication are separate.
-
-### Install global tools only
-
-```sh
-sh scripts/bootstrap/configure_mise.sh
-mise install --dry-run
-mise install
-```
-
-The helper saves the checkout path and profile in `~/.config/mise/conf.d/01-dotfiles-machine.toml` and links the [shared global manifest](dots/.config/mise/config.toml), backs up conflicting global config, and preserves local overrides. `install` adds missing versions; use `upgrade` for updates. Shell startup files must [activate mise](https://mise.jdx.dev/getting-started.html) for tools to appear on `PATH`.
-
 ## Managing Dotfiles
 
-Edit the source files under `dots/` in this checkout. Paths mirror your home directory: `dots/.bashrc` manages `~/.bashrc`, and `dots/.config/starship.toml` manages `~/.config/starship.toml`. Most deployed files are symlinks, so source edits are immediately visible at their home-directory paths. Edit `.tera` source files for generated configuration, such as Git identity and `env.sh`; reapply to render changes.
+If you skipped full machine setup, prepare global configuration once from the checkout with mise and Python 3.11+ installed:
 
-After the one-time preparation above, import an existing file from any directory with `mise dot add`:
+```sh
+sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-fedora  # Use your profile
+mise vars prompt
+```
+
+`install.sh` already performs this preparation. After preparation, the `mise dot` commands below work from any directory without profile flags.
+
+### Editing Dotfiles
+
+Edit files under `dots/` or through their deployed symlinks; both change the same file. Paths mirror your home directory: `dots/.config/starship.toml` manages `~/.config/starship.toml`. Edit `.tera` sources for generated files, such as `env.sh` and Git configuration, then run `mise dot apply` to render changes.
+
+### Adding Dotfiles
 
 ```sh
 mise dot add --group home --dry-run ~/.config/example/config.toml
@@ -103,7 +63,7 @@ This captures the file into `dots/.config/example/config.toml` and replaces the 
 
 You can also create new files directly under their matching paths in `dots/`; they are included automatically on the next apply. Keep secrets and machine-specific values outside the repository. [Back up conflicting files](docs/mise.md#back-up-conflicts) before deploying repository files over existing home-directory files.
 
-After the one-time preparation above, review and apply your changes from any directory:
+### Applying Dotfiles to the System
 
 ```sh
 mise dot diff
@@ -111,7 +71,7 @@ mise dot apply --dry-run
 mise dot apply
 ```
 
-Applying deploys new files, rerenders templates, and runs dotfile hooks. Open a new shell for shell configuration changes, or reload/restart the affected application. Package or bootstrap changes require the full setup below.
+Applying deploys files, renders templates, and configures wallpaper on supported desktops. It does not install packages or tools or run full bootstrap. Open a new shell for shell configuration changes, or reload/restart the affected application. Package or bootstrap changes require the full setup below.
 
 Review `git diff`, then commit and push the files you changed to share them with other machines. On another machine, run `git pull --ff-only`, then the review/apply commands above. See [editing and publishing dotfiles](docs/mise.md#edit-and-publish-dotfiles) for more options, including capturing changes to copy-managed files.
 
