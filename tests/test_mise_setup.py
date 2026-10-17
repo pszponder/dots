@@ -546,6 +546,40 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
         self.assertIn("cancelled before global mise preparation", result.stdout + result.stderr)
         self.assertFalse(self.config.exists())
 
+    def test_piped_installer_exits_after_success(self):
+        fake_bin = self.root / "bin"
+        fake_bin.mkdir()
+        fake_mise = fake_bin / "mise"
+        fake_mise.write_text("#!/bin/sh\nexit 0\n")
+        fake_mise.chmod(0o755)
+        self.env["PATH"] = str(fake_bin) + ":" + self.env["PATH"]
+        master, slave = pty.openpty()
+
+        def attach_terminal():
+            os.setsid()
+            fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+
+        try:
+            # Keep the terminal open after answering every prompt. Successful
+            # completion must not depend on terminal EOF or another keystroke.
+            os.write(master, b"2\ny\ny\n")
+            result = subprocess.run(
+                ["sh", "-c", f"cat {shlex.quote(str(self.repo / 'install.sh'))} | sh"],
+                stdin=slave,
+                preexec_fn=attach_terminal,
+                env=self.env,
+                cwd=str(self.repo),
+                text=True,
+                capture_output=True,
+                timeout=5,
+            )
+        finally:
+            os.close(slave)
+            os.close(master)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Setup complete", result.stdout)
+        self.assertIn("mise doctor", result.stdout)
+
     def test_installer_requires_profile_without_terminal(self):
         result = subprocess.run(
             ["sh", str(self.repo / "install.sh")],

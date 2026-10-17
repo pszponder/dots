@@ -181,6 +181,9 @@ main() {
   configure_ssh_remote
   log_success "Setup complete"
   log_info "Open a new shell, then run 'mise doctor' to verify shell activation"
+  # With curl | sh, stdin now points at /dev/tty for prompts. Exit before
+  # the shell tries to read another command from that terminal.
+  exit 0
 }
 
 main "$@"
