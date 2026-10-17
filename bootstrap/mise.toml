@@ -21,7 +21,9 @@ nerdfonts_version = "v3.5.1"
 "~/.ssh/github/pszponder" = { mode = "0700" }
 
 [bootstrap.hooks]
-post-dotfiles = ["mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:git"]
+post-dotfiles = [
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:git",
+]
 final = [
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:tools",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:kanata",
