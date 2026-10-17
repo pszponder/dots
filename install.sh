@@ -180,7 +180,12 @@ main() {
   mise -E "$profile" bootstrap status
   configure_ssh_remote
   log_success "Setup complete"
-  log_info "Open a new shell, then run 'mise doctor' to verify shell activation"
+  case "$profile" in
+    workstation-*)
+      log_warn "Reboot before using this workstation so new device-group permissions and the Kanata keyboard service take effect. Logging out and back in may not be sufficient."
+      ;;
+  esac
+  log_info "In a new shell, run 'mise doctor' to verify shell activation"
   # With curl | sh, stdin now points at /dev/tty for prompts. Exit before
   # the shell tries to read another command from that terminal.
   exit 0

@@ -111,7 +111,9 @@ Kanata needs access to `/dev/input` and `/dev/uinput`. Follow the
 [upstream Linux setup](https://github.com/jtroo/kanata/blob/main/docs/setup-linux.md)
 to configure the `input` and `uinput` groups, udev permissions, and the `uinput`
 module. To load the module at boot, add `uinput` to
-`/etc/modules-load.d/kanata.conf`. Log out and back in after changing groups.
+`/etc/modules-load.d/kanata.conf`. Reboot after changing groups so both your
+session and the systemd user manager pick up the new permissions. Logging out
+and back in may leave the existing user manager running with its old groups.
 Run Kanata on the desktop host; the agent sandbox does not expose these devices.
 
 The config maps held `a`/`;` to Super, `s`/`l` to Alt, `d`/`k` to Shift,
@@ -134,7 +136,7 @@ mise run setup:kanata
 ```
 
 If your current session lacks either device group, the script enables the service
-for the next login and asks you to reboot. Otherwise it restarts the service
+for the next boot and asks you to reboot. Otherwise it restarts the service
 immediately. Repeated runs preserve existing groups and group memberships.
 
 ### Wallpaper
