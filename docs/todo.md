@@ -3,7 +3,7 @@
 ## Ideas
 - [ ] Ubuntu Setup
   - [ ] Save changes to shortcuts
-  - [ ] Save changes to background
+  - [x] Set the Catppuccin wallpaper automatically on Ubuntu GNOME
   - [ ] Save changes to color theme
   - [ ] Save changes to dock behavior and pinned apps
   - [ ] Save changes to color theme and profile for gnome terminal
@@ -43,7 +43,7 @@
 - [x] Install Zed with its official native Linux installer.
 - [x] Configure Ghostty through available package managers: Snap, apt, native mise COPR on Fedora, and pacman on Arch.
 - [x] Provide README sections for bootstrap only, dotfiles only, and global tool installation.
-- [x] Remove automated wallpaper setup; keep the image for manual selection.
+- [x] Copy the wallpaper image and apply it through Ubuntu GNOME desktop setup.
 - [x] Review my old dotfiles and import other configurations
 - [x] Review tmux and herdr bindings/configs. Should we make both use default tmux bindings?
 - [x] Should we integrate [fff.nvim](https://github.com/dmtrKovalenko/fff#fffnvim) into our nvim config? -> Didn't integrate, maybe in the future

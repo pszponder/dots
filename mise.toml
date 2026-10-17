@@ -35,6 +35,11 @@ raw = true
 description = "Attach shared Git defaults while preserving local settings"
 run = "mise -C bootstrap -E server run setup:git"
 
+[tasks."setup:desktop"]
+raw = true
+description = "Apply Ubuntu GNOME desktop preferences"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:desktop"
+
 [tasks."setup:tools"]
 raw = true
 description = "Install configured global tools"

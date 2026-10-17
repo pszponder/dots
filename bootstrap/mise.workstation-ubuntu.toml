@@ -13,6 +13,7 @@ dotfiles_profile = "workstation-ubuntu"
 "apt:bsdextrautils" = "latest"
 "apt:openssh-client" = "latest"
 "apt:procps" = "latest"
+"apt:python3" = "latest"
 "apt:tar" = "latest"
 "apt:xz-utils" = "latest"
 "snap:ghostty" = { classic = true }

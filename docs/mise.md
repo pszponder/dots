@@ -141,7 +141,20 @@ immediately. Repeated runs preserve existing groups and group memberships.
 
 ### Wallpaper
 
-Dotfile deployment makes `~/Pictures/wallpapers/catppuccin-mocha.png` available for manual selection in your desktop's background settings. Wallpaper selection is not automated.
+Dotfile deployment copies `~/Pictures/wallpapers/catppuccin-mocha.png` into your home directory. To replace an existing symlink with a copy, run `mise run dotfiles:apply` and accept the force retry if prompted.
+
+Ubuntu workstation bootstrap runs `setup:desktop` after deploying dotfiles. It
+selects this wallpaper in GNOME for both light and dark mode where supported,
+using the `zoom` scaling option. To apply it again from your GNOME session:
+
+```bash
+mise run setup:desktop
+```
+
+The task skips other profiles and sessions without GNOME or a desktop session
+bus. If bootstrap ran over SSH or before desktop login, run it after logging in.
+The script lives at `scripts/bootstrap/configure_desktop.sh`; additional desktop
+preferences can be added there. It currently changes only the wallpaper.
 
 ### Nerd Fonts
 
