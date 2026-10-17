@@ -26,8 +26,8 @@ final = [
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:tools",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:kanata",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:hooks",
-  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:ssh",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:fonts",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:ssh",
 ]
 
 [tasks."setup:git"]
