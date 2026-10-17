@@ -142,7 +142,9 @@ immediately. Repeated runs preserve existing groups and group memberships.
 ### GNOME desktop setup
 
 See [GNOME desktop setup](gnome.md) for wallpaper, appearance, Ubuntu Dock,
-pinned applications, workspaces, and keyboard shortcuts applied by `setup:desktop`.
+pinned applications, workspaces, and keyboard shortcuts applied by `setup:gnome:desktop`.
+The same guide covers power saving, suspend, battery percentage, screen dimming,
+and sunset-to-sunrise Night Light applied by `mise run setup:gnome:power`.
 
 ### Nerd Fonts
 

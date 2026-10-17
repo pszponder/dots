@@ -4,14 +4,14 @@ set -eu
 
 case ":${XDG_CURRENT_DESKTOP:-}:" in
   *:GNOME:*|*:gnome:*) ;;
-  *) printf 'Skipping desktop setup: run setup:desktop from a GNOME session.\n'; exit 0 ;;
+  *) printf 'Skipping desktop setup: run setup:gnome:desktop from a GNOME session.\n'; exit 0 ;;
 esac
 if [ "$(id -u)" = 0 ]; then
   printf 'Run desktop setup as your login user, not root.\n' >&2
   exit 1
 fi
 if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
-  printf 'Skipping desktop setup: no desktop session bus. Run setup:desktop after logging in.\n'
+  printf 'Skipping desktop setup: no desktop session bus. Run setup:gnome:desktop after logging in.\n'
   exit 0
 fi
 command -v gsettings >/dev/null

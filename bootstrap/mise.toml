@@ -26,7 +26,8 @@ nerdfonts_version = "v3.5.1"
 post-dotfiles = [
   "{% if vars.dotfiles_profile != 'server' %}mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:defaults{% else %}true{% endif %}",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:git",
-  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:desktop",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:desktop",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:power",
 ]
 final = [
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:tools",
@@ -41,10 +42,15 @@ raw = true
 description = "Attach shared Git defaults while preserving local settings"
 run = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git.sh"
 
-[tasks."setup:desktop"]
+[tasks."setup:gnome:desktop"]
 raw = true
 description = "Apply Ubuntu GNOME desktop preferences"
-run = "{% if vars.dotfiles_profile == 'workstation-ubuntu' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_desktop.sh{% else %}echo 'Skipping desktop setup: Ubuntu profile only'{% endif %}"
+run = "{% if vars.dotfiles_profile == 'workstation-ubuntu' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_gnome_desktop.sh{% else %}echo 'Skipping desktop setup: Ubuntu profile only'{% endif %}"
+
+[tasks."setup:gnome:power"]
+raw = true
+description = "Apply Ubuntu GNOME power and Night Light preferences"
+run = "{% if vars.dotfiles_profile == 'workstation-ubuntu' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_gnome_power.sh{% else %}echo 'Skipping power setup: Ubuntu profile only'{% endif %}"
 
 [tasks."setup:defaults"]
 raw = true

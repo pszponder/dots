@@ -1,5 +1,15 @@
 # GNOME desktop setup
 
+Ubuntu workstation bootstrap also applies power and display preferences using `scripts/bootstrap/configure_gnome_power.sh`. To reapply only these settings from your logged-in GNOME session, run:
+
+```bash
+mise run setup:gnome:power
+```
+
+To select the Ubuntu profile explicitly, use `mise -C bootstrap -E workstation-ubuntu run setup:gnome:power`. You can also run `sh scripts/bootstrap/configure_gnome_power.sh` directly, without sudo.
+
+This enables battery percentage, selects the `power-saver` profile, enables automatic suspend after 30 minutes of inactivity while plugged in, enables idle screen dimming and automatic power saver on low battery (where supported), and enables Night Light with its automatic sunset-to-sunrise schedule. Battery suspend timing, brightness levels, and Night Light temperature remain unchanged. GNOME determines sunset and sunrise using the current location; the script does not copy machine-specific coordinates. The task requires `gsettings`, `powerprofilesctl`, and a running power-profiles-daemon service. It skips non-Ubuntu profiles and sessions without GNOME or a desktop session bus.
+
 Workstation bootstrap configures application defaults automatically after dotfile deployment. The Ubuntu workstation profile selects Ghostty (`ghostty_ghostty.desktop`) and Zen (`zen.desktop`). This step requires a logged-in desktop session; if bootstrap ran over SSH, run `mise run setup:defaults` after desktop login. Server bootstrap does not configure application defaults.
 
 After editing your defaults, run `mise run setup:defaults` to apply only application defaults. To select a profile explicitly, use `mise -C bootstrap -E workstation-ubuntu run setup:defaults`. Neither command reruns bootstrap.
@@ -8,15 +18,15 @@ Set `default_terminal` and `default_browser` in a workstation profile's `[vars]`
 
 Dotfile deployment copies `~/Pictures/wallpapers/catppuccin-mocha.png` into your home directory. To replace an existing symlink with a copy, run `mise run dotfiles:apply` and accept the force retry if prompted.
 
-Ubuntu workstation bootstrap runs `setup:desktop` after deploying dotfiles. It selects this wallpaper in GNOME for both light and dark mode where supported, using the `zoom` scaling option. To apply it again from your GNOME session:
+Ubuntu workstation bootstrap runs `setup:gnome:desktop` after deploying dotfiles. It selects this wallpaper in GNOME for both light and dark mode where supported, using the `zoom` scaling option. To apply it again from your GNOME session:
 
 ```bash
-mise run setup:desktop
+mise run setup:gnome:desktop
 ```
 
-The task skips other profiles and sessions without GNOME or a desktop session bus. If bootstrap ran over SSH or before desktop login, run it after logging in. The script lives at `scripts/bootstrap/configure_desktop.sh`. It also selects the dark appearance with a purple accent where the GNOME version supports accent colors and restores the saved Ubuntu Dock preferences: bottom position, automatic hiding (`dock-fixed=false`), and a dock that does not extend across the whole screen. Network mounts are shown, limited to mounted volumes. Dock preferences are skipped when the extension schema is unavailable.
+The task skips other profiles and sessions without GNOME or a desktop session bus. If bootstrap ran over SSH or before desktop login, run it after logging in. The script lives at `scripts/bootstrap/configure_gnome_desktop.sh`. It also selects the dark appearance with a purple accent where the GNOME version supports accent colors and restores the saved Ubuntu Dock preferences: bottom position, automatic hiding (`dock-fixed=false`), and a dock that does not extend across the whole screen. Network mounts are shown, limited to mounted volumes. Dock preferences are skipped when the extension schema is unavailable.
 
-Pinned apps are restored in this order: Files, Zen, Helium, VS Code, Ghostty, Obsidian, and Discord. The corresponding desktop IDs are stored in the script; install the matching applications on the destination machine for their pins to appear. Running `setup:desktop` replaces the current pin order.
+Pinned apps are restored in this order: Files, Zen, Helium, VS Code, Ghostty, Obsidian, and Discord. The corresponding desktop IDs are stored in the script; install the matching applications on the destination machine for their pins to appear. Running `setup:gnome:desktop` replaces the current pin order.
 
 The task also saves GNOME shortcuts and selects nine fixed workspaces:
 

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts/bootstrap/configure_desktop.sh"
+SCRIPT = Path(__file__).resolve().parents[1] / "scripts/bootstrap/configure_gnome_desktop.sh"
 
 
 class DesktopTests(unittest.TestCase):

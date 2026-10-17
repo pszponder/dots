@@ -35,10 +35,15 @@ raw = true
 description = "Attach shared Git defaults while preserving local settings"
 run = "mise -C bootstrap -E server run setup:git"
 
-[tasks."setup:desktop"]
+[tasks."setup:gnome:desktop"]
 raw = true
 description = "Apply Ubuntu GNOME desktop preferences"
-run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:desktop"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:desktop"
+
+[tasks."setup:gnome:power"]
+raw = true
+description = "Apply Ubuntu GNOME power and Night Light preferences"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:power"
 
 [tasks."setup:defaults"]
 raw = true
