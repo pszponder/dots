@@ -30,4 +30,16 @@ fi
 gsettings set org.gnome.desktop.background picture-options zoom
 gsettings set org.gnome.desktop.interface accent-color 'purple'
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-printf 'GNOME wallpaper configured.\n'
+# Saved Ubuntu Dock preferences; leave unrelated extension settings alone.
+if gsettings list-schemas | grep -qx org.gnome.shell.extensions.dash-to-dock; then
+  dock_schema=org.gnome.shell.extensions.dash-to-dock
+  gsettings set "$dock_schema" dock-fixed false
+  gsettings set "$dock_schema" dock-position 'BOTTOM'
+  gsettings set "$dock_schema" extend-height false
+  gsettings set "$dock_schema" show-mounts-network true
+  gsettings set "$dock_schema" show-mounts-only-mounted true
+else
+  printf 'Skipping Ubuntu Dock preferences: extension schema is not installed.\n'
+fi
+gsettings set org.gnome.shell favorite-apps "['org.gnome.Nautilus.desktop', 'zen.desktop', 'helium.desktop', 'code_code.desktop', 'ghostty_ghostty.desktop', 'obsidian_obsidian.desktop', 'discord_discord.desktop']"
+printf 'GNOME desktop preferences configured.\n'

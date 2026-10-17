@@ -139,7 +139,7 @@ If your current session lacks either device group, the script enables the servic
 for the next boot and asks you to reboot. Otherwise it restarts the service
 immediately. Repeated runs preserve existing groups and group memberships.
 
-### Wallpaper
+### GNOME wallpaper and Ubuntu Dock
 
 Dotfile deployment copies `~/Pictures/wallpapers/catppuccin-mocha.png` into your home directory. To replace an existing symlink with a copy, run `mise run dotfiles:apply` and accept the force retry if prompted.
 
@@ -153,8 +153,16 @@ mise run setup:desktop
 
 The task skips other profiles and sessions without GNOME or a desktop session
 bus. If bootstrap ran over SSH or before desktop login, run it after logging in.
-The script lives at `scripts/bootstrap/configure_desktop.sh`; additional desktop
-preferences can be added there. It currently changes only the wallpaper.
+The script lives at `scripts/bootstrap/configure_desktop.sh`. It also selects the
+dark appearance with a purple accent and restores the saved Ubuntu Dock preferences:
+bottom position, automatic hiding (`dock-fixed=false`), and a dock that does not
+extend across the whole screen. Network mounts are shown, limited to mounted volumes.
+Dock preferences are skipped when the extension schema is unavailable.
+
+Pinned apps are restored in this order: Files, Zen, Helium, VS Code, Ghostty,
+Obsidian, and Discord. The corresponding desktop IDs are stored in the script;
+install the matching applications on the destination machine for their pins to appear.
+Running `setup:desktop` replaces the current pin order.
 
 ### Nerd Fonts
 

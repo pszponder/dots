@@ -23,6 +23,8 @@ class DesktopTests(unittest.TestCase):
                 "gsettings": 'if [ "$1" = list-keys ]; then\n'
                              '  printf "%s\\n" picture-uri picture-options\n'
                              '  [ "$DARK" = no ] || echo picture-uri-dark\n'
+                             'elif [ "$1" = list-schemas ]; then\n'
+                             '  [ "$DARK" = no ] || echo org.gnome.shell.extensions.dash-to-dock\n'
                              'else\n  printf "%s\\n" "$*" >> "$LOG"\nfi\n',
             }.items():
                 path = binary / name
@@ -41,6 +43,20 @@ class DesktopTests(unittest.TestCase):
                     self.assertIn(f"set org.gnome.desktop.background picture-uri {image.as_uri()}", calls)
                     self.assertEqual(any("picture-uri-dark" in call for call in calls), dark == "yes")
                     self.assertIn("set org.gnome.desktop.background picture-options zoom", calls)
+                    dock_calls = [call for call in calls if "extensions.dash-to-dock" in call]
+                    self.assertEqual(dock_calls, [
+                        "set org.gnome.shell.extensions.dash-to-dock dock-fixed false",
+                        "set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM",
+                        "set org.gnome.shell.extensions.dash-to-dock extend-height false",
+                        "set org.gnome.shell.extensions.dash-to-dock show-mounts-network true",
+                        "set org.gnome.shell.extensions.dash-to-dock show-mounts-only-mounted true",
+                    ] if dark == "yes" else [])
+                    self.assertIn(
+                        "set org.gnome.shell favorite-apps ['org.gnome.Nautilus.desktop', "
+                        "'zen.desktop', 'helium.desktop', 'code_code.desktop', "
+                        "'ghostty_ghostty.desktop', 'obsidian_obsidian.desktop', 'discord_discord.desktop']",
+                        calls,
+                    )
             log.write_text("")
             result = subprocess.run(["sh", str(SCRIPT)],
                                     env=dict(env, XDG_CURRENT_DESKTOP="COSMIC"),

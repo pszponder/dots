@@ -3,7 +3,7 @@
 ## Ideas
 - [ ] Ubuntu Setup
   - [ ] Save changes to shortcuts
-  - [ ] Save changes to dock behavior and pinned apps
+  - [x] Save changes to dock behavior and pinned apps
   - [ ] Save changes to color theme and profile for gnome terminal
 - [ ] Replace podman desktop with lazydocker/[ezpodman](https://github.com/alfonsosanchez12/ezpodman)
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
