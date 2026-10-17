@@ -40,6 +40,11 @@ raw = true
 description = "Apply Ubuntu GNOME desktop preferences"
 run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:desktop"
 
+[tasks."setup:gnome:terminal"]
+raw = true
+description = "Configure Catppuccin Ptyxis profiles"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:gnome:terminal"
+
 [tasks."setup:gnome:power"]
 raw = true
 description = "Apply Ubuntu GNOME power and Night Light preferences"

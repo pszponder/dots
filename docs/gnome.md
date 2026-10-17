@@ -47,3 +47,14 @@ The task also saves GNOME shortcuts and selects nine fixed workspaces:
 | Super + V | Open notifications |
 
 Super + Tab still switches applications. Super + H replaces the default minimize shortcut; Alt + F9 still minimizes windows. Super + I/K are unassigned: built-in GNOME has no directional window focus. Half-screen snapping uses Ubuntu’s enabled Tiling Assistant extension and works on maximized windows too. If its schema is unavailable, setup skips the two snapping bindings and prints a message; install and enable Tiling Assistant, then re-run setup. Other shortcuts use built-in GNOME actions. Numbered application shortcuts in GNOME Shell and the existing Ubuntu Dock are disabled to free workspace bindings; the dock's Super + Q overlay shortcut is also disabled. Re-running the task restores these saved bindings. Browser and file-manager launchers use the configured defaults; terminal selection uses the launcher configured during workstation bootstrap.
+
+Ptyxis is Ubuntu's built-in terminal starting with Ubuntu 25.10. Terminal setup creates `catppuccin-mocha` and `catppuccin-latte` profiles and selects Caskaydia Cove Nerd Font Mono at 12 points for Ptyxis. Workstation bootstrap applies them after font installation, with Mocha as the default. Existing profiles are preserved. The task skips sessions without a desktop bus or the Ptyxis schema; it does not install Ptyxis.
+
+```bash
+mise run setup:gnome:terminal
+# Select either default directly from the checkout:
+python3 scripts/bootstrap/configure_ptyxis.py latte
+python3 scripts/bootstrap/configure_ptyxis.py mocha
+```
+
+Choose either profile in Ptyxis preferences or its new-tab menu. The default applies to new terminals; restored tabs may retain their existing profile. Re-running bootstrap restores Mocha as the default. The profiles select the built-in `Catppuccin Mocha` and `Catppuccin Latte` palettes; no custom palette files or downloads are needed. Font installation already includes the `CascadiaCode` Nerd Fonts archive; run `mise run setup:fonts` if needed. This task configures Ptyxis appearance; application launcher defaults are managed separately by `setup:defaults`.

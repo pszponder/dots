@@ -13,10 +13,11 @@
     - [x] super + f to open the home folder
     - [x] super + m to toggle maximize/restore
   - [x] Save changes to dock behavior and pinned apps
-  - [ ] Set default apps
-    - [ ] Browser
-    - [ ] Terminal
-  - [ ] Save changes to color theme and profile for gnome terminal
+  - [x] Set default apps
+    - [x] Browser
+    - [x] Terminal
+  - [ ] Change alt + tab to cycle through most recently used apps
+  - [x] Save changes to color theme and profile for gnome terminal
 - [ ] Replace podman desktop with lazydocker/[ezpodman](https://github.com/alfonsosanchez12/ezpodman)
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
