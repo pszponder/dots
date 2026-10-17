@@ -67,8 +67,11 @@ class DesktopTests(unittest.TestCase):
                     ] if dark == "yes" else [])
                     for schema, action, binding in (
                         ("desktop.wm.keybindings", "minimize", "['<Super><Shift>j', '<Alt>F9']"),
-                        ("desktop.wm.keybindings", "switch-windows", "['<Super>l', '<Alt>Tab']"),
-                        ("desktop.wm.keybindings", "switch-windows-backward", "['<Super>h', '<Shift><Alt>Tab']"),
+                        ("desktop.wm.keybindings", "switch-windows", "['<Super>l']"),
+                        ("desktop.wm.keybindings", "switch-windows-backward", "['<Super>h']"),
+                        ("desktop.wm.keybindings", "switch-applications", "['<Super>Tab', '<Alt>Tab']"),
+                        ("desktop.wm.keybindings", "switch-applications-backward", "['<Shift><Super>Tab', '<Shift><Alt>Tab']"),
+                        ("shell.app-switcher", "current-workspace-only", "false"),
                         ("desktop.wm.keybindings", "close", "['<Super>q', '<Alt>F4']"),
                         ("desktop.wm.keybindings", "maximize", "['<Super><Shift>k']"),
                         ("desktop.wm.keybindings", "toggle-maximized", "['<Super>m', '<Alt>F10']"),

@@ -1,23 +1,6 @@
 # TODOs
 
 ## Ideas
-- [ ] Ubuntu Setup
-  - [x] Save GNOME shortcuts (half-screen snapping uses Ubuntu Tiling Assistant)
-    - [x] super + h/l for previous/next window (directional focus unavailable)
-    - [x] super + shift + h/l to snap left/right; j/k to minimize/maximize
-    - [x] super + 1–9 to navigate to nine fixed workspaces
-    - [x] super + shift + 1–9 to move a window to the desired workspace
-    - [x] super + q to close the active window
-    - [x] super + enter to launch the terminal
-    - [x] super + shift + enter to open the default browser
-    - [x] super + f to open the home folder
-    - [x] super + m to toggle maximize/restore
-  - [x] Save changes to dock behavior and pinned apps
-  - [x] Set default apps
-    - [x] Browser
-    - [x] Terminal
-  - [ ] Change alt + tab to cycle through most recently used apps
-  - [x] Save changes to color theme and profile for gnome terminal
 - [ ] Replace podman desktop with lazydocker/[ezpodman](https://github.com/alfonsosanchez12/ezpodman)
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
@@ -33,6 +16,23 @@
 - [ ] [Seth Phaeno - The Greatest Minimal Shell Prompt Ever](https://www.youtube.com/watch?v=oe3gadOQk44)
 
 ## Done
+- [x] Ubuntu Setup
+  - [x] Save GNOME shortcuts (half-screen snapping uses Ubuntu Tiling Assistant)
+    - [x] super + h/l for previous/next window (directional focus unavailable)
+    - [x] super + shift + h/l to snap left/right; j/k to minimize/maximize
+    - [x] super + 1–9 to navigate to nine fixed workspaces
+    - [x] super + shift + 1–9 to move a window to the desired workspace
+    - [x] super + q to close the active window
+    - [x] super + enter to launch the terminal
+    - [x] super + shift + enter to open the default browser
+    - [x] super + f to open the home folder
+    - [x] super + m to toggle maximize/restore
+  - [x] Save changes to dock behavior and pinned apps
+  - [x] Set default apps
+    - [x] Browser
+    - [x] Terminal
+  - [x] Change alt + tab to cycle through most recently used apps
+  - [x] Save changes to color theme and profile for gnome terminal
 - [x] Review [acefei/dotfiles-mise](https://github.com/acefei/dotfiles-mise): preserve local Git settings with includes, offer force retries after normal deployment fails, remove host Python from bootstrap, and expose setup tasks.
 - [x] Add a Betterleaks pre-commit check and a full-history secret-scanning command.
 - [x] Install Betterleaks globally and enable checkout hooks during bootstrap, preserving existing custom hooks.

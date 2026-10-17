@@ -63,10 +63,12 @@ done
 # Release Super+H from minimizing; keep Alt+F9 for minimize.
 gsettings set "$wm_schema" minimize "['<Super><Shift>j', '<Alt>F9']"
 # H/L cycle windows in recent-use order, rather than spatially.
-gsettings set "$wm_schema" switch-windows "['<Super>l', '<Alt>Tab']"
-gsettings set "$wm_schema" switch-windows-backward "['<Super>h', '<Shift><Alt>Tab']"
-gsettings set "$wm_schema" switch-applications "['<Super>Tab']"
-gsettings set "$wm_schema" switch-applications-backward "['<Shift><Super>Tab']"
+gsettings set "$wm_schema" switch-windows "['<Super>l']"
+gsettings set "$wm_schema" switch-windows-backward "['<Super>h']"
+# Alt+Tab cycles applications in recent-use order across all workspaces.
+gsettings set org.gnome.shell.app-switcher current-workspace-only false
+gsettings set "$wm_schema" switch-applications "['<Super>Tab', '<Alt>Tab']"
+gsettings set "$wm_schema" switch-applications-backward "['<Shift><Super>Tab', '<Shift><Alt>Tab']"
 # Release the old edge-positioning bindings before assigning half-screen snaps.
 for side in n w s e; do
   gsettings set "$wm_schema" "move-to-side-$side" "[]"

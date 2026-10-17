@@ -32,7 +32,7 @@ The task also saves GNOME shortcuts and selects nine fixed workspaces:
 
 | Shortcut | Action |
 | --- | --- |
-| Super + H / L | Previous / next window in recent-use order (Alt + Tab also cycles windows) |
+| Super + H / L | Previous / next window in recent-use order |
 | Super + Shift + H / L | Snap the active window to the left / right half |
 | Super + Shift + J | Minimize the active window |
 | Super + Shift + K | Maximize the active window |
@@ -46,7 +46,7 @@ The task also saves GNOME shortcuts and selects nine fixed workspaces:
 | Super + Ctrl + L | Lock the screen |
 | Super + V | Open notifications |
 
-Super + Tab still switches applications. Super + H replaces the default minimize shortcut; Alt + F9 still minimizes windows. Super + I/K are unassigned: built-in GNOME has no directional window focus. Half-screen snapping uses Ubuntu’s enabled Tiling Assistant extension and works on maximized windows too. If its schema is unavailable, setup skips the two snapping bindings and prints a message; install and enable Tiling Assistant, then re-run setup. Other shortcuts use built-in GNOME actions. Numbered application shortcuts in GNOME Shell and the existing Ubuntu Dock are disabled to free workspace bindings; the dock's Super + Q overlay shortcut is also disabled. Re-running the task restores these saved bindings. Browser and file-manager launchers use the configured defaults; terminal selection uses the launcher configured during workstation bootstrap.
+Alt + Tab and Super + Tab switch applications in recent-use order across all workspaces; add Shift to cycle backward. Hold Alt and press Tab repeatedly to move through the list, then release Alt to activate the selected app. Super + H replaces the default minimize shortcut; Alt + F9 still minimizes windows. Super + I/K are unassigned: built-in GNOME has no directional window focus. Half-screen snapping uses Ubuntu’s enabled Tiling Assistant extension and works on maximized windows too. If its schema is unavailable, setup skips the two snapping bindings and prints a message; install and enable Tiling Assistant, then re-run setup. Other shortcuts use built-in GNOME actions. Numbered application shortcuts in GNOME Shell and the existing Ubuntu Dock are disabled to free workspace bindings; the dock's Super + Q overlay shortcut is also disabled. Re-running the task restores these saved bindings. Browser and file-manager launchers use the configured defaults; terminal selection uses the launcher configured during workstation bootstrap.
 
 Ptyxis is Ubuntu's built-in terminal starting with Ubuntu 25.10. Terminal setup creates `catppuccin-mocha` and `catppuccin-latte` profiles and selects Caskaydia Cove Nerd Font Mono at 12 points for Ptyxis. Workstation bootstrap applies them after font installation, with Mocha as the default. Existing profiles are preserved. The task skips sessions without a desktop bus or the Ptyxis schema; it does not install Ptyxis.
 
