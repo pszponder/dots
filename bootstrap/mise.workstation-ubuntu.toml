@@ -2,7 +2,7 @@
 dotfiles_profile = "workstation-ubuntu"
 
 # Prefer project-published, project-endorsed, or Snapcrafters Snaps.
-# Zed uses its official installer; other apps use explicit fallback sources.
+# Zen and Zed use official installers; other apps use explicit fallback sources.
 [bootstrap.packages]
 "apt:build-essential" = "latest"
 "apt:curl" = "latest"
@@ -21,24 +21,20 @@ dotfiles_profile = "workstation-ubuntu"
 "snap:discord" = "latest"
 "apt:podman" = "latest"
 "apt:podman-compose" = "latest"
-"flatpak-user:io.podman_desktop.PodmanDesktop" = "latest"
-"flatpak:app.zen_browser.zen" = "latest"
 
 [bootstrap.hooks]
-pre-packages = [
-  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:flatpak",
-]
 post-packages = [
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:zen",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:helium",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:brave-origin",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:zed",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:yaak",
 ]
 
-[tasks."setup:flatpak"]
+[tasks."setup:zen"]
 raw = true
-description = "Prepare Flatpak and Flathub"
-run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh"
+description = "Install Zen with its official tarball installer"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zen_install.sh"
 
 [tasks."setup:helium"]
 raw = true

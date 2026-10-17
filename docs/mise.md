@@ -49,7 +49,7 @@ servers, and fonts use bootstrap packages on Universal Blue.
 
 For an explicit profile, run `mise -C bootstrap -E workstation-fedora run setup:tools`.
 GUI installer tasks are available only in profiles that use their scripts:
-`setup:flatpak`, `setup:helium`, `setup:brave-origin`, `setup:zed`, and `setup:yaak`.
+`setup:flatpak`, `setup:helium`, `setup:brave-origin`, `setup:zen`, `setup:zed`, and `setup:yaak`.
 Run these with the explicit profile form. Native package installations remain
 managed by bootstrap declarations. `mise -C bootstrap -E workstation-fedora tasks ls`
 lists the available tasks for that profile.
@@ -69,19 +69,19 @@ The workstation profiles add:
 | Visual Studio Code | Classic Snap | System Flatpak | System Flatpak | AUR |
 | Obsidian | Classic Snap | System Flatpak | System Flatpak | pacman |
 | Discord | Snap (Snapcrafters) | System Flatpak | System Flatpak | pacman |
-| Zen | System Flatpak | System Flatpak | System Flatpak | AUR |
-| Podman Desktop | User Flatpak | User Flatpak | User Flatpak | pacman |
+| Zen | Official tarball installer | System Flatpak | System Flatpak | AUR |
+| Podman Desktop | Not installed | User Flatpak | User Flatpak | pacman |
 | Helium | apt repository | apt repository | COPR/dnf | AUR |
 | Brave Origin | Official installer | Official installer | Official installer | AUR |
 | Yaak | Official Debian download | Official Debian download | Official RPM download | pacman |
 | Zed | Official install script | Official install script | Official install script | pacman |
 | Podman and Compose | apt | apt | dnf | pacman |
 
-Ubuntu prefers project-published, project-endorsed, or Snapcrafters Snap packages, then Flatpak, then apt. Zed uses its official script on Ubuntu, Debian, and Fedora. Arch uses pacman packages where available and AUR packages otherwise, with no Flatpak setup or standalone app installers. Each application has one declared source; fallback choices are explicit, not retries after failed installations. The Ubuntu profile uses the existing Snap installation and expects snapd to be installed and running.
+Ubuntu prefers project-published, project-endorsed, or Snapcrafters Snap packages and explicit native installer or apt sources. It does not install Flatpak or Flatpak apps. Zed uses its official script on Ubuntu, Debian, and Fedora. Arch uses pacman packages where available and AUR packages otherwise, with no Flatpak setup or standalone app installers. Each application has one declared source; fallback choices are explicit, not retries after failed installations. The Ubuntu profile uses the existing Snap installation and expects snapd to be installed and running.
 
-Sources checked for the Ubuntu Snap choices: [Ghostty's package documentation](https://ghostty.org/docs/install/binary), [VS Code](https://snapcraft.io/code), [Obsidian](https://snapcraft.io/obsidian), and [Discord](https://snapcraft.io/discord). The [Zen Snap](https://snapcraft.io/zen-browser-snap) has a different community publisher, so Zen uses Flatpak. No eligible Snap was found for Podman Desktop, Helium, Brave Origin, or Yaak; Brave's standard browser is a different application from Brave Origin.
+Sources checked for the Ubuntu Snap choices: [Ghostty's package documentation](https://ghostty.org/docs/install/binary), [VS Code](https://snapcraft.io/code), [Obsidian](https://snapcraft.io/obsidian), and [Discord](https://snapcraft.io/discord). The [Zen Snap](https://snapcraft.io/zen-browser-snap) has a different community publisher, so Ubuntu uses Zen’s [official tarball installer](https://docs.zen-browser.app/guides/install-linux), which installs into `~/.tarball-installations/zen`. Podman Desktop is also omitted on Ubuntu. No eligible Snap was found for Podman Desktop, Helium, Brave Origin, or Yaak; Brave's standard browser is a different application from Brave Origin.
 
-`pre-packages` hooks only prepare system-wide Flatpak/Flathub on Ubuntu, Debian, and Fedora. `post-packages` hooks run the Zed, Brave Origin, and Yaak installers where applicable. On Ubuntu and Debian, the Helium post-packages hook configures its apt repository and installs `helium-bin`; Fedora and Arch retain declarative Helium packages. Existing native installations are preserved. Yaak's direct downloads remain pinned to 2026.9.0 and do not configure an update repository. Add system Flatpak apps as `"flatpak:APPLICATION_ID" = "latest"` in the appropriate workstation profile.
+`pre-packages` hooks only prepare system-wide Flatpak/Flathub on Debian and Fedora. `post-packages` hooks run the Zen, Zed, Brave Origin, and Yaak installers where applicable. On Ubuntu and Debian, the Helium post-packages hook configures its apt repository and installs `helium-bin`; Fedora and Arch retain declarative Helium packages. Existing native installations are preserved. Yaak's direct downloads remain pinned to 2026.9.0 and do not configure an update repository. Add system Flatpak apps as `"flatpak:APPLICATION_ID" = "latest"` in the appropriate workstation profile.
 
 Requirements:
 

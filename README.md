@@ -1,89 +1,113 @@
-# Bootstrap & Dotfiles with mise
+# Dotfiles & Linux setup
 
-Linux workstation and server bootstrap & dotfiles, deployed with [mise](https://mise.jdx.dev).
+Personal Linux workstation and server configuration, managed with [mise](https://mise.jdx.dev).
 
-## Bootstrapping a New Machine
+- Bootstrap packages, development tools, fonts, SSH keys, and dotfiles.
+- Choose a workstation profile for your distribution or a server profile.
+- Edit version-controlled dotfiles and deploy them through symlinks and templates.
+- Keep machine-specific settings outside the repository.
 
-The installer installs mise if needed; bootstrap does not require host Python.
+[Installation](#installation) · [Usage](#usage) · [Updates](#updates) · [Documentation](#documentation)
 
-From a local checkout:
+## Prerequisites
 
-```sh
-./install.sh              # Choose a profile interactively
-./install.sh workstation  # Detect the workstation distribution
-./install.sh workstation-fedora  # Select a profile explicitly
-```
+| Requirement | Purpose |
+| --- | --- |
+| Linux with a supported profile | Workstation or server setup |
+| Git and curl | Download the repository and install mise if needed |
+| sudo access | System packages and workstation configuration where required |
 
-Without cloning first (requires Git and curl):
+The installer installs mise if needed. Bootstrap does not require host Python. Check the [distribution-specific requirements](docs/mise.md#packages-and-desktop-setup) before running setup.
 
-The installer offers automatic workstation detection, server, or an explicit workstation distribution (Ubuntu, Debian, Fedora, Arch, or Universal Blue). It confirms preparation, asks for missing setup variables (including your Git author name and email), and previews bootstrap before asking to apply it. Saved answers are reused on later runs. It reads input from your terminal even when piped from curl.
+## Installation
+
+### Option 1: Install without cloning
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh
 ```
 
-To skip profile selection, pass a profile explicitly (the workstation shorthand automatically detects the distribution):
+The installer reads input from your terminal, even when piped from curl. It guides you through:
+
+1. Choosing a machine profile.
+2. Confirming mise installation and global configuration preparation.
+3. Entering missing setup values, including your Git author name and email.
+4. Reviewing the bootstrap preview and confirming application.
+
+Saved answers are reused on later runs. The repository is cloned into `~/repos/github/pszponder/dots` for the user running `sh`.
+
+### Option 2: Use a local checkout
+
+From the checkout root:
+
+```sh
+./install.sh                     # Choose a profile interactively
+./install.sh workstation         # Detect the workstation distribution
+./install.sh workstation-fedora  # Select a profile explicitly
+```
+
+The installer uses the current checkout directly.
+
+### Profiles
+
+| Machine | Profile |
+| --- | --- |
+| Ubuntu workstation | `workstation-ubuntu` |
+| Debian workstation | `workstation-debian` |
+| Fedora workstation | `workstation-fedora` |
+| Arch workstation | `workstation-arch` |
+| Universal Blue workstation | `workstation-ublue` |
+| Server | `server` |
+
+The installer shorthand `workstation` detects the distribution. Manual mise bootstrap commands require a full profile name, for example `mise -C bootstrap -E workstation-fedora bootstrap`.
+
+### Unattended installation
+
+Save `git_name` and `git_email` in `~/.config/mise/config.local.toml` first. Passing an explicit profile to the piped installer skips profile selection and applies setup without confirmation:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | sh -s -- workstation
 ```
 
-With an explicit profile, the piped installer applies setup without confirmation. Set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first for these unattended runs.
+Noninteractive runs require an explicit profile. For unattended setup from a local terminal, use `./install.sh server --yes` with your chosen profile.
 
-This clones the repository into `~/repos/github/pszponder/dots` under the home directory of the user running `sh`. To choose another location, set `DOTFILES_REPO_DIR` on the `sh` command:
+### Checkout location and forks
+
+Set `DOTFILES_REPO_DIR` on the `sh` command to choose a different destination:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | DOTFILES_REPO_DIR="$HOME/dotfiles" sh
 ```
 
-Keep the checkout at its chosen location after setup: deployed dotfiles are symlinks into it.
+Set `DOTFILES_REPO_URL` to clone a fork with the curl installer.
 
-Setup attempts normal deployment first, without scanning for conflicts or creating backups. If it fails, the installer shows the error and offers one force retry, defaulting to No. Unattended force retries require explicit `--yes`, for example `./install.sh server --yes`. A failed force retry aborts setup. Global mise linking follows the same normal-first behavior.
+> **Keep the checkout in place after installation.** Deployed dotfiles are symlinks into it.
 
-Installs packages, directories, dotfiles, global tools, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs require an explicit profile and apply both stages; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
+### Existing files and retries
 
-Available profiles:
+Setup attempts normal deployment first, without scanning for conflicts or creating backups. If deployment fails, it shows the error and offers one force retry, defaulting to No. A failed force retry aborts setup. Global mise configuration linking follows the same approach.
 
-| Machine                    | Profile              |
-| -------------------------- | -------------------- |
-| Ubuntu workstation         | `workstation-ubuntu` |
-| Debian workstation         | `workstation-debian` |
-| Fedora workstation         | `workstation-fedora` |
-| Arch workstation           | `workstation-arch`   |
-| Universal Blue workstation | `workstation-ublue`  |
-| Server                     | `server`             |
+Unattended force retries require explicit `--yes`, for example `./install.sh server --yes`. [Review replacements](docs/mise.md#confirm-replacements) before deploying over existing files.
 
-Pass a profile to `./install.sh <profile>` or `mise -C bootstrap -E <profile>`. The installer shorthand `workstation` detects the distribution; manual bootstrap commands require a full profile name.
+### After installation
 
-When running `./install.sh` from a local checkout, the installer uses that checkout directly. For the curl installer, set `DOTFILES_REPO_URL` to clone a fork. After successful setup, the installer switches a GitHub HTTPS `origin` to SSH (for example, `git@github.com:pszponder/dots.git`). Add your SSH public key to GitHub before pulling or pushing over SSH. Other remote URLs are preserved. After setup, open a new shell and run `mise doctor`.
-
-## Managing Dotfiles
-
-If you skipped full machine setup, prepare global configuration once from the checkout with mise installed:
+Open a new shell and run:
 
 ```sh
-sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-fedora  # Use your profile
-mise vars prompt
+mise doctor
 ```
 
-`install.sh` already performs this preparation. After preparation, the `mise dot` commands below work from any directory without profile flags.
+After successful setup, the installer switches a GitHub HTTPS `origin` to SSH. Add your SSH public key to GitHub before pulling or pushing. Other remote URLs are preserved. See [SSH configuration](docs/ssh_configuration.md).
 
-### Editing Dotfiles
+## Usage
 
-Edit files under `dots/` or through their deployed symlinks; both change the same file. Paths mirror your home directory: `dots/.config/starship.toml` manages `~/.config/starship.toml`. Edit `.tera` sources for generated files, such as `env.sh` and Git configuration, then run `mise dot apply` to render changes.
+After installation, `mise dot` commands work from any directory without profile flags.
 
-### Adding Dotfiles
+### Edit and apply dotfiles
 
-```sh
-mise dot add --group home --dry-run ~/.config/example/config.toml
-mise dot add --group home ~/.config/example/config.toml
-```
+Edit files under `dots/` or through their deployed symlinks. Paths mirror your home directory: `dots/.config/starship.toml` manages `~/.config/starship.toml`.
 
-This captures the file into `dots/.config/example/config.toml` and replaces the original home-directory file with a symlink to it. It applies the new file immediately; use `--no-apply` to capture without applying. Review and commit the captured file. Future edits through either path change the same file.
-
-You can also create new files directly under their matching paths in `dots/`; they are included automatically on the next apply. Keep secrets and machine-specific values outside the repository. [Review replacements](docs/mise.md#confirm-replacements) before deploying repository files over existing home-directory files. Use `mise run dotfiles:apply` for normal deployment with an optional force retry.
-
-### Applying Dotfiles to the System
+For generated files such as `env.sh` and Git configuration, edit the `.tera` source and apply it to render changes.
 
 ```sh
 mise dot diff
@@ -91,32 +115,67 @@ mise dot apply --dry-run
 mise dot apply
 ```
 
-Applying deploys files and renders templates. It does not install packages or tools or run full bootstrap. Open a new shell for shell configuration changes, or reload/restart the affected application. Package or bootstrap changes require the full setup below.
+Applying deploys dotfiles and renders templates. Open a new shell after shell configuration changes, or reload the affected application. Use [full setup](#updates) for package and bootstrap changes.
 
-Review `git diff`, then commit and push the files you changed to share them with other machines. On another machine, run `git pull --ff-only`, then the review/apply commands above. See [editing and publishing dotfiles](docs/mise.md#edit-and-publish-dotfiles) for more options, including capturing changes to copy-managed files.
+### Add a dotfile
 
-## Reapply full setup or update
+Preview, then capture an existing file:
 
-From the checkout, pull repository changes if needed, then rerun the installer with your profile:
+```sh
+mise dot add --group home --dry-run ~/.config/example/config.toml
+mise dot add --group home ~/.config/example/config.toml
+```
+
+This moves the file into `dots/.config/example/config.toml` and replaces the original with a symlink. It applies immediately; add `--no-apply` to capture without applying. Review the captured file before committing.
+
+You can also create files directly under their matching paths in `dots/`; the next apply includes them automatically. Use `mise run dotfiles:apply` for normal deployment with an optional force retry.
+
+### Share changes across machines
+
+Review `git diff`, then commit and push your changes. On another machine:
 
 ```sh
 git pull --ff-only
-./install.sh workstation-ubuntu  # Or server, workstation-fedora, etc.
+mise dot diff
+mise dot apply --dry-run
+mise dot apply
 ```
 
-The installer prepares global mise configuration, trusts the checkout, prompts for missing variables, previews bootstrap, and applies it after confirmation. Once you approve application, mise attempts normal deployment with `--yes`. A failed attempt offers a separate force retry. Noninteractive runs apply both preparation and bootstrap automatically. It applies the current checkout without pulling repository changes itself.
+See [editing and publishing dotfiles](docs/mise.md#edit-and-publish-dotfiles) for more options, including copy-managed files.
 
-Run `up --dry-run`, then `up` from any directory to [update the OS, tools, and packages](docs/mise.md#update-tools-and-packages-from-any-directory).
+### Use dotfiles without full machine setup
 
-Keep machine-local overrides in `~/.config/mise/config.local.toml`. Profile-specific overrides apply to bootstrap commands that select that profile.
+With mise installed, run this once from the checkout, using your profile:
 
-## Security and publishing
+```sh
+sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-fedora
+mise vars prompt
+```
 
-Keep credentials, private keys, and machine-specific settings outside the checkout. Review files captured with `mise dot add` before committing them. Before making this repository public, scan its full Git history and review the personal information it exposes. See [security recommendations](docs/security.md) for the publishing checklist and ongoing precautions.
+You can then use the `mise dot` commands above. `install.sh` already performs this preparation.
+
+## Updates
+
+| Task | Commands |
+| --- | --- |
+| Update the OS, tools, and packages | `up --dry-run`, then `up` from any directory |
+| Pull and apply dotfile changes | `git pull --ff-only`, then review and run `mise dot apply` |
+| Reapply full machine setup | Pull changes, then rerun `./install.sh <profile>` |
+
+For example, from the checkout:
+
+```sh
+git pull --ff-only
+./install.sh workstation-ubuntu
+```
+
+The installer applies the current checkout; it does not pull changes itself. Interactive runs confirm preparation and bootstrap separately. Noninteractive runs apply both stages automatically, with a separate `--yes` requirement for force retries.
+
+Keep machine-local overrides in `~/.config/mise/config.local.toml`. Profile-specific overrides apply to bootstrap commands selecting that profile. See [updating tools and packages](docs/mise.md#update-tools-and-packages-from-any-directory) and [individual setup tasks](docs/mise.md#run-individual-setup-steps).
 
 ## Repository checks
 
-Requires mise and Python 3.11+:
+Requires mise and Python 3.11+. Run from the checkout:
 
 ```sh
 mise trust
@@ -125,15 +184,22 @@ mise run lint   # TOML and shell syntax
 mise run check  # Both; also run by CI
 ```
 
+Install Zsh to check its startup-file syntax. Checks do not bootstrap the machine or run ShellCheck.
+
 Full bootstrap installs Betterleaks globally through mise and enables this checkout's [pre-commit check](docs/security.md#betterleaks-pre-commit-check). For other clones, run `mise run hooks-install` to install Betterleaks and enable the hook. Existing custom hooks are preserved and need manual integration. Run `mise run secrets` to scan all locally available Git history.
 
-Install Zsh to check its startup-file syntax. Checks do not bootstrap the machine or run ShellCheck.
+## Security
+
+Keep credentials, private keys, and machine-specific settings outside the checkout. Review files captured with `mise dot add` before committing. Before publishing the repository, scan its full Git history and review the personal information it exposes. See the [security recommendations](docs/security.md).
 
 ## Documentation
 
-- [Setup, customization, and daily usage](docs/mise.md)
-- [Home directories](docs/directory_structure.md)
-- [Git configuration, identity, and local overrides](docs/git.md)
-- [SSH configuration](docs/ssh_configuration.md)
-- [Tmux and Herdr bindings](docs/multiplexer-bindings.md)
-- [TODOs](docs/todo.md)
+| Guide | Contents |
+| --- | --- |
+| [Setup and usage](docs/mise.md) | Configuration layout, packages, individual tasks, and customization |
+| [Home directories](docs/directory_structure.md) | Directories created during bootstrap |
+| [Git configuration](docs/git.md) | Identity, shared defaults, and local overrides |
+| [SSH configuration](docs/ssh_configuration.md) | Keys and connections |
+| [Tmux and Herdr bindings](docs/multiplexer-bindings.md) | Multiplexer shortcuts |
+| [Security](docs/security.md) | Secret scanning and publishing precautions |
+| [TODOs](docs/todo.md) | Planned work |
