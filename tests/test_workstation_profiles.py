@@ -114,7 +114,7 @@ class WorkstationProfileTests(unittest.TestCase):
 
                 pre_hooks = hook_commands('pre-packages')
                 self.assertTrue(all('flatpak_install.sh' in hook for hook in pre_hooks))
-                self.assertEqual('flatpak_install.sh' in '\n'.join(pre_hooks), distro != 'arch')
+                self.assertEqual('flatpak_install.sh' in '\n'.join(pre_hooks), distro in ('debian', 'fedora'))
                 hooks = '\n'.join(hook_commands('post-packages'))
                 self.assertEqual('zed_install.sh' in hooks, distro != 'arch')
                 if distro in ('ubuntu', 'debian'):

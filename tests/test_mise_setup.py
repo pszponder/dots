@@ -208,7 +208,7 @@ class MiseSetupTests(unittest.TestCase):
                 preview = self.run_command(*args, "--dry-run", "--skip", "tools")
                 self.assertIn("run setup:ssh", preview)
                 self.assertEqual(
-                    "run setup:flatpak" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
+                    "run setup:flatpak" in preview, profile in ("workstation-debian", "workstation-fedora", "workstation-ublue")
                 )
                 self.assertEqual("run setup:zed" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
                 self.assertEqual(
@@ -360,7 +360,7 @@ class MiseSetupTests(unittest.TestCase):
                 self.assertNotIn("flox_install.sh", output)
                 self.assertIn(
                     "run setup:flatpak"
-                    if profile in WORKSTATIONS and profile != "workstation-arch"
+                    if profile in ("workstation-debian", "workstation-fedora", "workstation-ublue")
                     else "run setup:fonts",
                     output,
                 )
