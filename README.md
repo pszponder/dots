@@ -4,7 +4,7 @@ Linux workstation and server bootstrap & dotfiles, deployed with [mise](https://
 
 ## Bootstrapping a New Machine
 
-Requires Python 3.11+. The installer installs mise if needed.
+The installer installs mise if needed; bootstrap does not require host Python.
 
 From a local checkout:
 
@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/pszponder/dots/main/install.sh | DO
 
 Keep the checkout at its chosen location after setup: deployed dotfiles are symlinks into it.
 
-Before deploying dotfiles, bootstrap moves each conflicting file to a sibling with `.bak` appended (for example, `~/.bashrc.bak`). Existing backups are preserved using `.bak.1`, `.bak.2`, and so on. The installer then forces dotfile application. Existing correct links are left alone, and dry runs do not move files.
+Setup attempts normal deployment first, without scanning for conflicts or creating backups. If it fails, the installer shows the error and offers one force retry, defaulting to No. Unattended force retries require explicit `--yes`, for example `./install.sh server --yes`. A failed force retry aborts setup. Global mise linking follows the same normal-first behavior.
 
 Installs packages, directories, dotfiles, global tools, Nerd Fonts, and SSH keys. Interactive runs confirm preparation and preview bootstrap before applying it. Noninteractive runs require an explicit profile and apply both stages; set `git_name` and `git_email` in `~/.config/mise/config.local.toml` first.
 
@@ -59,7 +59,7 @@ When running `./install.sh` from a local checkout, the installer uses that check
 
 ## Managing Dotfiles
 
-If you skipped full machine setup, prepare global configuration once from the checkout with mise and Python 3.11+ installed:
+If you skipped full machine setup, prepare global configuration once from the checkout with mise installed:
 
 ```sh
 sh scripts/bootstrap/configure_mise.sh "$PWD" workstation-fedora  # Use your profile
@@ -81,7 +81,7 @@ mise dot add --group home ~/.config/example/config.toml
 
 This captures the file into `dots/.config/example/config.toml` and replaces the original home-directory file with a symlink to it. It applies the new file immediately; use `--no-apply` to capture without applying. Review and commit the captured file. Future edits through either path change the same file.
 
-You can also create new files directly under their matching paths in `dots/`; they are included automatically on the next apply. Keep secrets and machine-specific values outside the repository. [Back up conflicting files](docs/mise.md#back-up-conflicts) before deploying repository files over existing home-directory files.
+You can also create new files directly under their matching paths in `dots/`; they are included automatically on the next apply. Keep secrets and machine-specific values outside the repository. [Review replacements](docs/mise.md#confirm-replacements) before deploying repository files over existing home-directory files. Use `mise run dotfiles:apply` for normal deployment with an optional force retry.
 
 ### Applying Dotfiles to the System
 
@@ -104,7 +104,7 @@ git pull --ff-only
 ./install.sh workstation-ubuntu  # Or server, workstation-fedora, etc.
 ```
 
-The installer prepares global mise configuration, trusts the checkout, prompts for missing variables, previews bootstrap, and applies it after confirmation. Once you approve application, mise runs with `--yes`, including dotfile deployment, so it does not ask for a second confirmation. Noninteractive runs apply both preparation and bootstrap automatically. It applies the current checkout without pulling repository changes itself.
+The installer prepares global mise configuration, trusts the checkout, prompts for missing variables, previews bootstrap, and applies it after confirmation. Once you approve application, mise attempts normal deployment with `--yes`. A failed attempt offers a separate force retry. Noninteractive runs apply both preparation and bootstrap automatically. It applies the current checkout without pulling repository changes itself.
 
 Run `up --dry-run`, then `up` from any directory to [update the OS, tools, and packages](docs/mise.md#update-tools-and-packages-from-any-directory).
 
@@ -133,6 +133,7 @@ Install Zsh to check its startup-file syntax. Checks do not bootstrap the machin
 
 - [Setup, customization, and daily usage](docs/mise.md)
 - [Home directories](docs/directory_structure.md)
+- [Git configuration, identity, and local overrides](docs/git.md)
 - [SSH configuration](docs/ssh_configuration.md)
 - [Tmux and Herdr bindings](docs/multiplexer-bindings.md)
 - [TODOs](docs/todo.md)

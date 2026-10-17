@@ -143,9 +143,9 @@ Here is an example directory hierarchy:
 - **courses/** (place course materials here)
 - **resources/** (books, cheat sheets, etc.)
 
-This is what your global gitconfig (`~/.config/git/config`) should look like
+The shared defaults contain this conditional include (see [Git configuration](git.md) for how those defaults are loaded):
 ```txt
-# ~/.config/git/config
+# ~/.config/git/defaults
 
 # Include for all .git projects under ~/repos/github/pszponder
 # Copy this pattern for any other git repos, making sure to change the gitdir and path
@@ -155,7 +155,7 @@ path = ~/.config/git/github_pszponder
 # Add other global gitconfig settings here ...
 ```
 
-The repository deploys this conditional include from `dots/.config/git/config.tera`
+The repository deploys this conditional include from `dots/.config/git/defaults`
 and links `dots/.config/git/github_pszponder` into place. All repositories under
 `~/repos/github/pszponder/` select the personal GitHub key automatically. The
 trailing slash includes nested directories. Git author name and email still come
@@ -168,8 +168,8 @@ from the `git_name` and `git_email` mise variables.
     sshCommand = ssh -i ~/.ssh/github/pszponder/personal -o IdentitiesOnly=yes
 ```
 
-Run `mise dot apply ~/.config/git/config ~/.config/git/github_pszponder` after
-changing these sources. Private keys remain local under `~/.ssh/`; only their
+These sources are symlinked, so edits take effect immediately. Run
+`mise run dotfiles:apply` from the checkout to deploy them initially. Private keys remain local under `~/.ssh/`; only their
 paths are tracked. Register each machine's public key with GitHub separately.
 Create a separate fragment and include rule for each additional host or account.
 Repository-local `core.sshCommand` values override this shared configuration.

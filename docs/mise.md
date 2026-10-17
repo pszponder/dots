@@ -17,13 +17,13 @@ Available workstation profiles are `workstation-ubuntu`, `workstation-debian`, `
 | `~/.config/mise/conf.d/01-dotfiles-machine.toml` | Generated checkout path and machine profile |
 | `~/.config/mise/config.local.toml` | User-maintained machine-local overrides |
 
-The home group links individual files under `dots/`, preserving unrelated files. Git configuration and `env.sh` are rendered from templates. New source files deploy automatically unless excluded.
+The home group links individual files under `dots/`, preserving unrelated files. Git identity defaults and `env.sh` are rendered from templates; shared Git defaults are included from a separate managed file. New source files deploy automatically unless excluded.
 
-The setup helper backs up conflicting global mise config, preserves local overrides, and retires legacy configuration links. `install.sh` confirms this preparation, then separately confirms bootstrap. Declining bootstrap leaves preparation in place; noninteractive runs apply both stages.
+The setup helper attempts to link global mise configuration normally and offers a force retry if linking fails. It preserves local overrides and retires legacy configuration links. `install.sh` confirms this preparation, then separately confirms bootstrap. Declining bootstrap leaves preparation in place; unattended replacements require explicit `--yes`.
 
 Bootstrap final hooks install global tools, SSH keys, and direct-download fonts where applicable, skipping existing matching installations. Universal Blue fonts are bootstrap packages instead. `dot apply` runs only dotfile hooks. Dry runs print final hooks without executing them; bootstrap status does not verify their installed state.
 
-Global tools include pinned Betterleaks. After installing tools, bootstrap enables this checkout's pre-commit hook, preserving existing custom hook setups. For another clone without full bootstrap, run `mise run hooks-install` from that checkout. See [security setup](security.md#betterleaks-pre-commit-check).
+Global tools include Betterleaks tracking `latest`. After installing tools, bootstrap enables this checkout's pre-commit hook, preserving existing custom hook setups. For another clone without full bootstrap, run `mise run hooks-install` from that checkout. See [security setup](security.md#betterleaks-pre-commit-check).
 
 ## Packages and desktop setup
 
@@ -151,7 +151,7 @@ mise -C bootstrap -E workstation-ubuntu bootstrap
 
 Use your full workstation profile, or `server`. Required-variable prompting saves answers outside the checkout, including during dry runs. For unattended setup, save Git identity first with `mise vars prompt git_name="Your Name" git_email="you@example.com"`, then apply with `--yes`.
 
-The preparation helper backs up conflicting global configuration and migrates legacy links. It requires Python 3.11+ and preserves user overrides. Dotfile commands then work from any directory without `-C` or `-E`. Keep the checkout because deployed symlinks and `DOTFILES_REPO` refer to it. The first final hook loads the newly deployed global tool config in a fresh invocation.
+The preparation helper offers a force retry if normal global configuration linking fails and migrates legacy links without backups. It uses POSIX shell and preserves user overrides; bootstrap does not require host Python. Dotfile commands then work from any directory without `-C` or `-E`. Keep the checkout because deployed symlinks and `DOTFILES_REPO` refer to it. The first final hook loads the newly deployed global tool config in a fresh invocation.
 
 To update the checkout and reapply:
 
@@ -221,7 +221,7 @@ See [managed files](https://mise.jdx.dev/dotfiles/managed.html).
 
 ## Templates and personal values
 
-For example, `dots/.config/git/config.tera`:
+For example, `dots/.config/git/dotfiles-identity.tera`:
 
 ```
 [user]
@@ -281,19 +281,23 @@ mise -C bootstrap -E workstation-ubuntu bootstrap status
 
 Open a new shell and run `mise doctor`. Earlier successful steps remain applied if a later step fails.
 
-### Back up conflicts
+### Confirm replacements
 
-Full bootstrap automatically moves conflicting dotfiles to sibling paths with `.bak` appended before deploying replacements (for example, `~/.bashrc.bak`). Existing backups, including broken symlinks, are preserved by choosing `.bak.1`, `.bak.2`, and so on. Files, directories, and symlinks are moved intact. Correct links are left alone. The installer enables `--force-dotfiles` after this backup hook; if backup fails, bootstrap stops. Dry runs only print the hook and leave files untouched.
+Run `mise run dotfiles:apply` from the checkout for routine deployment. It attempts normal `mise dot apply` first. If the command fails, its error is shown and setup offers one retry with `--force`, defaulting to No. The installer follows the same pattern for bootstrap, using `--force-dotfiles` only on retry. A second failure aborts. Earlier successful steps remain applied; force retries do not fix unrelated installation errors.
 
-For standalone `mise dot apply`, back up conflicts manually as described below, or run full setup with `./install.sh`.
+There is no conflict scan, custom path removal, or backup creation. Mise controls normal replacement behavior, including updates to managed copies and templates. Normal deployment can already write files before an error occurs; this is not a transaction.
 
-Before applying, review the sources and back up existing target files. Move conflicting symlink targets out of the way; a backup copy alone leaves the conflict unresolved. After incorporating desired settings into `dots/.bashrc`, for example:
+For unattended force retries, pass `./install.sh server --yes` (or a workstation profile). Routine tasks accept `DOTFILES_YES=1 mise run dotfiles:apply`. Without a terminal or explicit consent, a failed normal attempt aborts. Direct mise commands retain their native behavior; `mise bootstrap --force-dotfiles` and `mise dot apply --force` force replacement immediately. The installer uses `--force-dotfiles` for its read-only preview so conflicts do not prevent the normal deployment attempt. Dry runs do not execute the retry helper.
 
-```sh
-mv ~/.bashrc ~/.bashrc.bak
-```
+Global mise configuration linking also attempts normal creation first, offers a force retry on error, and aborts if the retry fails. Configuration generation uses shell and awk; bootstrap has no extra jq or host Python dependency. Python remains needed for repository checks and development tools.
 
-Choose an unused backup name and repeat for other conflicts, including `~/.config/nvim`. Back up copy and template targets too: applying overwrites their contents.
+### Configuration ownership and setup tasks
+
+Symlinks are repository-owned and live edits change their sources. Templates render machine-dependent defaults. Copies are application-writable but remain repository-managed: applying replaces local edits after consent. VS Code, Codex, and COSMIC retain copy mode; capture wanted edits before applying.
+
+Git defaults are included from separately managed files, while global Git configuration remains user-owned. See [Git configuration](git.md) for the files, precedence, author identity, local overrides, and migration behavior.
+
+Use `mise run setup:git`, `mise run setup:fonts`, and `mise run setup:kanata` from the checkout to rerun individual setup operations. Server keyboard setup is skipped. Universal Blue fonts are installed with its bootstrap packages.
 
 ### Private repository authentication
 

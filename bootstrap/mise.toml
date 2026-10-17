@@ -17,9 +17,7 @@ nerdfonts_version = "v3.5.1"
 "~/.ssh/github/pszponder" = { mode = "0700" }
 
 [bootstrap.hooks]
-pre-dotfiles = [
-  "python3 {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/backup_dotfiles.py",
-]
+post-dotfiles = ["sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git.sh"]
 final = [
   # A fresh invocation reads the global tools config deployed by dotfiles.
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes",
@@ -31,3 +29,6 @@ final = [
   "{% if vars.dotfiles_profile != 'workstation-ublue' %}NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh{% else %}true{% endif %}",
 ]
 
+
+[tasks."setup:fonts"]
+run = "{% if vars.dotfiles_profile != 'workstation-ublue' %}NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh{% else %}echo 'Universal Blue fonts are managed by bootstrap packages'{% endif %}"

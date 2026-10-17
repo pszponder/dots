@@ -13,7 +13,7 @@ mode = "symlink-each"
 
 [dotfile_groups.home.entries]
 "~/.config/env.sh" = { source = ".config/env.sh.tera", mode = "template" }
-"~/.config/git/config" = { source = ".config/git/config.tera", mode = "template" }
+"~/.config/git/dotfiles-identity" = { source = ".config/git/dotfiles-identity.tera", mode = "template" }
 "~/.config/git/github_pszponder" = { source = ".config/git/github_pszponder", mode = "symlink" }
 
 # Keep application-managed configuration independent of repository sources.

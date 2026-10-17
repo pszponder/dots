@@ -1,11 +1,7 @@
 # TODOs
 
-## Before publishing
-
-- [ ] Complete the [security publishing checklist](security.md#before-making-the-repository-public), including a dedicated scan of full Git history and a review of personal information and GitHub-only content.
-
 ## Ideas
-
+- [x] Review [acefei/dotfiles-mise](https://github.com/acefei/dotfiles-mise): preserve local Git settings with includes, offer force retries after normal deployment fails, remove host Python from bootstrap, and expose setup tasks.
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
 - [ ] [How To Setup Minimal Neovim 0.12 Config Guide From Scratch](https://www.youtube.com/watch?v=XQuNoprFW38)

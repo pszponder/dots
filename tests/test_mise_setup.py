@@ -59,6 +59,7 @@ class MiseSetupTests(unittest.TestCase):
             XDG_STATE_HOME=str(self.root / "state"),
             MISE_TRUSTED_CONFIG_PATHS=str(self.root),
             MISE_OFFLINE="1",
+            DOTFILES_YES="1",
         )
 
     def run_command(self, *args):
@@ -73,9 +74,10 @@ class MiseSetupTests(unittest.TestCase):
             "sh", str(self.repo / "scripts/bootstrap/configure_mise.sh"), str(self.repo)
         )
 
-    @unittest.skipUnless(MISE, "mise is required for dotfile backup integration checks")
-    def test_bootstrap_backs_up_conflicts_before_forced_apply(self):
+    @unittest.skipUnless(MISE, "mise is required for dotfile replacement integration checks")
+    def test_dotfiles_retry_without_backups(self):
         self.configure()
+        self.env.pop("DOTFILES_YES")
         (self.config / "config.local.toml").write_text(
             '[vars]\ngit_name="Test"\ngit_email="test@example.com"\n'
         )
@@ -85,7 +87,7 @@ class MiseSetupTests(unittest.TestCase):
         (self.home / ".bash_profile").write_text("original profile\n")
         (self.home / ".profile").symlink_to("missing-original")
         (self.home / ".config/git").mkdir()
-        (self.home / ".config/git/config").write_text("original git config\n")
+        (self.home / ".config/git/config").write_text("[user]\n name = Local\n")
         (self.home / ".config/keep").write_text("unmanaged\n")
         (self.home / ".config/zsh").write_text("file where a directory is needed\n")
         (self.home / ".config/aliases").mkdir()
@@ -98,19 +100,21 @@ class MiseSetupTests(unittest.TestCase):
         self.run_command(*args, "--dry-run")
         self.assertFalse((self.home / ".bashrc.bak.2").exists())
         self.assertEqual((self.home / ".bashrc").read_text(), "original bashrc\n")
-        self.run_command(*args)
+        self.env["DOTFILES_YES"] = "1"
+        self.run_command("sh", str(self.repo / "scripts/bootstrap/retry_mise.sh"),
+                         "dotfiles", "-C", str(self.repo / "bootstrap"), "-E", "server")
         self.assertEqual((self.home / ".bashrc.bak").read_text(), "older backup\n")
         self.assertEqual(os.readlink(self.home / ".bashrc.bak.1"), "missing-backup")
-        self.assertEqual((self.home / ".bashrc.bak.2").read_text(), "original bashrc\n")
-        self.assertEqual((self.home / ".bash_profile.bak").read_text(), "original profile\n")
-        self.assertEqual(os.readlink(self.home / ".profile.bak"), "missing-original")
-        self.assertEqual((self.home / ".config/git/config.bak").read_text(), "original git config\n")
-        self.assertEqual((self.home / ".config/zsh.bak").read_text(), "file where a directory is needed\n")
-        self.assertEqual((self.home / ".config/aliases.bak/keep").read_text(), "original directory\n")
+        self.assertFalse((self.home / ".bashrc.bak.2").exists())
+        self.assertFalse((self.home / ".bash_profile.bak").exists())
+        self.assertFalse((self.home / ".profile.bak").exists())
+        self.assertIn("Local", (self.home / ".config/git/config").read_text())
         self.assertFalse((self.home / ".zshenv.bak").exists())
         self.assertEqual((self.home / ".config/keep").read_text(), "unmanaged\n")
         self.assertTrue((self.home / ".bashrc").is_symlink())
-        self.run_command(*args)
+        self.env["DOTFILES_YES"] = "1"
+        self.run_command("sh", str(self.repo / "scripts/bootstrap/retry_mise.sh"),
+                         "dotfiles", "-C", str(self.repo / "bootstrap"), "-E", "server")
         self.assertFalse((self.home / ".bashrc.bak.3").exists())
         self.assertFalse((self.home / ".bash_profile.bak.1").exists())
 
@@ -125,18 +129,13 @@ class MiseSetupTests(unittest.TestCase):
             self.skipTest("Installed mise lacks native Snap support; upgrade mise to exercise Ubuntu integration")
         self.assertEqual(probe.returncode, 0, probe.stdout + probe.stderr)
 
-    def test_config_backups_and_repeat_setup(self):
+    def test_config_replacement_and_repeat_setup(self):
         self.config.mkdir(parents=True)
         (self.config / "config.toml").write_text("# existing configuration\n")
         (self.config / "config.local.toml").write_text("# keep local overrides\n")
         self.configure()
-        backups = list(self.config.glob(".dotfiles-backup.*"))
-        self.assertEqual(len(backups), 1)
-        self.assertEqual(
-            (backups[0] / "config.toml").read_text(), "# existing configuration\n"
-        )
+        self.assertEqual(list(self.config.glob(".dotfiles-backup.*")), [])
         self.configure()
-        self.assertEqual(list(self.config.glob(".dotfiles-backup.*")), backups)
         self.assertEqual(
             (self.config / "config.local.toml").read_text(), "# keep local overrides\n"
         )
@@ -284,10 +283,9 @@ class MiseSetupTests(unittest.TestCase):
         self.assertFalse(context.exists())
         self.assertFalse((self.config / "dotfiles").exists())
         self.assertEqual(override.read_text(), "[tools]\n")
-        backup = next(self.config.glob(".dotfiles-backup.*"))
-        self.assertTrue((backup / context.name).exists())
+        self.assertEqual(list(self.config.glob(".dotfiles-backup.*")), [])
         self.configure()
-        self.assertEqual(len(list(self.config.glob(".dotfiles-backup.*"))), 1)
+        self.assertEqual(len(list(self.config.glob(".dotfiles-backup.*"))), 0)
 
     @unittest.skipUnless(MISE, "mise is required for dotfile integration checks")
     def test_saved_profile_and_moved_checkout_from_any_directory(self):
@@ -426,7 +424,7 @@ class MiseSetupTests(unittest.TestCase):
             else:
                 self.assertTrue(target.is_symlink(), str(target))
                 self.assertEqual(target.resolve(), source.resolve())
-        self.assertIn("Test", (self.home / ".config/git/config").read_text())
+        self.assertIn("Test", (self.home / ".config/git/dotfiles-identity").read_text())
         self.assertIn(str(self.repo), (self.home / ".config/env.sh").read_text())
         self.assertTrue((self.config / "config.toml").is_symlink())
         self.assertFalse((self.config / "config.local.toml").is_symlink())
@@ -456,6 +454,7 @@ class MiseSetupTests(unittest.TestCase):
         fake_mise.write_text("""#!/bin/sh
 set -eu
 config="$HOME/.config/mise"
+case "$*" in *"config --json") exit 0 ;; esac
 test -L "$config/config.toml"
 test ! -e "$config/conf.d/00-dotfiles-context.toml"
 printf '%s\\n' "$*" >> "$HOME/mise-calls"
@@ -469,7 +468,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run --force-dotfiles",
-                "-E server bootstrap --force-dotfiles --yes",
+                "-E server bootstrap --yes",
                 "-E server bootstrap status",
             ],
         )
@@ -489,7 +488,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
                     self.assertEqual(calls[-4:], [
                         "trust",
                         f"-E {profile} bootstrap --dry-run --force-dotfiles",
-                        f"-E {profile} bootstrap --force-dotfiles --yes",
+                        f"-E {profile} bootstrap --yes",
                         f"-E {profile} bootstrap status",
                     ])
         (self.repo / "install.sh").write_text(original)
@@ -505,7 +504,7 @@ printf '%s\\n' "$*" >> "$HOME/mise-calls"
             [
                 "trust",
                 "-E server bootstrap --dry-run --force-dotfiles",
-                "-E server bootstrap --force-dotfiles --yes",
+                "-E server bootstrap --yes",
                 "-E server bootstrap status",
             ],
         )

@@ -1,7 +1,3 @@
-[user]
-    name = {{ vars.git_name }}
-    email = {{ vars.git_email }}
-
 [includeIf "gitdir:~/repos/github/pszponder/"]
     path = ~/.config/git/github_pszponder
 

@@ -24,3 +24,19 @@ run = "python3 scripts/check.py"
 [tasks.check]
 description = "Run all repository checks"
 depends = ["lint", "test"]
+
+[tasks."setup:git"]
+description = "Attach shared Git defaults while preserving local settings"
+run = "sh scripts/bootstrap/configure_git.sh"
+
+[tasks."setup:fonts"]
+description = "Install fonts for the saved machine profile"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile }} run setup:fonts"
+
+[tasks."setup:kanata"]
+description = "Configure keyboard access on workstations"
+run = "{% if vars.dotfiles_profile != 'server' %}sh scripts/bootstrap/configure_kanata.sh{% else %}true{% endif %}"
+
+[tasks."dotfiles:apply"]
+description = "Apply dotfiles normally and offer a force retry on failure"
+run = "DOTFILES_YES=${DOTFILES_YES:-0} sh scripts/bootstrap/retry_mise.sh dotfiles -C bootstrap -E {{ vars.dotfiles_profile }}"

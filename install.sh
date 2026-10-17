@@ -106,6 +106,13 @@ configure_ssh_remote() {
 
 main() {
   initialize
+  DOTFILES_YES=0
+  selected_profile=
+  for argument in "$@"; do
+    case "$argument" in --yes|-y) DOTFILES_YES=1 ;; *) [ -z "$selected_profile" ] || die "Pass one profile"; selected_profile=$argument ;; esac
+  done
+  export DOTFILES_YES
+  set -- "$selected_profile"
 
   if [ -z "${1:-}" ] && [ ! -t 0 ]; then
     # curl | sh uses stdin for the script; read interactive input from the terminal.
@@ -130,8 +137,8 @@ main() {
   [ -f "$REPO_DIR/bootstrap/mise.toml" ] || die "could not find bootstrap/mise.toml in $REPO_DIR"
   profile="$(choose_profile "${1:-}")"
 
-  log_info "Preparation installs mise if needed, links global mise configs, backs up conflicting configs, and saves trust"
-  if [ -t 0 ]; then
+  log_info "Preparation installs mise if needed, links global mise configs, offers a force retry if linking fails, and saves trust"
+  if [ -t 0 ] && [ "$DOTFILES_YES" != 1 ]; then
     printf 'Prepare global mise configuration before previewing bootstrap? [y/N] '
     IFS= read -r answer
     case "$answer" in
@@ -142,9 +149,10 @@ main() {
   install_mise
 
   log_info "Linking global mise tool configuration"
+  mise -C "$REPO_DIR/bootstrap" -E "$profile" config --json >/dev/null
   sh "$REPO_DIR/scripts/bootstrap/configure_mise.sh" "$REPO_DIR" "$profile"
 
-  if [ -t 0 ]; then
+  if [ -t 0 ] && [ "$DOTFILES_YES" != 1 ]; then
     log_info "Collecting missing setup variables"
     # Prompt before loading bootstrap, whose templates may need these values.
     mise -C "${MISE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/mise}" vars prompt
@@ -157,7 +165,7 @@ main() {
   log_info "Previewing $profile setup"
   mise -E "$profile" bootstrap --dry-run --force-dotfiles
 
-  if [ -t 0 ]; then
+  if [ -t 0 ] && [ "$DOTFILES_YES" != 1 ]; then
     printf 'Apply bootstrap now? (Global mise preparation is already complete.) [y/N] '
     IFS= read -r answer
     case "$answer" in
@@ -168,7 +176,7 @@ main() {
     log_info "Applying $profile setup"
   fi
 
-  mise -E "$profile" bootstrap --force-dotfiles --yes
+  sh "$REPO_DIR/scripts/bootstrap/retry_mise.sh" bootstrap -E "$profile"
   mise -E "$profile" bootstrap status
   configure_ssh_remote
   log_success "Setup complete"
