@@ -3,8 +3,6 @@
 ## Ideas
 - [ ] Ubuntu Setup
   - [ ] Save changes to shortcuts
-  - [x] Set the Catppuccin wallpaper automatically on Ubuntu GNOME
-  - [ ] Save changes to color theme
   - [ ] Save changes to dock behavior and pinned apps
   - [ ] Save changes to color theme and profile for gnome terminal
 - [ ] Replace podman desktop with lazydocker/[ezpodman](https://github.com/alfonsosanchez12/ezpodman)
