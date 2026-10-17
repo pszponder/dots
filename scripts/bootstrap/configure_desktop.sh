@@ -28,4 +28,5 @@ if printf '%s\n' "$keys" | grep -qx picture-uri-dark; then
   gsettings set org.gnome.desktop.background picture-uri-dark "$wallpaper_uri"
 fi
 gsettings set org.gnome.desktop.background picture-options zoom
+gsettings set org.gnome.desktop.interface accent-color 'purple'
 printf 'GNOME wallpaper configured.\n'
