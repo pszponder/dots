@@ -25,6 +25,38 @@ Bootstrap final hooks install global tools, SSH keys, and direct-download fonts 
 
 Global tools include Betterleaks tracking `latest`. After installing tools, bootstrap enables this checkout's pre-commit hook, preserving existing custom hook setups. For another clone without full bootstrap, run `mise run hooks-install` from that checkout. See [security setup](security.md#betterleaks-pre-commit-check).
 
+## Run individual setup steps
+
+Reusable operations are mise tasks; bootstrap hooks call the same tasks in their
+required order. Setup tasks use the terminal directly so sudo and installer
+prompts remain usable. The installer retains initial mise installation, configuration,
+trust, profile selection, confirmations, and retry handling.
+
+From the checkout root, use the saved profile:
+
+```sh
+mise run setup:git
+mise run setup:tools
+mise run setup:kanata
+mise run setup:hooks
+mise run setup:ssh
+mise run setup:fonts
+```
+
+`setup:hooks` enables the checkout hook; `hooks-install` also installs Betterleaks.
+Git, hook, and SSH tasks do not require a saved machine profile. Kanata skips
+servers, and fonts use bootstrap packages on Universal Blue.
+
+For an explicit profile, run `mise -C bootstrap -E workstation-fedora run setup:tools`.
+GUI installer tasks are available only in profiles that use their scripts:
+`setup:flatpak`, `setup:helium`, `setup:brave-origin`, `setup:zed`, and `setup:yaak`.
+Run these with the explicit profile form. Native package installations remain
+managed by bootstrap declarations. `mise -C bootstrap -E workstation-fedora tasks ls`
+lists the available tasks for that profile.
+
+Task runs do not automatically install missing tools in this repository. Use
+`setup:tools` for global tools or `hooks-install` for Betterleaks.
+
 ## Packages and desktop setup
 
 Traditional workstation profiles and the server profile install development tools, Git, OpenSSH, and font-installation dependencies through apt, pacman, or dnf. Universal Blue relies on image-provided host prerequisites and declares no native packages. Mise runs every available declared package manager, so multiple declarations for an application can all apply. Package installation may request sudo; upgrades are explicit.
@@ -98,7 +130,7 @@ not enable the service or change device permissions. To configure an existing
 Linux workstation without rerunning full bootstrap:
 
 ```bash
-sh scripts/bootstrap/configure_kanata.sh
+mise run setup:kanata
 ```
 
 If your current session lacks either device group, the script enables the service

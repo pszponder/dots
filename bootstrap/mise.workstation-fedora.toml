@@ -29,10 +29,30 @@ helium = { copr = "imput/helium" }
 
 [bootstrap.hooks]
 pre-packages = [
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:flatpak",
 ]
 post-packages = [
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh",
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh",
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/yaak_install.sh",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:brave-origin",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:zed",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:yaak",
 ]
+
+[tasks."setup:flatpak"]
+raw = true
+description = "Prepare Flatpak and Flathub"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/flatpak_install.sh"
+
+[tasks."setup:brave-origin"]
+raw = true
+description = "Install Brave Origin"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/brave_origin_install.sh"
+
+[tasks."setup:zed"]
+raw = true
+description = "Install Zed"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/zed_install.sh"
+
+[tasks."setup:yaak"]
+raw = true
+description = "Install Yaak"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/gui/yaak_install.sh"

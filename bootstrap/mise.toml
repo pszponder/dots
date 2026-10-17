@@ -1,3 +1,7 @@
+# Setup tasks use host shell tools; tool installation is an explicit step.
+[settings.task]
+run_auto_install = false
+
 # Machine bootstrap. Everyday tools live in dots/.config/mise/.
 [vars]
 dotfiles_repo = "{{ config_root | dirname }}"
@@ -17,18 +21,42 @@ nerdfonts_version = "v3.5.1"
 "~/.ssh/github/pszponder" = { mode = "0700" }
 
 [bootstrap.hooks]
-post-dotfiles = ["sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git.sh"]
+post-dotfiles = ["mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:git"]
 final = [
-  # A fresh invocation reads the global tools config deployed by dotfiles.
-  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes",
-  "{% if vars.dotfiles_profile != 'server' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_kanata.sh{% else %}true{% endif %}",
-  "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git_hooks.sh",
-  # Flox installation is disabled for now; uncomment to enable it again.
-  # "sh {{ vars.dotfiles_repo | quote }}/scripts/cli/flox_install.sh",
-  "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh",
-  "{% if vars.dotfiles_profile != 'workstation-ublue' %}NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh{% else %}true{% endif %}",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:tools",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:kanata",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:hooks",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:ssh",
+  "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:fonts",
 ]
 
+[tasks."setup:git"]
+raw = true
+description = "Attach shared Git defaults while preserving local settings"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git.sh"
+
+[tasks."setup:tools"]
+raw = true
+description = "Install configured global tools"
+# Start a fresh invocation to read the global config deployed by dotfiles.
+run = "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} install --yes"
+
+[tasks."setup:kanata"]
+raw = true
+description = "Configure keyboard access on workstations"
+run = "{% if vars.dotfiles_profile != 'server' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_kanata.sh{% else %}true{% endif %}"
+
+[tasks."setup:hooks"]
+raw = true
+description = "Enable this checkout's Git hooks"
+run = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git_hooks.sh"
+
+[tasks."setup:ssh"]
+raw = true
+description = "Create missing SSH keys"
+run = "bash {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/create_ssh_keys.sh"
 
 [tasks."setup:fonts"]
+raw = true
+description = "Install fonts for the selected machine profile"
 run = "{% if vars.dotfiles_profile != 'workstation-ublue' %}NERDFONTS_VERSION={{ vars.nerdfonts_version | quote }} sh {{ vars.dotfiles_repo | quote }}/scripts/cli/nerdfonts_install.sh{% else %}echo 'Universal Blue fonts are managed by bootstrap packages'{% endif %}"

@@ -1,7 +1,7 @@
 # TODOs
 
 ## Ideas
-- [x] Review [acefei/dotfiles-mise](https://github.com/acefei/dotfiles-mise): preserve local Git settings with includes, offer force retries after normal deployment fails, remove host Python from bootstrap, and expose setup tasks.
+- [ ] Replace podman desktop with lazydocker/[ezpodman](https://github.com/alfonsosanchez12/ezpodman)
 - [ ] [The Forever Timeless Terminal Setup](https://www.youtube.com/watch?v=MHPRnM38Dyc)
 - [ ] [My Updated Neovim Config for 2026](https://www.youtube.com/watch?v=nB2EIjKtJ8U)
 - [ ] [How To Setup Minimal Neovim 0.12 Config Guide From Scratch](https://www.youtube.com/watch?v=XQuNoprFW38)
@@ -16,7 +16,7 @@
 - [ ] [Seth Phaeno - The Greatest Minimal Shell Prompt Ever](https://www.youtube.com/watch?v=oe3gadOQk44)
 
 ## Done
-
+- [x] Review [acefei/dotfiles-mise](https://github.com/acefei/dotfiles-mise): preserve local Git settings with includes, offer force retries after normal deployment fails, remove host Python from bootstrap, and expose setup tasks.
 - [x] Add a Betterleaks pre-commit check and a full-history secret-scanning command.
 - [x] Install Betterleaks globally and enable checkout hooks during bootstrap, preserving existing custom hooks.
 - [x] Add Universal Blue workstation support with Flathub GUI apps, declarative font casks, shared mise CLI tools, and atomic OS updates.

@@ -87,7 +87,7 @@ class WorkstationProfileTests(unittest.TestCase):
                 if distro == "ublue":
                     self.assertEqual(set(key.split(":")[0] for key in packages), {"flatpak", "flatpak-user", "brew-cask"})
                     self.assertEqual(sum(key.startswith("brew-cask:") for key in packages), 3)
-                    self.assertIn("--ublue", str(bootstrap["hooks"]))
+                    self.assertIn("--ublue", config["tasks"]["setup:flatpak"]["run"])
                     self.assertNotIn("post-packages", bootstrap["hooks"])
                     continue
                 manager = {'ubuntu': 'apt', 'debian': 'apt', 'fedora': 'dnf', 'arch': 'pacman'}[distro]
@@ -108,10 +108,14 @@ class WorkstationProfileTests(unittest.TestCase):
                     self.assertEqual(sum(key in packages for key in choices), 1)
                     if distro == 'ubuntu':
                         self.assertIn(f'snap:{app}', packages)
-                pre_hooks = bootstrap['hooks'].get('pre-packages', [])
+                def hook_commands(stage):
+                    return [config['tasks'][hook.rsplit(' run ', 1)[1]]['run']
+                            for hook in bootstrap['hooks'].get(stage, [])]
+
+                pre_hooks = hook_commands('pre-packages')
                 self.assertTrue(all('flatpak_install.sh' in hook for hook in pre_hooks))
                 self.assertEqual('flatpak_install.sh' in '\n'.join(pre_hooks), distro != 'arch')
-                hooks = '\n'.join(bootstrap['hooks'].get('post-packages', []))
+                hooks = '\n'.join(hook_commands('post-packages'))
                 self.assertEqual('zed_install.sh' in hooks, distro != 'arch')
                 if distro in ('ubuntu', 'debian'):
                     self.assertNotIn('apt:helium-bin', packages)

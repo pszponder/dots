@@ -1,12 +1,17 @@
+# Setup tasks use host shell tools; tool installation is an explicit step.
+[settings.task]
+run_auto_install = false
+
 # Repository maintenance. Machine setup lives in bootstrap/.
 [tools]
 betterleaks = "latest"
 
 [tasks.hooks-install]
+raw = true
 description = "Install Betterleaks and enable this repository's Git hooks"
 run = [
     "mise install betterleaks",
-    "sh scripts/bootstrap/configure_git_hooks.sh",
+    "mise run setup:hooks",
 ]
 
 [tasks.secrets]
@@ -26,16 +31,34 @@ description = "Run all repository checks"
 depends = ["lint", "test"]
 
 [tasks."setup:git"]
+raw = true
 description = "Attach shared Git defaults while preserving local settings"
-run = "sh scripts/bootstrap/configure_git.sh"
+run = "mise -C bootstrap -E server run setup:git"
 
-[tasks."setup:fonts"]
-description = "Install fonts for the saved machine profile"
-run = "mise -C bootstrap -E {{ vars.dotfiles_profile }} run setup:fonts"
+[tasks."setup:tools"]
+raw = true
+description = "Install configured global tools"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:tools"
 
 [tasks."setup:kanata"]
+raw = true
 description = "Configure keyboard access on workstations"
-run = "{% if vars.dotfiles_profile != 'server' %}sh scripts/bootstrap/configure_kanata.sh{% else %}true{% endif %}"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:kanata"
+
+[tasks."setup:hooks"]
+raw = true
+description = "Enable this checkout's Git hooks"
+run = "mise -C bootstrap -E server run setup:hooks"
+
+[tasks."setup:ssh"]
+raw = true
+description = "Create missing SSH keys"
+run = "mise -C bootstrap -E server run setup:ssh"
+
+[tasks."setup:fonts"]
+raw = true
+description = "Install fonts for the selected machine profile"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:fonts"
 
 [tasks."dotfiles:apply"]
 description = "Apply dotfiles normally and offer a force retry on failure"

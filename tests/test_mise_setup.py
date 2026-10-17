@@ -163,6 +163,10 @@ class MiseSetupTests(unittest.TestCase):
             "scripts/bootstrap/configure_kanata.sh",
         ):
             (remote / name).write_text("#!/bin/sh\nexit 0\n")
+        bootstrap = remote / "bootstrap/mise.toml"
+        bootstrap.write_text(bootstrap.read_text().replace(
+            "install --yes", r'config --json > \"$HOME/tools.json\"'
+        ))
         self.run_command("git", "init", str(remote))
         self.run_command("git", "-C", str(remote), "add", ".")
         self.run_command(
@@ -202,15 +206,15 @@ class MiseSetupTests(unittest.TestCase):
                 config = home / ".config/mise/config.toml"
                 self.run_command("sh", str(checkout / "scripts/bootstrap/configure_mise.sh"), str(checkout), profile)
                 preview = self.run_command(*args, "--dry-run", "--skip", "tools")
-                self.assertIn("create_ssh_keys.sh", preview)
+                self.assertIn("run setup:ssh", preview)
                 self.assertEqual(
-                    "flatpak_install.sh" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
+                    "run setup:flatpak" in preview, profile in WORKSTATIONS and profile != "workstation-arch"
                 )
-                self.assertEqual("zed_install.sh" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
+                self.assertEqual("run setup:zed" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
                 self.assertEqual(
-                    "brave_origin_install.sh" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
+                    "run setup:brave-origin" in preview, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
                 )
-                self.assertEqual("helium_repo.sh" in preview, profile in ("workstation-ubuntu", "workstation-debian"))
+                self.assertEqual("run setup:helium" in preview, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.assertTrue(config.is_symlink())
                 self.run_command(*args, "--only", "dotfiles")
                 self.assertEqual(
@@ -219,29 +223,13 @@ class MiseSetupTests(unittest.TestCase):
                 environment = (home / ".config/env.sh").read_text()
                 self.assertIn(str(checkout), environment)
                 self.assertIn(profile, environment)
-                # Run the real final hook, replacing only its installer
-                # subprocess with a tool-list probe to avoid downloads.
-                fake_bin = base / "bin"
-                fake_bin.mkdir()
-                installer = fake_bin / "mise"
-                installer.write_text(
-                    "#!/bin/sh\nset -eu\n"
-                    'test "$1" = -C\nshift 2\n'
-                    'test "$1" = -E\nshift 2\n'
-                    'test "$*" = "install --yes"\n'
-                    'exec "$REAL_MISE" config --json > "$HOME/tools.json"\n'
-                )
-                installer.chmod(0o755)
-                original_path = self.env["PATH"]
-                self.env.update(
-                    PATH=str(fake_bin) + ":" + original_path, REAL_MISE=MISE
-                )
+                # Run the real final hooks with the tool installation task replaced
+                # by a config probe, keeping this integration test offline.
                 self.run_command(*args, "--only", "final-hook")
                 self.assertEqual(
                     self.run_command("git", "-C", str(checkout), "config", "--local", "--get", "core.hooksPath").strip(),
                     ".githooks",
                 )
-                self.env["PATH"] = original_path
                 tools = json.loads((home / "tools.json").read_text())
                 self.assertIn(str(config), str(tools), tools)
                 self.assertEqual(
@@ -364,23 +352,23 @@ class MiseSetupTests(unittest.TestCase):
                         MISE, "-C", str(self.repo / "bootstrap"), "-E", profile,
                         "bootstrap", "--only", "packages", "--dry-run",
                     )
-                    self.assertIn("flatpak_install.sh --ublue", packages)
+                    self.assertIn("run setup:flatpak", packages)
                     self.assertNotIn("create_ssh_keys.sh", packages)
                     self.assertNotIn("nerdfonts_install.sh", packages)
                 self.assertNotIn("fedora_development_tools.sh", output)
-                self.assertIn("create_ssh_keys.sh", output)
+                self.assertIn("run setup:ssh", output)
                 self.assertNotIn("flox_install.sh", output)
                 self.assertIn(
-                    "flatpak_install.sh"
+                    "run setup:flatpak"
                     if profile in WORKSTATIONS and profile != "workstation-arch"
-                    else "nerdfonts_install.sh",
+                    else "run setup:fonts",
                     output,
                 )
-                self.assertEqual("zed_install.sh" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
+                self.assertEqual("run setup:zed" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue"))
                 self.assertEqual(
-                    "brave_origin_install.sh" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
+                    "run setup:brave-origin" in output, profile in WORKSTATIONS and profile not in ("workstation-arch", "workstation-ublue")
                 )
-                self.assertEqual("helium_repo.sh" in output, profile in ("workstation-ubuntu", "workstation-debian"))
+                self.assertEqual("run setup:helium" in output, profile in ("workstation-ubuntu", "workstation-debian"))
                 self.env["PATH"] = str(fake_bin) + ":" + original_path
                 self.env.update(DOTFILES_REPO=str(self.repo), DOTFILES_PROFILE=profile)
                 output = self.run_command(
