@@ -5,6 +5,8 @@ run_auto_install = false
 # Machine bootstrap. Everyday tools live in dots/.config/mise/.
 [vars]
 dotfiles_repo = "{{ config_root | dirname }}"
+default_terminal = ""
+default_browser = ""
 
 nerdfonts_version = "v3.5.1"
 
@@ -22,6 +24,7 @@ nerdfonts_version = "v3.5.1"
 
 [bootstrap.hooks]
 post-dotfiles = [
+  "{% if vars.dotfiles_profile != 'server' %}mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:defaults{% else %}true{% endif %}",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:git",
   "mise -C {{ vars.dotfiles_repo | quote }}/bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:desktop",
 ]
@@ -42,6 +45,11 @@ run = "sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_git.sh"
 raw = true
 description = "Apply Ubuntu GNOME desktop preferences"
 run = "{% if vars.dotfiles_profile == 'workstation-ubuntu' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_desktop.sh{% else %}echo 'Skipping desktop setup: Ubuntu profile only'{% endif %}"
+
+[tasks."setup:defaults"]
+raw = true
+description = "Apply application defaults for the selected workstation"
+run = "{% if vars.dotfiles_profile != 'server' %}sh {{ vars.dotfiles_repo | quote }}/scripts/bootstrap/configure_defaults.sh {{ vars.default_terminal | quote }} {{ vars.default_browser | quote }}{% else %}echo 'Skipping application defaults: workstation profiles only'{% endif %}"
 
 [tasks."setup:tools"]
 raw = true

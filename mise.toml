@@ -40,6 +40,11 @@ raw = true
 description = "Apply Ubuntu GNOME desktop preferences"
 run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:desktop"
 
+[tasks."setup:defaults"]
+raw = true
+description = "Apply application defaults for the selected workstation"
+run = "mise -C bootstrap -E {{ vars.dotfiles_profile | quote }} run setup:defaults"
+
 [tasks."setup:tools"]
 raw = true
 description = "Install configured global tools"

@@ -1,5 +1,7 @@
 [vars]
 dotfiles_profile = "workstation-ubuntu"
+default_terminal = "ghostty_ghostty.desktop"
+default_browser = "zen.desktop"
 
 # Prefer project-published, project-endorsed, or Snapcrafters Snaps.
 # Zen and Zed use official installers; other apps use explicit fallback sources.
