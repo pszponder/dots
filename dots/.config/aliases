@@ -86,8 +86,8 @@ alias search='rg --smart-case --pretty'
 
 # 🧰 Tool shortcuts
 # alias g='git'
-alias lzg='lazygit'
-alias lzd='lazydocker'
+alias lg='lazygit'
+alias ld='lazydocker'
 alias k='kubectl'
 alias tf='terraform'
 
