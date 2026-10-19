@@ -9,6 +9,11 @@ if [ ! -e "$repo_dir/.git" ]; then
 fi
 
 cd "$repo_dir"
+if [ ! -x .githooks/pre-commit ]; then
+  printf 'Cannot enable Git hooks: .githooks/pre-commit is missing or not executable.\n' >&2
+  exit 1
+fi
+
 hook_path=$(git config --get core.hooksPath || :)
 if [ -n "$hook_path" ] && [ "$hook_path" != .githooks ]; then
   printf 'Keeping existing core.hooksPath: %s. Integrate .githooks/pre-commit manually.\n' "$hook_path" >&2
